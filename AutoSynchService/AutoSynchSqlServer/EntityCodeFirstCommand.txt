@@ -1,0 +1,14 @@
+
+INSTALL NUGET
+
+Oracle.EntityFrameworkCore
+Microsoft.EntityFrameworkCore.Tools
+
+RUN FOLLOWING IN PACKAGE MANAGER CONSOLE TO GENERATE CLASSES
+ Scaffold-DbContext "Data Source=ONE;User ID=sa;Password=Nadra@123;Database=cmsnet_inventory_db;Persist Security Info=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force -NoPluralize -NoOnConfiguring -Context Entities
+
+
+Data Source=ONE;User ID=sa;Password=Nadra@123;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False
+Scaffold-DbContext "Server=.\SQLEXPRESS;Database=TestDB;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir DataDB
+
+Scaffold-DbContext "Data Source=ONE;User ID=sa;Password=Nadra@123;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;Database=cmsnet" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force -NoPluralize -NoOnConfiguring -Context Entities

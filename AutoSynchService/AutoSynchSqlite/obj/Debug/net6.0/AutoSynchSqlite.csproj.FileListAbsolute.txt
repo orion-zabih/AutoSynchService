@@ -1,0 +1,12 @@
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\bin\Debug\net6.0\AutoSynchSqlite.deps.json
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\bin\Debug\net6.0\AutoSynchSqlite.dll
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\bin\Debug\net6.0\AutoSynchSqlite.pdb
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.csproj.AssemblyReference.cache
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.AssemblyInfoInputs.cache
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.AssemblyInfo.cs
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.csproj.CoreCompileInputs.cache
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.dll
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\refint\AutoSynchSqlite.dll
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\AutoSynchSqlite.pdb
+C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlite\obj\Debug\net6.0\ref\AutoSynchSqlite.dll

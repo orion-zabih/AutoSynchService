@@ -1,0 +1,5 @@
+10/23/2022 3:35:51 PM | [SqliteManager:GetDataTable()] | DataReader already active on this command | 
+10/23/2022 3:39:15 PM | [SqliteManager:GetDataTable()] | SQL logic error
+no such column: IsCanceled | 
+10/23/2022 3:41:10 PM | [SqliteManager:GetDataTable()] | DataReader already active on this command | 
+10/23/2022 3:41:43 PM | [SqliteManager:GetDataTable()] | DataReader already active on this command | 
