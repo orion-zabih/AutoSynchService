@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoSynchSqlite\AutoSynchSqlite.csproj" />
+    <ProjectReference Include="..\AutoSynchSqlServer\AutoSynchSqlServer.csproj" />
   </ItemGroup>
 </Project>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -39,6 +40,74 @@ namespace AutoSynchService.Classes
                 invSaleDetailList.Add(invSaleDetail);
             }
             return invSaleDetailList;
+        }
+        internal static List<InvSaleMaster> GetInvSaleMaster(DataTable table)
+        {
+            var invSaleMasterList = new List<InvSaleMaster>(table.Rows.Count);
+            foreach (DataRow row in table.Rows)
+            {
+                var values = row.ItemArray;
+                var invSaleMaster = new InvSaleMaster()
+                {
+                    Id = Convert.ToInt32(row["Id"]),
+                    OrderDate = Convert.ToDateTime(row["OrderDate"]),
+                    CustomerId = Convert.ToInt32(row["CustomerId"]),
+                    CustomerTypeId = Convert.ToInt32(row["CustomerTypeId"]),
+                    InvoiceTotal = Convert.ToDecimal(row["InvoiceTotal"]),
+                    DiscountPercent = Convert.ToDecimal(row["DiscountPercent"]),
+                    TaxCalculated = Convert.ToDecimal(row["TaxCalculated"]),
+                    ServiceChargesCalculated = Convert.ToDecimal(row["ServiceChargesCalculated"]),
+                    GrandTotal = Convert.ToDecimal(row["GrandTotal"]),
+                    PaymentReceived = Convert.ToDecimal(row["PaymentReceived"]),
+                    Change = Convert.ToDecimal(row["Change"]),
+                    IsCanceled = Convert.ToBoolean(row["IsCanceled"]),
+                    OrderStatus = Convert.ToString(row["OrderStatus"]),
+                    DiscountRemarks = row["DiscountRemarks"].ToString(),
+                    BranchId = Convert.ToInt32(row["BranchId"]),
+                    SessionId = Convert.ToInt32(row["SessionId"]),
+                    IsDeleted = Convert.ToBoolean(row["IsDeleted"]),
+                    ThirdPartyId = Convert.ToInt32(row["ThirdPartyId"]),
+                    CustomerName = row["CustomerName"].ToString(),
+                    CustomerContact = row["CustomerContact"].ToString(),
+                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
+                    Remarks = row["Remarks"].ToString(),
+                    CreatedBy = Convert.ToInt32(row["CreatedBy"]),
+                    CreatedDate = Convert.ToDateTime(row["CreatedDate"]),
+                    UpdatedBy = Convert.ToInt32(row["UpdatedBy"]),
+                    UpdatedDate = Convert.ToDateTime(row["UpdatedDate"]),
+                    CompletedBy = Convert.ToInt32(row["CompletedBy"]),
+                    CompletedDate = Convert.ToDateTime(row["CompletedDate"]),
+                    ShiftId = Convert.ToInt32(row["ShiftId"]),
+                    StoreId = Convert.ToInt32(row["StoreId"]),
+                    IsReturn = Convert.ToBoolean(row["IsReturn"]),
+                    FiscalYearId = Convert.ToInt32(row["FiscalYearId"]),
+                    VehicleId = Convert.ToInt32(row["VehicleId"]),
+                    CurrentReading = Convert.ToInt32(row["CurrentReading"]),
+                    NextServiceAfterKm = Convert.ToInt32(row["NextServiceAfterKm"]),
+                    ExpectReadingOnNext = Convert.ToInt32(row["ExpectReadingOnNext"]),
+                    ReadingPerDay = Convert.ToInt32(row["ReadingPerDay"]),
+                    NextServiceDate = Convert.ToDateTime(row["NextServiceDate"]),
+                    IsSentToFbr = Convert.ToInt32(row["IsSentToFbr"]),
+                    FbrInvoiceNumber = row["FbrInvoiceNumber"].ToString(),
+                    FbrResponseCode = row["FbrResponseCode"].ToString(),
+                    FbrResponse = row["FbrResponse"].ToString(),
+                    FbrPosid = Convert.ToInt32(row["FbrPOSID"]),
+                    FbrUsin = row["FbrUSIN"].ToString(),
+                    BuyerNtn = row["BuyerNTN"].ToString(),
+                    BuyerCnic = row["BuyerCNIC"].ToString(),
+                    BuyerPhoneNumber = row["BuyerPhoneNumber"].ToString(),
+                    FbrPaymentModeCode = Convert.ToInt32(row["FbrPaymentModeCode"]),
+                    DiscountCalculated = Convert.ToDecimal(row["DiscountCalculated"]),
+                    TotalQuantity = Convert.ToDecimal(row["TotalQuantity"]),
+                    FurtherTax = Convert.ToDecimal(row["FurtherTax"]),
+                    FbrInvoiceTypeCode = Convert.ToInt32(row["FbrInvoiceTypeCode"]),
+                    PaymentType = row["PaymentType"].ToString()
+
+                };
+            
+                invSaleMasterList.Add(invSaleMaster);
+            }
+            return invSaleMasterList;
         }
     }
 }

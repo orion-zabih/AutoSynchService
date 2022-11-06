@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "gqqNYSOHSmI0rQ6L0lKhE+kWvNpuSul6YvG7eodROSC7B+57PEIoUC4euEDwUV/Q62Vdmleyq9gLeoKitiWXKw==",
+  "dgSpecHash": "1+8oCvXbYVQgwLWmmc/OWGKTHEb8HSIVn6rcT2RVV95v2DNoeuENF4uO6Z5K4X1OU5P09U3goIyf6NGMMI+oWw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\one\\source\\repos\\AutoSynchService\\AutoSynchSqlServer\\AutoSynchSqlServer.csproj",
+  "projectFilePath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchSqlServer\\AutoSynchSqlServer.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\one\\.nuget\\packages\\humanizer.core\\2.8.26\\humanizer.core.2.8.26.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",

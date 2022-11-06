@@ -13,12 +13,12 @@ namespace AutoSynchService.ApiClient
     
     internal class AccountsClient
     {
-        string accountAPIUrl = "/AccAccount";
+        string accountAPIUrl = "/api/AccAccount";
         public DataResponse? GetAccounts()
         {
             try
             {
-                DataResponse dataResponse = null;
+                
                 try
                 {
 
@@ -29,10 +29,10 @@ namespace AutoSynchService.ApiClient
                     // List data response.
                     if (responses!=null)
                     {
-                        using (var streamReader = new StreamReader(responses))
+                        //using (var streamReader = new StreamReader(responses))
                         {
-                            var jsonResult = streamReader.ReadToEnd();
-                            DataResponse response = JsonConvert.DeserializeObject<DataResponse>(jsonResult);
+                            //var jsonResult = streamReader.ReadToEnd();
+                            DataResponse response = JsonConvert.DeserializeObject<DataResponse>(responses);
                             if (response.accAccounts != null)
                             {
                                 return response;

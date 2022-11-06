@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AutoSynchAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/AccAccount")]
     [ApiController]
     public class AccAccountController : ControllerBase
     {
         // GET: api/<AccAccountController>
+        [Route("GetAccounts")]
         [HttpGet]
         public IActionResult GetAccounts()
         {
@@ -42,20 +43,23 @@ namespace AutoSynchAPI.Controllers
                 return BadRequest(responseObj);
             }
         }
-        
 
-        // GET api/<AccAccountController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+
+        //GET api/<AccAccountController>/5
+
+        [Route("GetAccounts/{id?}")]
+        [HttpGet]
+        public string GetAccAccount(int id)
         {
             return "value";
         }
 
         // POST api/<AccAccountController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+        //[HttpPost]
+        //public async Task<IActionResult<DataResponse>> PostAccAccount( DataResponse dataResponse)
+        //{
+
+        //}
 
         // PUT api/<AccAccountController>/5
         [HttpPut("{id}")]

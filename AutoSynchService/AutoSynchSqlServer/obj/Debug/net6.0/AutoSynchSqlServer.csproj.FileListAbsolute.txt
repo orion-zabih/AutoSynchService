@@ -12,3 +12,17 @@ C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\r
 C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.pdb
 C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.genruntimeconfig.cache
 C:\Users\one\source\repos\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\ref\AutoSynchSqlServer.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\bin\Debug\net6.0\AutoSynchSqlServer.deps.json
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\bin\Debug\net6.0\AutoSynchSqlServer.runtimeconfig.json
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\bin\Debug\net6.0\AutoSynchSqlServer.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\bin\Debug\net6.0\AutoSynchSqlServer.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.csproj.AssemblyReference.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.AssemblyInfoInputs.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.AssemblyInfo.cs
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.csproj.CoreCompileInputs.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\refint\AutoSynchSqlServer.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\AutoSynchSqlServer.genruntimeconfig.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchSqlServer\obj\Debug\net6.0\ref\AutoSynchSqlServer.dll

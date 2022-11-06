@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "owRbLM+4v9uPrCxet84LsycDCG3eM1/R4tgnIWM6A2bJ23c1YKro4Rs3dWPRS7keAjrBhTi0XnYmntKLG4OX3g==",
+  "dgSpecHash": "mtYnmDTc/xC1CDs46yOPOY882pa3XShA8Nj0xwz0yEoa7RNuFXsOBpp6zC+sXj/bqD8Dr51ryfhQgYKZoIipvw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\one\\source\\repos\\AutoSynchService\\AutoSynchAPI\\AutoSynchAPI.csproj",
+  "projectFilePath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchAPI\\AutoSynchAPI.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\one\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\microsoft.data.sqlclient\\2.1.4\\microsoft.data.sqlclient.2.1.4.nupkg.sha512",

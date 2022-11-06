@@ -1,0 +1,15 @@
+
+AutoSynchService/AutoSynchAPI/bin/
+AutoSynchService/AutoSynchAPI/obj/
+
+
+AutoSynchService/AutoSynchService/bin/
+AutoSynchService/AutoSynchService/obj/
+
+AutoSynchService/AutoSynchSqlite/bin/
+AutoSynchService/AutoSynchSqlite/obj/
+
+AutoSynchService/AutoSynchSqlServer/bin/
+AutoSynchService/AutoSynchSqlServer/obj/
+
+AutoSynchService/.vs/

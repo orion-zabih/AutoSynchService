@@ -11,21 +11,63 @@ namespace AutoSynchService.ApiClient
    
     internal class InvSaleClient
     { 
-        string invSaleApiUrl = "/upload";
-
-        private static DataResponse _PostRepint(DataResponse dataResponse)
+        string invSaleApiUrl = "/api/InvSales";
+        public DataResponse? GetSaleDetails()
         {
-            DataResponse responseDTO = new DataResponse();
             try
             {
-                string landappdataAPIUrl = "/eto/getEtoReprintData";
+                try
+                {
 
+                    invSaleApiUrl += "/GetSaleDetails";
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            DataResponse response = JsonConvert.DeserializeObject<DataResponse>(responses);
+                            if (response.invSaleDetails != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public ApiResponse PostInvSaleDetails(DataResponse dataResponse)
+        {
+            ApiResponse responseDTO = new ApiResponse();
+            try
+            {
+                invSaleApiUrl += "/PostSales";
                 var json = JsonConvert.SerializeObject(dataResponse);
-                var response = ApiManager.PostAsync(json, landappdataAPIUrl);
+                var response = ApiManager.PostAsync(json, invSaleApiUrl);
 
                 if (response != null)
                 {
-                    var result = JsonConvert.DeserializeObject<DataResponse>(response);
+                    var result = JsonConvert.DeserializeObject<ApiResponse>(response);
                     if (result != null)
                         responseDTO = result;
                 }

@@ -23,7 +23,7 @@ namespace AutoSynchService.ApiClient
                 //var response = await client.PostAsync(Utility.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json"));
                 //var response = client.PostAsync(Global.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
                 //var response = client.PostAsync(apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
-                HttpResponseMessage responses = client.PostAsync("api/Upload" + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
+                HttpResponseMessage responses = client.PostAsync(apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
                 if (responses.IsSuccessStatusCode)
                 {
                    return responses.Content.ReadAsStringAsync().Result;

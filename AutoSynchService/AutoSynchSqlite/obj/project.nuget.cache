@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "wJN3FqzqFrFuqiKv6paqHLyYpikFuGgKlOCTAhYLxbqpWa3jiP+2PhQ/uxiYKVWATaCuhIVS7gCKNmbeCSjDjA==",
+  "dgSpecHash": "bH8LU9wWeYaF7D4GwfevmJX3NivFjL1BY+7AuuSA36IRc+96APxXyVjFS+Ck3e9gd1oNqtHx8XmfTBMdl106Nw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\one\\source\\repos\\AutoSynchService\\AutoSynchSqlite\\AutoSynchSqlite.csproj",
+  "projectFilePath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchSqlite\\AutoSynchSqlite.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\one\\.nuget\\packages\\microsoft.data.sqlite.core\\6.0.10\\microsoft.data.sqlite.core.6.0.10.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\sqlitepclraw.core\\2.0.6\\sqlitepclraw.core.2.0.6.nupkg.sha512",

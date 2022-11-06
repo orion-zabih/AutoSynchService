@@ -19,21 +19,13 @@ namespace AutoSynchService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                //UploadToServer();
-                AccountsClient accountsClient = new AccountsClient();
-                DataResponse apiResponse = accountsClient.GetAccounts();
+                BusinessLogic.UploadToServer();
+                
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);
             }
         }
-        private bool UploadToServer()
-        {
-            InvSaleDao invSaleDao = new InvSaleDao();
-            
-            List<InvSaleDetail> invSaleDetailList = invSaleDao.GetSaleDetails();
-            return true;
-        }
-
+        
 
     }
 }
