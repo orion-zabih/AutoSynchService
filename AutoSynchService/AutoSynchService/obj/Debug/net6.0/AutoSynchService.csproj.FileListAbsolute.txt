@@ -145,3 +145,6 @@ C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchSqlServer.dll
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchSqlServer.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\FluentFTP.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchFtp.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchFtp.pdb

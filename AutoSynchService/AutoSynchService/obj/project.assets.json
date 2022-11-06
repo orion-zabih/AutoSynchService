@@ -2,6 +2,22 @@
   "version": 3,
   "targets": {
     "net6.0": {
+      "FluentFTP/42.0.0": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "2.1.0"
+        },
+        "compile": {
+          "lib/net6.0/FluentFTP.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/FluentFTP.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.CSharp/4.5.0": {
         "type": "package",
         "compile": {
@@ -1269,6 +1285,19 @@
           }
         }
       },
+      "AutoSynchFtp/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "FluentFTP": "42.0.0"
+        },
+        "compile": {
+          "bin/placeholder/AutoSynchFtp.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AutoSynchFtp.dll": {}
+        }
+      },
       "AutoSynchSqlite/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v6.0",
@@ -1299,6 +1328,31 @@
     }
   },
   "libraries": {
+    "FluentFTP/42.0.0": {
+      "sha512": "sYGvWxexDIgeswc3qem/hr+KZEXIzmeI/xJ63oWcF7ykMx+cUG41sicRY1SmwWNjoIKAWEXDZooMA5NiaC/9qg==",
+      "type": "package",
+      "path": "fluentftp/42.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "fluentftp.42.0.0.nupkg.sha512",
+        "fluentftp.nuspec",
+        "lib/net462/FluentFTP.dll",
+        "lib/net462/FluentFTP.xml",
+        "lib/net472/FluentFTP.dll",
+        "lib/net472/FluentFTP.xml",
+        "lib/net5.0/FluentFTP.dll",
+        "lib/net5.0/FluentFTP.xml",
+        "lib/net6.0/FluentFTP.dll",
+        "lib/net6.0/FluentFTP.xml",
+        "lib/netstandard2.0/FluentFTP.dll",
+        "lib/netstandard2.0/FluentFTP.xml",
+        "lib/netstandard2.1/FluentFTP.dll",
+        "lib/netstandard2.1/FluentFTP.xml",
+        "logo-nuget.png"
+      ]
+    },
     "Microsoft.CSharp/4.5.0": {
       "sha512": "kaj6Wb4qoMuH3HySFJhxwQfe8R/sJsNJnANrvv8WdFPMoNbKY5htfNscv+LHCu5ipz+49m2e+WQXpLXr9XYemQ==",
       "type": "package",
@@ -3059,6 +3113,11 @@
         "version.txt"
       ]
     },
+    "AutoSynchFtp/1.0.0": {
+      "type": "project",
+      "path": "../AutoSynchFtp/AutoSynchFtp.csproj",
+      "msbuildProject": "../AutoSynchFtp/AutoSynchFtp.csproj"
+    },
     "AutoSynchSqlite/1.0.0": {
       "type": "project",
       "path": "../AutoSynchSqlite/AutoSynchSqlite.csproj",
@@ -3072,6 +3131,7 @@
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "AutoSynchFtp >= 1.0.0",
       "AutoSynchSqlServer >= 1.0.0",
       "AutoSynchSqlite >= 1.0.0",
       "Microsoft.Extensions.Hosting >= 6.0.1",
@@ -3110,6 +3170,9 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
+            "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchFtp\\AutoSynchFtp.csproj": {
+              "projectPath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchFtp\\AutoSynchFtp.csproj"
+            },
             "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchSqlite\\AutoSynchSqlite.csproj": {
               "projectPath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchSqlite\\AutoSynchSqlite.csproj"
             },

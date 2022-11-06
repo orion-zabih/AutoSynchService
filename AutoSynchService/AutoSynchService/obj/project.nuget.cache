@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "nVgqlfwtWclmwIp64+yrHfW9j18FZ40L28uL6ut68gdB1LYx8C8sM/4NzTkuajLMdAF/GBKtAkt+p5DfsTLTxw==",
+  "dgSpecHash": "ZwVKg0i1ZzPitgmKMJNXUroRE8Pb+hmTpErZg37yhTKjHway92swTQRDwYn/+PCBdGesrP8UJ6CCmvLcv5ksPg==",
   "success": true,
   "projectFilePath": "C:\\Users\\one\\Documents\\GitHub\\AutoSynchService\\AutoSynchService\\AutoSynchService\\AutoSynchService.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\one\\.nuget\\packages\\fluentftp\\42.0.0\\fluentftp.42.0.0.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\microsoft.data.sqlclient\\2.1.4\\microsoft.data.sqlclient.2.1.4.nupkg.sha512",
     "C:\\Users\\one\\.nuget\\packages\\microsoft.data.sqlclient.sni.runtime\\2.1.1\\microsoft.data.sqlclient.sni.runtime.2.1.1.nupkg.sha512",

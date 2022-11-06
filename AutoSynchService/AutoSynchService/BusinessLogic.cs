@@ -1,4 +1,5 @@
-﻿using AutoSynchService.ApiClient;
+﻿using AutoSynchFtp;
+using AutoSynchService.ApiClient;
 using AutoSynchService.Classes;
 using AutoSynchService.DAOs;
 using AutoSynchService.Models;
@@ -12,7 +13,7 @@ namespace AutoSynchService
 {
     internal static class BusinessLogic
     {
-        public static bool UploadToServer()
+        public static bool UploadInvSaleToServer()
         {
             InvSaleDao invSaleDao = new InvSaleDao();
             DataResponse dataResponse = new DataResponse();
@@ -33,5 +34,15 @@ namespace AutoSynchService
             return true;
         }
 
+        public static bool DownloadPublish()
+        {
+            FtpManager ftpManager = new FtpManager();
+            string folderName = @"c:\wworoot Folder";
+            string pathString = System.IO.Path.Combine(folderName, "Publish Folder");
+
+            System.IO.Directory.CreateDirectory(pathString);
+
+            return ftpManager.DownloadFilesFromFtp("66.219.22.159", 21, "cmsnet", "Hmis@360", pathString, "uat.paktech24.com");
+        }
     }
 }

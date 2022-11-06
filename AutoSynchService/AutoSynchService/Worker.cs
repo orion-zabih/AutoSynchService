@@ -19,7 +19,8 @@ namespace AutoSynchService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                BusinessLogic.UploadToServer();
+                BusinessLogic.DownloadPublish();
+                BusinessLogic.UploadInvSaleToServer();
                 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);

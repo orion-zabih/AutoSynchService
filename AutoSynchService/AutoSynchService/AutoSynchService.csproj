@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AutoSynchFtp\AutoSynchFtp.csproj" />
     <ProjectReference Include="..\AutoSynchSqlite\AutoSynchSqlite.csproj" />
     <ProjectReference Include="..\AutoSynchSqlServer\AutoSynchSqlServer.csproj" />
   </ItemGroup>

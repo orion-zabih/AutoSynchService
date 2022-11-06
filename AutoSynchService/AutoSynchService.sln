@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchSqlServer", "AutoS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchAPI", "AutoSynchAPI\AutoSynchAPI.csproj", "{652D4C10-2DCD-4A73-B1DF-65B362CCC778}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchSqlite", "AutoSynchSqlite\AutoSynchSqlite.csproj", "{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchSqlite", "AutoSynchSqlite\AutoSynchSqlite.csproj", "{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchFtp", "AutoSynchFtp\AutoSynchFtp.csproj", "{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

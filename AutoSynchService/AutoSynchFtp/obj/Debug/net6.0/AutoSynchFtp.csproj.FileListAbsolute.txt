@@ -1,0 +1,12 @@
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\bin\Debug\net6.0\AutoSynchFtp.deps.json
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\bin\Debug\net6.0\AutoSynchFtp.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\bin\Debug\net6.0\AutoSynchFtp.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.csproj.AssemblyReference.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.AssemblyInfoInputs.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.AssemblyInfo.cs
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.csproj.CoreCompileInputs.cache
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\refint\AutoSynchFtp.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\AutoSynchFtp.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchFtp\obj\Debug\net6.0\ref\AutoSynchFtp.dll

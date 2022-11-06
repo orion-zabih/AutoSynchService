@@ -1,0 +1,59 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v6.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v6.0": {
+      "AutoSynchFtp/1.0.0": {
+        "dependencies": {
+          "FluentFTP": "42.0.0"
+        },
+        "runtime": {
+          "AutoSynchFtp.dll": {}
+        }
+      },
+      "FluentFTP/42.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "2.1.0"
+        },
+        "runtime": {
+          "lib/net6.0/FluentFTP.dll": {
+            "assemblyVersion": "42.0.0.0",
+            "fileVersion": "42.0.0.0"
+          }
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions/2.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.Extensions.Logging.Abstractions.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.18136"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AutoSynchFtp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FluentFTP/42.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sYGvWxexDIgeswc3qem/hr+KZEXIzmeI/xJ63oWcF7ykMx+cUG41sicRY1SmwWNjoIKAWEXDZooMA5NiaC/9qg==",
+      "path": "fluentftp/42.0.0",
+      "hashPath": "fluentftp.42.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Logging.Abstractions/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GfD2VtvN9z1W+m6pZZe98yh9VWTSdNY2dZSxtca9uFIY6aBI6twvskMvLO/ktClBOTQmAov/7Em+IWFlHepa0A==",
+      "path": "microsoft.extensions.logging.abstractions/2.1.0",
+      "hashPath": "microsoft.extensions.logging.abstractions.2.1.0.nupkg.sha512"
+    }
+  }
+}
