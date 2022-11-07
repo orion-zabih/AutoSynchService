@@ -61,7 +61,7 @@ namespace AutoSynchService.ApiClient
             ApiResponse responseDTO = new ApiResponse();
             try
             {
-                invSaleApiUrl += "/PostSales";
+                invSaleApiUrl += "/PostSaleDetails";
                 var json = JsonConvert.SerializeObject(dataResponse);
                 var response = ApiManager.PostAsync(json, invSaleApiUrl);
 

@@ -65,10 +65,15 @@ namespace AutoSynchAPI.Controllers
                         OrgBranch orgBranch = dbContext.OrgBranch.FirstOrDefault(o => o.Id == m.BranchId);
                         OrgOrganization orgOrganization = dbContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
                         List<AccVoucherDetail> accVoucherDetails = new List<AccVoucherDetail>();
+                        oldId = m.Id;
+                        m.Id = (int)dbContext.GetSequence("Id", "InvSaleMaster");
+                        m.OrderNo = (int)dbContext.GetSequence("OrderNo", "InvSaleMaster", m.BranchId);
+                        dbContext.InvSaleMaster.Add(m);
+                        List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
                         if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill")
                         {
                             IsJournalEqual = false;
-                            //accVoucherDetails = GetSaleJournal(masterData, Items);
+                            accVoucherDetails = GetSaleJournal(dbContext, m, invSaleDetails);
                             //int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
                             //int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
                             //if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
@@ -76,71 +81,32 @@ namespace AutoSynchAPI.Controllers
                             //    IsJournalEqual = false;
                             //}
                         }
-                        oldId = m.Id;
-                        m.Id = (int)dbContext.GetSequence("Id", "InvSaleMaster");
-                        m.OrderNo = (int)dbContext.GetSequence("OrderNo", "InvSaleMaster", m.BranchId);
-                        dbContext.InvSaleMaster.Add(m);
-                        List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
+                        
                         invSaleDetails.ForEach(d => {
                             InvProduct invProduct = dbContext.InvProduct.FirstOrDefault(p => p.Id == d.ProductId);
                             d.BillId = m.Id;
                             dbContext.InvSaleDetail.Add(d);
-                            if (invProduct.Type == "Standard" || invProduct.Type == "Mixture")
+                            if (invProduct != null)
                             {
-                                InvProductLedger ledger = new InvProductLedger();
-                                ledger.TransDate = m.OrderDate;
-                                ledger.ProductId = d.ProductId;
-                                ledger.ReferenceId = m.Id;
-                                if (m.IsReturn)
+                                if (invProduct.Type == "Standard" || invProduct.Type == "Mixture")
                                 {
-                                    ledger.Source = "Sale Return";
-                                    ledger.QtyIn = d.Qty;
-                                    ledger.QtyOut = 0;
-                                    ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                }
-                                else
-                                {
-                                    ledger.Source = "Sale";
-                                    ledger.QtyIn = 0;
-                                    ledger.QtyOut = d.Qty;
-                                    ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                }
-                                ledger.BranchId = m.BranchId;
-                                ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
-                                ledger.CreatedDate = m.CreatedDate;
-                                ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
-                                ledger.WarehouseId = m.StoreId;
-                                ledger.Cost = invProduct.Cost;
-                                ledger.RetailPrice = d.Price;
-                                ledger.SourceParty = m.StoreId.ToString();
-                                ledger.FiscalYearId = m.FiscalYearId;
-                                dbContext.InvProductLedger.Add(ledger);
-                            }
-                            else if (invProduct.Type == "Package")
-                            {
-
-                                List<InvPackageProductsMapping> PackageProducts = dbContext.InvPackageProductsMapping.Where(pm => pm.PackageId == d.ProductId).ToList();
-                                PackageProducts.ForEach(pm =>
-                                {
-                                    InvProduct PackageItem = dbContext.InvProduct.FirstOrDefault(pi => pi.Id == pm.ProductId);
                                     InvProductLedger ledger = new InvProductLedger();
                                     ledger.TransDate = m.OrderDate;
-                                    ledger.ProductId = pm.ProductId;
-                                    ledger.PackageId = d.ProductId;
+                                    ledger.ProductId = d.ProductId;
                                     ledger.ReferenceId = m.Id;
                                     if (m.IsReturn)
                                     {
                                         ledger.Source = "Sale Return";
-                                        ledger.QtyIn = d.Qty * pm.Qty;
+                                        ledger.QtyIn = d.Qty;
                                         ledger.QtyOut = 0;
-                                        ledger.Remarks = "Sale Return of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyIn;
+                                        ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
                                     }
                                     else
                                     {
                                         ledger.Source = "Sale";
                                         ledger.QtyIn = 0;
-                                        ledger.QtyOut = d.Qty * pm.Qty;
-                                        ledger.Remarks = "Sale of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyOut;
+                                        ledger.QtyOut = d.Qty;
+                                        ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
                                     }
                                     ledger.BranchId = m.BranchId;
                                     ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
@@ -152,48 +118,86 @@ namespace AutoSynchAPI.Controllers
                                     ledger.SourceParty = m.StoreId.ToString();
                                     ledger.FiscalYearId = m.FiscalYearId;
                                     dbContext.InvProductLedger.Add(ledger);
-                                });
-                            }
-                            else if (invProduct.Type == "Material")
-                            {
-                                InvProductLedger ledger = new InvProductLedger();
-                                if (Convert.ToInt32(invProduct.Type) == 0)
-                                {
-                                    ledger.ProductId = d.ProductId;
                                 }
-                                else
+                                else if (invProduct.Type == "Package")
                                 {
-                                    ledger.ProductId = Convert.ToInt32(invProduct.MixtureId);
-                                    ledger.MaterialId = d.ProductId;
-                                }
-                                ledger.TransDate = m.OrderDate;
-                                ledger.ReferenceId = m.Id;
-                                if (m.IsReturn)
-                                {
-                                    ledger.Source = "Sale Return";
-                                    ledger.QtyIn = d.Qty;
-                                    ledger.QtyOut = 0;
-                                    ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                }
-                                else
-                                {
-                                    ledger.Source = "Sale";
-                                    ledger.QtyIn = 0;
-                                    ledger.QtyOut = d.Qty;
-                                    ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                }
-                                ledger.BranchId = m.BranchId;
-                                ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
-                                ledger.CreatedDate = m.CreatedDate;
-                                ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
-                                ledger.WarehouseId = m.StoreId;
-                                ledger.Cost = invProduct.Cost;
-                                ledger.RetailPrice = d.Price;
-                                ledger.SourceParty = m.StoreId.ToString();
-                                ledger.FiscalYearId = m.FiscalYearId;
-                                dbContext.InvProductLedger.Add(ledger);
-                            }
 
+                                    List<InvPackageProductsMapping> PackageProducts = dbContext.InvPackageProductsMapping.Where(pm => pm.PackageId == d.ProductId).ToList();
+                                    PackageProducts.ForEach(pm =>
+                                    {
+                                        InvProduct PackageItem = dbContext.InvProduct.FirstOrDefault(pi => pi.Id == pm.ProductId);
+                                        InvProductLedger ledger = new InvProductLedger();
+                                        ledger.TransDate = m.OrderDate;
+                                        ledger.ProductId = pm.ProductId;
+                                        ledger.PackageId = d.ProductId;
+                                        ledger.ReferenceId = m.Id;
+                                        if (m.IsReturn)
+                                        {
+                                            ledger.Source = "Sale Return";
+                                            ledger.QtyIn = d.Qty * pm.Qty;
+                                            ledger.QtyOut = 0;
+                                            ledger.Remarks = "Sale Return of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyIn;
+                                        }
+                                        else
+                                        {
+                                            ledger.Source = "Sale";
+                                            ledger.QtyIn = 0;
+                                            ledger.QtyOut = d.Qty * pm.Qty;
+                                            ledger.Remarks = "Sale of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyOut;
+                                        }
+                                        ledger.BranchId = m.BranchId;
+                                        ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
+                                        ledger.CreatedDate = m.CreatedDate;
+                                        ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
+                                        ledger.WarehouseId = m.StoreId;
+                                        ledger.Cost = invProduct.Cost;
+                                        ledger.RetailPrice = d.Price;
+                                        ledger.SourceParty = m.StoreId.ToString();
+                                        ledger.FiscalYearId = m.FiscalYearId;
+                                        dbContext.InvProductLedger.Add(ledger);
+                                    });
+                                }
+                                else if (invProduct.Type == "Material")
+                                {
+                                    InvProductLedger ledger = new InvProductLedger();
+                                    if (Convert.ToInt32(invProduct.Type) == 0)
+                                    {
+                                        ledger.ProductId = d.ProductId;
+                                    }
+                                    else
+                                    {
+                                        ledger.ProductId = Convert.ToInt32(invProduct.MixtureId);
+                                        ledger.MaterialId = d.ProductId;
+                                    }
+                                    ledger.TransDate = m.OrderDate;
+                                    ledger.ReferenceId = m.Id;
+                                    if (m.IsReturn)
+                                    {
+                                        ledger.Source = "Sale Return";
+                                        ledger.QtyIn = d.Qty;
+                                        ledger.QtyOut = 0;
+                                        ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
+                                    }
+                                    else
+                                    {
+                                        ledger.Source = "Sale";
+                                        ledger.QtyIn = 0;
+                                        ledger.QtyOut = d.Qty;
+                                        ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
+                                    }
+                                    ledger.BranchId = m.BranchId;
+                                    ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
+                                    ledger.CreatedDate = m.CreatedDate;
+                                    ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
+                                    ledger.WarehouseId = m.StoreId;
+                                    ledger.Cost = invProduct.Cost;
+                                    ledger.RetailPrice = d.Price;
+                                    ledger.SourceParty = m.StoreId.ToString();
+                                    ledger.FiscalYearId = m.FiscalYearId;
+                                    dbContext.InvProductLedger.Add(ledger);
+                                }
+
+                            }
                         });
                         //inserting jv transactions
 
@@ -263,6 +267,640 @@ namespace AutoSynchAPI.Controllers
             }
             
         }
+        private List<AccVoucherDetail> GetSaleJournal(Entities dbContext,InvSaleMaster masterData, List<InvSaleDetail> Items)
+        {
+            List<AccVoucherDetail> Journal = new List<AccVoucherDetail>();
+            try
+            {
+                if (masterData != null)
+                {
+                    foreach (var item in Items)
+                    {
+                        InvProduct Product = dbContext.InvProduct.FirstOrDefault(p=> p.Id ==  item.ProductId);
+                        if (Product != null)
+                        { }
+                        item.ItemCostValue = Product.AverageCost;
+                        item.ProductName = Product.Name;
+                        if (item.ItemCostValue <= 0)
+                        {
+                            item.ItemCostValue = item.Price * item.Qty;
+                        }
+                        decimal ProductTaxValue = (Product.Tax / (100 + Product.Tax)) * item.Price;
+                        if (Convert.ToBoolean(Product.IsRetailPriceInclusiveTax) == true)
+                        {
+                            decimal PriceExclusiveTax = item.Price - ProductTaxValue;
+                            item.ItemSaleValue = (item.Price - ProductTaxValue) * item.Qty;
+                            item.ItemTaxCharged = ProductTaxValue * item.Qty;
+                        }
+                        else
+                        {
+                            decimal PriceExclusiveTax = item.Price;
+                            item.ItemSaleValue = item.Price * item.Qty;
+                            item.ItemTaxCharged = ProductTaxValue * item.Qty;
+                        }
+                        item.ItemNetTotal = item.ItemSaleValue - item.ItemDiscount + item.ItemTaxCharged + item.ItemExtraTaxCharged;
+                        decimal ProfitAndLost = item.ItemSaleValue - item.ItemCostValue;
+                        if (ProfitAndLost > 0)
+                        {
+                            item.ItemProfit = ProfitAndLost;
+                        }
+                        else if (ProfitAndLost < 0)
+                        {
+                            item.ItemLost = ProfitAndLost * (-1);
+                        }
+                    }
+                    List<AccAccountsMapping> AccountsDetails = new List<AccAccountsMapping>();
+                    if (masterData.IsReturn)
+                    {
+                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales Return' and x.TransactionType = 'Line' and x.BranchId = '" + masterData.BranchId + "'");
+                        foreach (DataRow item in dtMappings.Rows)
+                        {
+                            AccAccountsMapping mapping = new AccAccountsMapping();
+                            mapping.Id = Convert.ToInt32(item.Id);
+                            mapping.AccountId = Convert.ToInt32(item.AccountId);
+                            mapping.MappingSource = item.MappingSource.ToString();
+                            mapping.DebitOrCredit = item.DebitOrCredit.ToString();
+                            mapping.Description = item.Description.ToString();
+                            mapping.Account = item.AccountName.ToString();
+                            AccountsDetails.Add(mapping);
+                        }
+                    }
+                    else
+                    {
+                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales' and x.TransactionType = 'Line' and x.BranchId = '" + masterData.BranchId + "'");
+                        foreach (DataRow item in dtMappings.Rows)
+                        {
+                            AccAccountsMapping mapping = new AccAccountsMapping();
+                            mapping.Id = Convert.ToInt32(item.Id);
+                            mapping.AccountId = Convert.ToInt32(item.AccountId);
+                            mapping.MappingSource = item.MappingSource.ToString();
+                            mapping.DebitOrCredit = item.DebitOrCredit.ToString();
+                            mapping.Description = item.Description.ToString();
+                            mapping.Account = item.AccountName.ToString();
+                            AccountsDetails.Add(mapping);
+                        }
+                    }
+                    foreach (var map in AccountsDetails)
+                    {
+                        if (map.MappingSource == "Items Sale")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemSaleValue > 0))
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemSaleValue;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemSaleValue;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Cost")
+                        {
+                            foreach (var item in Items)
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemCostValue;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemCostValue;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Discount")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemDiscount > 0))
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemDiscount;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemDiscount;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Tax")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemTaxCharged > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemTaxCharged;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemTaxCharged;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items ExTax")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemExtraTaxCharged > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemExtraTaxCharged;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemExtraTaxCharged;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items TotalTax")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemTaxCharged + x.ItemExtraTaxCharged > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemTaxCharged + item.ItemExtraTaxCharged;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemTaxCharged + item.ItemExtraTaxCharged;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Profit")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemProfit > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemProfit;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemProfit;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Lost")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemLost > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemLost;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemLost;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Net")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemSaleValue - x.ItemDiscount + x.ItemTaxCharged + x.ItemExtraTaxCharged > 0))
+                            {
+                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = item.ItemNetTotal;
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = item.ItemNetTotal;
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                    }
+                    List<AccAccountsMapping> AccountsTotal = new List<AccAccountsMapping>();
+                    if (masterData.IsReturn)
+                    {
+                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales Return' and x.TransactionType = 'Total' and x.BranchId = '" + masterData.BranchId + "'");
+                        foreach (DataRow item in dtMappings.Rows)
+                        {
+                            AccAccountsMapping mapping = new AccAccountsMapping();
+                            mapping.Id = Convert.ToInt32(item.Id);
+                            mapping.AccountId = Convert.ToInt32(item.AccountId);
+                            mapping.MappingSource = item.MappingSource.ToString();
+                            mapping.DebitOrCredit = item.DebitOrCredit.ToString();
+                            mapping.Description = item.Description.ToString();
+                            mapping.Account = item.AccountName.ToString();
+                            AccountsTotal.Add(mapping);
+                        }
+                    }
+                    else
+                    {
+                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales' and x.TransactionType = 'Total' and x.BranchId = '" + masterData.BranchId + "'");
+                        foreach (DataRow item in dtMappings.Rows)
+                        {
+                            AccAccountsMapping mapping = new AccAccountsMapping();
+                            mapping.Id = Convert.ToInt32(item.Id);
+                            mapping.AccountId = Convert.ToInt32(item.AccountId);
+                            mapping.MappingSource = item.MappingSource.ToString();
+                            mapping.DebitOrCredit = item.DebitOrCredit.ToString();
+                            mapping.Description = item.Description.ToString();
+                            mapping.Account = item.AccountName.ToString();
+                            AccountsTotal.Add(mapping);
+                        }
+                    }
+                    foreach (var AccTotal in AccountsTotal)
+                    {
+                        if (AccTotal.MappingSource == "Items Sale")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemSaleValue).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemSaleValue).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Cost")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemCostValue).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemCostValue).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Discount")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemDiscount).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemDiscount).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Tax")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemTaxCharged).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemTaxCharged).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items ExTax")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemExtraTaxCharged).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemExtraTaxCharged).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items TotalTax")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemExtraTaxCharged + x.ItemTaxCharged).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemExtraTaxCharged + x.ItemTaxCharged).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Profit")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemProfit).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemProfit).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Lost")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemLost).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemLost).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Net")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Items.Select(x => x.ItemNetTotal).Sum();
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Items.Select(x => x.ItemNetTotal).Sum();
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Discounts")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.DiscountCalculated;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.DiscountCalculated;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Tax")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.TaxCalculated;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.TaxCalculated;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Service Charges")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.ServiceChargesCalculated;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.ServiceChargesCalculated;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable Credit" && masterData.PaymentType == "Credit" && masterData.CustomerId != 0)
+                        {
+                            string CustomerName = "";
+                            DataTable Customer = ObjSqlServerRepository.GetDataTable("select * from InvCustomer where Id = '" + masterData.CustomerId + "'");
+                            if (Customer != null && Customer.Rows.Count > 0)
+                            {
+                                CustomerName = Customer.Name.ToString();
+                            }
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description + " (" + CustomerName + ")";
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            voucherDetail.PartnerId = masterData.CustomerId;
+                            voucherDetail.PartnerType = "Customer";
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable Cash" && masterData.PaymentType == "Cash")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable CreditCard" && masterData.PaymentType == "Credit Card")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                CustomLogging.Log("[DataUplodingService:(GetSaleJournal)]", ex.Message);
+            }
+            return Journal;
+        }
+
     }
 
 }

@@ -42,12 +42,12 @@ namespace AutoSynchService.Models
 
         public decimal GetSequence(string Column,string Table,decimal Branch)
         {
-            var SeqValue = Sequence.FromSqlRaw($"select ISNULL(max({Column}), 0) + 1 from {Table} where BranchId = '{Branch}'").AsEnumerable().FirstOrDefault().nextval;
+            var SeqValue = Sequence.FromSqlRaw($"select ISNULL(max({Column}), 0) + 1 as nextval from {Table} where BranchId = '{Branch}'").AsEnumerable().FirstOrDefault().nextval;
             return SeqValue;
         }
-        public decimal GetSequence(string Column, string Table)
+        public int GetSequence(string Column, string Table)
         {
-            var SeqValue = Sequence.FromSqlRaw($"select ISNULL(max({Column}), 0) + 1 from {Table}").AsEnumerable().FirstOrDefault().nextval;
+            var SeqValue = Sequence.FromSqlRaw($"select ISNULL(max({Column}), 0) + 1 as nextval from {Table}").AsEnumerable().FirstOrDefault().nextval;
             return SeqValue;
         }
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

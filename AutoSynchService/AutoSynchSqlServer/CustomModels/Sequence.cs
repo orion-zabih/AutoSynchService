@@ -8,7 +8,7 @@ namespace AutoSynchSqlServer.CustomModels
 {
     public class Sequence
     {
-        public decimal nextval { get; set; }
+        public int nextval { get; set; }
     }
 
     public class Timestamp

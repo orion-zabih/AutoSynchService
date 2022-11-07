@@ -19,7 +19,7 @@ namespace AutoSynchService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                BusinessLogic.DownloadPublish();
+                //BusinessLogic.DownloadPublish();
                 BusinessLogic.UploadInvSaleToServer();
                 
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);

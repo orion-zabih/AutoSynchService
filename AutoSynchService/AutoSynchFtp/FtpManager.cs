@@ -1,5 +1,6 @@
 ﻿using FluentFTP;
 using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 using System.Net;
 
 namespace AutoSynchFtp
@@ -71,10 +72,11 @@ namespace AutoSynchFtp
                 Console.WriteLine("Connecting to FTP ....  ");
                 client.Connect();
                 Console.WriteLine("FTP Connected successfully");
-                if (client.DirectoryExists(remoteFolderName))
+               // if (client.DirectoryExists(remoteFolderName))
                 {
-                    
-                    client.DownloadDirectory(localFolderName, remoteFolderName, FtpFolderSyncMode.Update, FtpLocalExists.Overwrite, FtpVerify.None);
+                    client.DownloadFile(localFolderName, remoteFolderName, FtpLocalExists.Overwrite, FtpVerify.None);
+
+//                    client.DownloadDirectory(localFolderName, remoteFolderName, FtpFolderSyncMode.Update, FtpLocalExists.Overwrite, FtpVerify.None);
                 }
                 Console.WriteLine("File downloaded successfully");
                 //byte[] bts = null;

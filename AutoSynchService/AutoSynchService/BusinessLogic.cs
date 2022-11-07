@@ -5,6 +5,7 @@ using AutoSynchService.DAOs;
 using AutoSynchService.Models;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,11 +39,20 @@ namespace AutoSynchService
         {
             FtpManager ftpManager = new FtpManager();
             string folderName = @"c:\wworoot Folder";
-            string pathString = System.IO.Path.Combine(folderName, "Publish Folder");
+            string filename = "testzipfile.zip";
+            string localFolder = System.IO.Path.Combine(folderName, "Publish Folder");
+            string pathString = System.IO.Path.Combine(folderName, "Publish Folder", filename);
+            string extractPath = System.IO.Path.Combine(folderName, "Publish Extract Folder");
 
-            System.IO.Directory.CreateDirectory(pathString);
+            System.IO.Directory.CreateDirectory(localFolder);
+            System.IO.Directory.CreateDirectory(extractPath);
+            if ( ftpManager.DownloadFilesFromFtp("66.219.22.159", 21, "cmsnet", "Hmis@360", pathString, filename))
+            {
 
-            return ftpManager.DownloadFilesFromFtp("66.219.22.159", 21, "cmsnet", "Hmis@360", pathString, "uat.paktech24.com");
+                ZipFile.ExtractToDirectory(pathString, extractPath,true);
+                return true;
+            }
+            return false;
         }
     }
 }
