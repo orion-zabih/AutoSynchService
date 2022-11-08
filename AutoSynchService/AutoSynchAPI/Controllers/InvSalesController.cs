@@ -60,7 +60,7 @@ namespace AutoSynchAPI.Controllers
                 using (Entities dbContext = new Entities())
                 {
                     int oldId = 0;
-                    bool IsJournalEqual = false;
+                    bool IsJournalEqual = true;
                     dataResponse.invSaleMaster.ForEach(m => {
                         OrgBranch orgBranch = dbContext.OrgBranch.FirstOrDefault(o => o.Id == m.BranchId);
                         OrgOrganization orgOrganization = dbContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
@@ -72,14 +72,14 @@ namespace AutoSynchAPI.Controllers
                         List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
                         if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill")
                         {
-                            IsJournalEqual = false;
+                            //IsJournalEqual = false;
                             accVoucherDetails = GetSaleJournal(dbContext, m, invSaleDetails);
-                            //int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
-                            //int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
-                            //if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
-                            //{
-                            //    IsJournalEqual = false;
-                            //}
+                            int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
+                            int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
+                            if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
+                            {
+                                IsJournalEqual = false;
+                            }
                         }
                         
                         invSaleDetails.ForEach(d => {
@@ -267,11 +267,36 @@ namespace AutoSynchAPI.Controllers
             }
             
         }
-        private List<AccVoucherDetail> GetSaleJournal(Entities dbContext,InvSaleMaster masterData, List<InvSaleDetail> Items)
+        private List<InvSaleDetailExtended> GetDetailExtendeds(List<InvSaleDetail> Items)
+        {
+            List<InvSaleDetailExtended> list = new List<InvSaleDetailExtended>();
+            Items.ForEach(i => {
+                list.Add(new InvSaleDetailExtended {
+                    Id = i.Id,
+                    BillId = i.BillId,
+                    ProductId=i.ProductId,
+                    Price=i.Price,
+                    Qty=i.Qty,
+                    Total=i.Total,
+                    IsDeleted=i.IsDeleted,
+                    SaleValue=i.SaleValue,
+                    TaxCharged=i.TaxCharged,
+                    TaxRate=i.TaxRate,
+                    Pctcode=i.Pctcode,
+                    FurtherTax=i.FurtherTax,
+                    Discount=i.Discount,
+                    InvoiceType=i.InvoiceType,
+                    PriceExclusiveTax=i.PriceExclusiveTax
+                });
+            });
+            return list;
+        }
+        private List<AccVoucherDetail> GetSaleJournal(Entities dbContext,InvSaleMaster masterData, List<InvSaleDetail> ItemsDet)
         {
             List<AccVoucherDetail> Journal = new List<AccVoucherDetail>();
             try
             {
+                List<InvSaleDetailExtended> Items=GetDetailExtendeds(ItemsDet);
                 if (masterData != null)
                 {
                     foreach (var item in Items)
@@ -312,8 +337,8 @@ namespace AutoSynchAPI.Controllers
                     List<AccAccountsMapping> AccountsDetails = new List<AccAccountsMapping>();
                     if (masterData.IsReturn)
                     {
-                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales Return' and x.TransactionType = 'Line' and x.BranchId = '" + masterData.BranchId + "'");
-                        foreach (DataRow item in dtMappings.Rows)
+                        var dtMappings = dbContext.AccAccountsMapping.Where(x=> x.MappingForm == "Sales Return" && x.TransactionType == "Line" && x.BranchId ==  masterData.BranchId);
+                        foreach (AccAccountsMapping item in dtMappings)
                         {
                             AccAccountsMapping mapping = new AccAccountsMapping();
                             mapping.Id = Convert.ToInt32(item.Id);
@@ -321,14 +346,14 @@ namespace AutoSynchAPI.Controllers
                             mapping.MappingSource = item.MappingSource.ToString();
                             mapping.DebitOrCredit = item.DebitOrCredit.ToString();
                             mapping.Description = item.Description.ToString();
-                            mapping.Account = item.AccountName.ToString();
+                            mapping.AccountId = item.AccountId;
                             AccountsDetails.Add(mapping);
                         }
                     }
                     else
                     {
-                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales' and x.TransactionType = 'Line' and x.BranchId = '" + masterData.BranchId + "'");
-                        foreach (DataRow item in dtMappings.Rows)
+                        var dtMappings = dbContext.AccAccountsMapping.Where(x => x.MappingForm == "Sales" && x.TransactionType == "Line" && x.BranchId == masterData.BranchId);
+                        foreach (AccAccountsMapping item in dtMappings)
                         {
                             AccAccountsMapping mapping = new AccAccountsMapping();
                             mapping.Id = Convert.ToInt32(item.Id);
@@ -336,7 +361,7 @@ namespace AutoSynchAPI.Controllers
                             mapping.MappingSource = item.MappingSource.ToString();
                             mapping.DebitOrCredit = item.DebitOrCredit.ToString();
                             mapping.Description = item.Description.ToString();
-                            mapping.Account = item.AccountName.ToString();
+                            mapping.AccountId = item.AccountId;
                             AccountsDetails.Add(mapping);
                         }
                     }
@@ -351,7 +376,7 @@ namespace AutoSynchAPI.Controllers
                                 voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetailAccountId = map.AccountId;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -375,7 +400,7 @@ namespace AutoSynchAPI.Controllers
                                 voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetailAccountId = map.AccountId;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -399,7 +424,7 @@ namespace AutoSynchAPI.Controllers
                                 voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -418,13 +443,13 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemTaxCharged > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p=>p.Id == item.ProductId);
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
-                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -443,13 +468,13 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemExtraTaxCharged > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p=> p.Id == item.ProductId);
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
-                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -468,13 +493,15 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemTaxCharged + x.ItemExtraTaxCharged > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p => p.Id == item.ProductId);
+
+                                //DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
                                 voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -493,13 +520,15 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemProfit > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p => p.Id == item.ProductId);
+
+                                //DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
-                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -518,13 +547,15 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemLost > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p => p.Id == item.ProductId);
+
+                                //DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
-                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -543,13 +574,13 @@ namespace AutoSynchAPI.Controllers
                         {
                             foreach (var item in Items.Where(x => x.ItemSaleValue - x.ItemDiscount + x.ItemTaxCharged + x.ItemExtraTaxCharged > 0))
                             {
-                                DataTable Product = ObjSqlServerRepository.GetDataTable("select * from InvProduct where Id = '" + item.ProductId + "'");
+                                var Product = dbContext.InvProduct.FirstOrDefault(p=> p.Id == item.ProductId);
                                 AccVoucherDetail voucherDetail = new AccVoucherDetail();
                                 voucherDetail.AccountId = map.AccountId;
-                                voucherDetail.Description = map.Description + " (" + Product.Name.ToString() + ")";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
                                 voucherDetail.PartnerId = item.ProductId;
                                 voucherDetail.PartnerType = "Product";
-                                voucherDetail.AccountName = map.Account;
+                                //voucherDetail.AccountName = map.Account;
                                 voucherDetail.MappingSource = map.MappingSource;
                                 if (map.DebitOrCredit == "Debit")
                                 {
@@ -568,8 +599,8 @@ namespace AutoSynchAPI.Controllers
                     List<AccAccountsMapping> AccountsTotal = new List<AccAccountsMapping>();
                     if (masterData.IsReturn)
                     {
-                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales Return' and x.TransactionType = 'Total' and x.BranchId = '" + masterData.BranchId + "'");
-                        foreach (DataRow item in dtMappings.Rows)
+                        var dtMappings = dbContext.AccAccountsMapping.Where(x=> x.MappingForm == "Sales Return" && x.TransactionType == "Total" && x.BranchId == masterData.BranchId);
+                        foreach (AccAccountsMapping item in dtMappings)
                         {
                             AccAccountsMapping mapping = new AccAccountsMapping();
                             mapping.Id = Convert.ToInt32(item.Id);
@@ -577,14 +608,16 @@ namespace AutoSynchAPI.Controllers
                             mapping.MappingSource = item.MappingSource.ToString();
                             mapping.DebitOrCredit = item.DebitOrCredit.ToString();
                             mapping.Description = item.Description.ToString();
-                            mapping.Account = item.AccountName.ToString();
+                            //mapping.Account = item.AccountName.ToString();
                             AccountsTotal.Add(mapping);
                         }
                     }
                     else
                     {
-                        DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales' and x.TransactionType = 'Total' and x.BranchId = '" + masterData.BranchId + "'");
-                        foreach (DataRow item in dtMappings.Rows)
+                        //DataTable dtMappings = ObjSqlServerRepository.GetDataTable("select * from AccAccountsMapping as x inner join AccAccount as a on x.AccountId = a.id where x.MappingForm = 'Sales' and x.TransactionType = 'Total' and x.BranchId = '" + masterData.BranchId + "'");
+                        var dtMappings = dbContext.AccAccountsMapping.Where(x => x.MappingForm == "Sales" && x.TransactionType == "Total" && x.BranchId == masterData.BranchId);
+                        foreach (AccAccountsMapping item in dtMappings)
+
                         {
                             AccAccountsMapping mapping = new AccAccountsMapping();
                             mapping.Id = Convert.ToInt32(item.Id);
@@ -592,7 +625,7 @@ namespace AutoSynchAPI.Controllers
                             mapping.MappingSource = item.MappingSource.ToString();
                             mapping.DebitOrCredit = item.DebitOrCredit.ToString();
                             mapping.Description = item.Description.ToString();
-                            mapping.Account = item.AccountName.ToString();
+                            //mapping.Account = item.AccountName.ToString();
                             AccountsTotal.Add(mapping);
                         }
                     }
@@ -603,7 +636,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -622,7 +655,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -641,7 +674,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -660,7 +693,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -679,7 +712,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -698,7 +731,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -717,7 +750,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -736,7 +769,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -755,7 +788,7 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
@@ -774,17 +807,17 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.DiscountCalculated;
+                                voucherDetail.AmountDebit = masterData.DiscountCalculated.HasValue? masterData.DiscountCalculated.Value:0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.DiscountCalculated;
+                                voucherDetail.AmountCredit = masterData.DiscountCalculated.HasValue ? masterData.DiscountCalculated.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
@@ -793,17 +826,17 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.TaxCalculated;
+                                voucherDetail.AmountDebit = masterData.TaxCalculated.HasValue ? masterData.TaxCalculated.Value : 0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.TaxCalculated;
+                                voucherDetail.AmountCredit = masterData.TaxCalculated.HasValue ? masterData.TaxCalculated.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
@@ -812,44 +845,44 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.ServiceChargesCalculated;
+                                voucherDetail.AmountDebit = masterData.ServiceChargesCalculated.HasValue ? masterData.ServiceChargesCalculated.Value : 0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.ServiceChargesCalculated;
+                                voucherDetail.AmountCredit = masterData.ServiceChargesCalculated.HasValue ? masterData.ServiceChargesCalculated.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
                         else if (AccTotal.MappingSource == "Net Payable Credit" && masterData.PaymentType == "Credit" && masterData.CustomerId != 0)
                         {
                             string CustomerName = "";
-                            DataTable Customer = ObjSqlServerRepository.GetDataTable("select * from InvCustomer where Id = '" + masterData.CustomerId + "'");
-                            if (Customer != null && Customer.Rows.Count > 0)
+                            var Customer = dbContext.InvCustomer.FirstOrDefault(c=>c.Id == masterData.CustomerId);
+                            if (Customer != null)
                             {
-                                CustomerName = Customer.Name.ToString();
+                                CustomerName = Customer.Name;
                             }
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description + " (" + CustomerName + ")";
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
-                            voucherDetail.PartnerId = masterData.CustomerId;
+                            voucherDetail.PartnerId = masterData.CustomerId.HasValue ? masterData.CustomerId.Value : 0;
                             voucherDetail.PartnerType = "Customer";
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountDebit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
@@ -858,17 +891,17 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountDebit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
@@ -877,17 +910,17 @@ namespace AutoSynchAPI.Controllers
                             AccVoucherDetail voucherDetail = new AccVoucherDetail();
                             voucherDetail.AccountId = AccTotal.AccountId;
                             voucherDetail.Description = AccTotal.Description;
-                            voucherDetail.AccountName = AccTotal.Account;
+                            //voucherDetail.AccountName = AccTotal.Account;
                             voucherDetail.MappingSource = AccTotal.MappingSource;
                             if (AccTotal.DebitOrCredit == "Debit")
                             {
-                                voucherDetail.AmountDebit = masterData.GrandTotal;
+                                voucherDetail.AmountDebit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                                 voucherDetail.AmountCredit = 0;
                             }
                             else
                             {
                                 voucherDetail.AmountDebit = 0;
-                                voucherDetail.AmountCredit = masterData.GrandTotal;
+                                voucherDetail.AmountCredit = masterData.GrandTotal.HasValue ? masterData.GrandTotal.Value : 0;
                             }
                             Journal.Add(voucherDetail);
                         }
@@ -896,7 +929,7 @@ namespace AutoSynchAPI.Controllers
             }
             catch (Exception ex)
             {
-                CustomLogging.Log("[DataUplodingService:(GetSaleJournal)]", ex.Message);
+                //CustomLogging.Log("[DataUplodingService:(GetSaleJournal)]", ex.Message);
             }
             return Journal;
         }
