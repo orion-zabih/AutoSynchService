@@ -1,6 +1,5 @@
-﻿using AutoSynchService.Models;
-
-namespace AutoSynchAPI.Models
+﻿
+namespace AutoSynchService.Models
 {
     public class SysTablesResponse
     {

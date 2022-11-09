@@ -63,5 +63,25 @@ namespace AutoSynchService
             }
             return false;
         }
+        public static bool GetAndReplaceSysTables()
+        {
+            try
+            {
+                SysTablesClient sysTablesClient = new SysTablesClient();
+                SysTablesResponse sysTablesResponse = sysTablesClient.GetSysTables();
+                if (sysTablesResponse != null)
+                {
+                    ReCreateStructureTables._CreateDB(new DateTime(), sysTablesResponse);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+        }
     }
 }
