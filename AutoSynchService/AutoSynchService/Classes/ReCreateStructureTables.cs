@@ -34,7 +34,7 @@ namespace AutoSynchService.Classes
                     //objSqliteManager.CreateDbFile(DbBinPath);
                     bool isStructureComplete = false;
                     List<string> multiQueries = new List<string>();
-
+                    List<string> multiQueriesDrops = new List<string>();
                     var listofClasses = typeof(SysTablesResponse).GetProperties().ToList();
 
                     listofClasses.ForEach(t =>
@@ -43,10 +43,11 @@ namespace AutoSynchService.Classes
                         var clas = listProperties[2].PropertyType;
                         var fields = clas.GetProperties().ToList().Select(p => p.Name);
                         string columns = string.Join(" varchar(128),", fields.ToArray());
-                       // multiQueries.Add("")
+                        multiQueriesDrops.Add("DROP TABLE IF EXISTS " + clas.Name);
                         multiQueries.Add("create table " + clas.Name + "(" + columns + " varchar(128))");
 
                     });
+                    if (objSqliteManager.ExecuteTransactionMultiQueries(multiQueriesDrops)) ;
                     //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
                     isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries);
 
