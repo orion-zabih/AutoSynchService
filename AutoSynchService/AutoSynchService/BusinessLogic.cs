@@ -16,22 +16,31 @@ namespace AutoSynchService
     {
         public static bool UploadInvSaleToServer()
         {
-            InvSaleDao invSaleDao = new InvSaleDao();
-            DataResponse dataResponse = new DataResponse();
-            dataResponse.invSaleMaster = invSaleDao.GetSaleMaster();
-            dataResponse.invSaleMaster.ForEach(m => {
-                dataResponse.invSaleDetails.AddRange(invSaleDao.GetSaleDetails(m.Id));
-            });
-
-            InvSaleClient invSaleClient = new InvSaleClient();
-            
-            ApiResponse apiResponse= invSaleClient.PostInvSaleDetails(dataResponse);
-            if(apiResponse.Code== ApplicationResponse.SUCCESS_CODE)
+            try
             {
-                
-                    invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m=> m.Id).ToList());
-                
+                InvSaleDao invSaleDao = new InvSaleDao();
+                DataResponse dataResponse = new DataResponse();
+                dataResponse.invSaleMaster = invSaleDao.GetSaleMaster();
+                dataResponse.invSaleMaster.ForEach(m => {
+                    dataResponse.invSaleDetails.AddRange(invSaleDao.GetSaleDetails(m.Id));
+                });
+
+                InvSaleClient invSaleClient = new InvSaleClient();
+
+                ApiResponse apiResponse = invSaleClient.PostInvSaleDetails(dataResponse);
+                if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
+                {
+
+                    invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m => m.Id).ToList());
+
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            
             return true;
         }
 

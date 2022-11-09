@@ -59,91 +59,86 @@ namespace AutoSynchAPI.Controllers
             {
                 using (Entities dbContext = new Entities())
                 {
-                    int oldId = 0;
-                    bool IsJournalEqual = true;
-                    dataResponse.invSaleMaster.ForEach(m => {
-                        OrgBranch orgBranch = dbContext.OrgBranch.FirstOrDefault(o => o.Id == m.BranchId);
-                        OrgOrganization orgOrganization = dbContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
-                        List<AccVoucherDetail> accVoucherDetails = new List<AccVoucherDetail>();
-                        oldId = m.Id;
-                        m.Id = (int)dbContext.GetSequence("Id", "InvSaleMaster");
-                        m.OrderNo = (int)dbContext.GetSequence("OrderNo", "InvSaleMaster", m.BranchId);
-                        dbContext.InvSaleMaster.Add(m);
-                        List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
-                        if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill")
+                    using (var transaction = dbContext.Database.BeginTransaction())
+                    {
+                        int oldId = 0;
+                        //int newId = 0;
+                        bool IsJournalEqual = true;
+                        dataResponse.invSaleMaster.ForEach(m =>
                         {
-                            //IsJournalEqual = false;
-                            accVoucherDetails = GetSaleJournal(dbContext, m, invSaleDetails);
-                            int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
-                            int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
-                            if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
+                            OrgBranch orgBranch = dbContext.OrgBranch.FirstOrDefault(o => o.Id == m.BranchId);
+                            OrgOrganization orgOrganization = dbContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
+                            List<AccVoucherDetail> accVoucherDetails = new List<AccVoucherDetail>();
+                            oldId = m.Id;
+                            //if (newId == 0)
+                            //    m.Id = newId = (int)dbContext.GetSequence("Id", "InvSaleMaster");
+                            //else
+                            //{
+                            //    m.Id = newId++;
+                            //}
+                            m.OrderNo = (int)dbContext.GetSequence("OrderNo", "InvSaleMaster", m.BranchId);
+                           // InvSaleMaster dbSaleMaster = new InvSaleMaster();
+                            m.Id = 0;
+                            dbContext.InvSaleMaster.Add(m);
+                            dbContext.SaveChanges();
+                            List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
+                            if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill")
                             {
-                                IsJournalEqual = false;
-                            }
-                        }
-                        
-                        invSaleDetails.ForEach(d => {
-                            InvProduct invProduct = dbContext.InvProduct.FirstOrDefault(p => p.Id == d.ProductId);
-                            d.BillId = m.Id;
-                            dbContext.InvSaleDetail.Add(d);
-                            if (invProduct != null)
-                            {
-                                if (invProduct.Type == "Standard" || invProduct.Type == "Mixture")
+                                //IsJournalEqual = false;
+                                accVoucherDetails = GetSaleJournal(dbContext, m, invSaleDetails);
+                                int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
+                                int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
+                                if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
                                 {
-                                    InvProductLedger ledger = new InvProductLedger();
-                                    ledger.TransDate = m.OrderDate;
-                                    ledger.ProductId = d.ProductId;
-                                    ledger.ReferenceId = m.Id;
-                                    if (m.IsReturn)
-                                    {
-                                        ledger.Source = "Sale Return";
-                                        ledger.QtyIn = d.Qty;
-                                        ledger.QtyOut = 0;
-                                        ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                    }
-                                    else
-                                    {
-                                        ledger.Source = "Sale";
-                                        ledger.QtyIn = 0;
-                                        ledger.QtyOut = d.Qty;
-                                        ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                    }
-                                    ledger.BranchId = m.BranchId;
-                                    ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
-                                    ledger.CreatedDate = m.CreatedDate;
-                                    ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
-                                    ledger.WarehouseId = m.StoreId;
-                                    ledger.Cost = invProduct.Cost;
-                                    ledger.RetailPrice = d.Price;
-                                    ledger.SourceParty = m.StoreId.ToString();
-                                    ledger.FiscalYearId = m.FiscalYearId;
-                                    dbContext.InvProductLedger.Add(ledger);
+                                    IsJournalEqual = false;
                                 }
-                                else if (invProduct.Type == "Package")
-                                {
+                            }
 
-                                    List<InvPackageProductsMapping> PackageProducts = dbContext.InvPackageProductsMapping.Where(pm => pm.PackageId == d.ProductId).ToList();
-                                    PackageProducts.ForEach(pm =>
+                            invSaleDetails.ForEach(d =>
+                            {
+                                InvProduct invProduct = dbContext.InvProduct.FirstOrDefault(p => p.Id == d.ProductId);
+                                //d.BillId = m.Id;
+                                //d.Id = 0;
+
+                                dbContext.InvSaleDetail.Add(new InvSaleDetail
+                                {
+                                    BillId = m.Id,
+                                    ProductId = d.ProductId,
+                                    Price = d.Price,
+                                    Qty = d.Qty,
+                                    Total = d.Total,
+                                    IsDeleted = d.IsDeleted,
+                                    SaleValue = d.SaleValue,
+                                    TaxCharged = d.TaxCharged,
+                                    TaxRate = d.TaxRate,
+                                    Pctcode = d.Pctcode,
+                                    FurtherTax = d.FurtherTax,
+                                    Discount = d.Discount,
+                                    InvoiceType = d.InvoiceType,
+                                    PriceExclusiveTax = d.PriceExclusiveTax,
+                                });
+                                
+                                if (invProduct != null)
+                                {
+                                    if (invProduct.Type == "Standard" || invProduct.Type == "Mixture")
                                     {
-                                        InvProduct PackageItem = dbContext.InvProduct.FirstOrDefault(pi => pi.Id == pm.ProductId);
                                         InvProductLedger ledger = new InvProductLedger();
                                         ledger.TransDate = m.OrderDate;
-                                        ledger.ProductId = pm.ProductId;
-                                        ledger.PackageId = d.ProductId;
+                                        ledger.ProductId = d.ProductId;
                                         ledger.ReferenceId = m.Id;
                                         if (m.IsReturn)
                                         {
                                             ledger.Source = "Sale Return";
-                                            ledger.QtyIn = d.Qty * pm.Qty;
+                                            ledger.QtyIn = d.Qty;
                                             ledger.QtyOut = 0;
-                                            ledger.Remarks = "Sale Return of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyIn;
+                                            ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
                                         }
                                         else
                                         {
                                             ledger.Source = "Sale";
                                             ledger.QtyIn = 0;
-                                            ledger.QtyOut = d.Qty * pm.Qty;
-                                            ledger.Remarks = "Sale of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyOut;
+                                            ledger.QtyOut = d.Qty;
+                                            ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
                                         }
                                         ledger.BranchId = m.BranchId;
                                         ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
@@ -155,103 +150,151 @@ namespace AutoSynchAPI.Controllers
                                         ledger.SourceParty = m.StoreId.ToString();
                                         ledger.FiscalYearId = m.FiscalYearId;
                                         dbContext.InvProductLedger.Add(ledger);
-                                    });
+                                    }
+                                    else if (invProduct.Type == "Package")
+                                    {
+
+                                        List<InvPackageProductsMapping> PackageProducts = dbContext.InvPackageProductsMapping.Where(pm => pm.PackageId == d.ProductId).ToList();
+                                        PackageProducts.ForEach(pm =>
+                                        {
+                                            InvProduct PackageItem = dbContext.InvProduct.FirstOrDefault(pi => pi.Id == pm.ProductId);
+                                            InvProductLedger ledger = new InvProductLedger();
+                                            ledger.TransDate = m.OrderDate;
+                                            ledger.ProductId = pm.ProductId;
+                                            ledger.PackageId = d.ProductId;
+                                            ledger.ReferenceId = m.Id;
+                                            if (m.IsReturn)
+                                            {
+                                                ledger.Source = "Sale Return";
+                                                ledger.QtyIn = d.Qty * pm.Qty;
+                                                ledger.QtyOut = 0;
+                                                ledger.Remarks = "Sale Return of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyIn;
+                                            }
+                                            else
+                                            {
+                                                ledger.Source = "Sale";
+                                                ledger.QtyIn = 0;
+                                                ledger.QtyOut = d.Qty * pm.Qty;
+                                                ledger.Remarks = "Sale of Product " + PackageItem.Name + " (Package: " + invProduct.Name + "), Qty: " + ledger.QtyOut;
+                                            }
+                                            ledger.BranchId = m.BranchId;
+                                            ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
+                                            ledger.CreatedDate = m.CreatedDate;
+                                            ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
+                                            ledger.WarehouseId = m.StoreId;
+                                            ledger.Cost = invProduct.Cost;
+                                            ledger.RetailPrice = d.Price;
+                                            ledger.SourceParty = m.StoreId.ToString();
+                                            ledger.FiscalYearId = m.FiscalYearId;
+                                            dbContext.InvProductLedger.Add(ledger);
+                                        });
+                                    }
+                                    else if (invProduct.Type == "Material")
+                                    {
+                                        InvProductLedger ledger = new InvProductLedger();
+                                        if (Convert.ToInt32(invProduct.Type) == 0)
+                                        {
+                                            ledger.ProductId = d.ProductId;
+                                        }
+                                        else
+                                        {
+                                            ledger.ProductId = Convert.ToInt32(invProduct.MixtureId);
+                                            ledger.MaterialId = d.ProductId;
+                                        }
+                                        ledger.TransDate = m.OrderDate;
+                                        ledger.ReferenceId = m.Id;
+                                        if (m.IsReturn)
+                                        {
+                                            ledger.Source = "Sale Return";
+                                            ledger.QtyIn = d.Qty;
+                                            ledger.QtyOut = 0;
+                                            ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
+                                        }
+                                        else
+                                        {
+                                            ledger.Source = "Sale";
+                                            ledger.QtyIn = 0;
+                                            ledger.QtyOut = d.Qty;
+                                            ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
+                                        }
+                                        ledger.BranchId = m.BranchId;
+                                        ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
+                                        ledger.CreatedDate = m.CreatedDate;
+                                        ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
+                                        ledger.WarehouseId = m.StoreId;
+                                        ledger.Cost = invProduct.Cost;
+                                        ledger.RetailPrice = d.Price;
+                                        ledger.SourceParty = m.StoreId.ToString();
+                                        ledger.FiscalYearId = m.FiscalYearId;
+                                        dbContext.InvProductLedger.Add(ledger);
+                                    }
+
                                 }
-                                else if (invProduct.Type == "Material")
-                                {
-                                    InvProductLedger ledger = new InvProductLedger();
-                                    if (Convert.ToInt32(invProduct.Type) == 0)
-                                    {
-                                        ledger.ProductId = d.ProductId;
-                                    }
-                                    else
-                                    {
-                                        ledger.ProductId = Convert.ToInt32(invProduct.MixtureId);
-                                        ledger.MaterialId = d.ProductId;
-                                    }
-                                    ledger.TransDate = m.OrderDate;
-                                    ledger.ReferenceId = m.Id;
-                                    if (m.IsReturn)
-                                    {
-                                        ledger.Source = "Sale Return";
-                                        ledger.QtyIn = d.Qty;
-                                        ledger.QtyOut = 0;
-                                        ledger.Remarks = "Sale Return of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                    }
-                                    else
-                                    {
-                                        ledger.Source = "Sale";
-                                        ledger.QtyIn = 0;
-                                        ledger.QtyOut = d.Qty;
-                                        ledger.Remarks = "Sale of Product " + invProduct.Name + ", Qty: " + d.Qty;
-                                    }
-                                    ledger.BranchId = m.BranchId;
-                                    ledger.CreatedBy = m.CompletedBy.HasValue ? m.CompletedBy.Value : 0;
-                                    ledger.CreatedDate = m.CreatedDate;
-                                    ledger.UnitId = invProduct.SaleUnitId.HasValue ? invProduct.SaleUnitId.Value : 0;
-                                    ledger.WarehouseId = m.StoreId;
-                                    ledger.Cost = invProduct.Cost;
-                                    ledger.RetailPrice = d.Price;
-                                    ledger.SourceParty = m.StoreId.ToString();
-                                    ledger.FiscalYearId = m.FiscalYearId;
-                                    dbContext.InvProductLedger.Add(ledger);
-                                }
+                            });
+                            //inserting jv transactions
 
-                            }
-                        });
-                        //inserting jv transactions
-
-                        int JvVoucherMasterId = 0;
-                        if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill" && IsJournalEqual == true && (m.OrderStatus == "Invoice" || (m.OrderStatus == "QT" && orgBranch.InvCreateJvInCaseOfQtsale == "Yes")))
-                        {
-
-                            if (m != null && m.Id > 0)
+                            int JvVoucherMasterId = 0;
+                            if (orgOrganization.AccountIntegration == "Yes" && orgBranch.InvSaleAccInteg == "Bill" && IsJournalEqual == true && (m.OrderStatus == "Invoice" || (m.OrderStatus == "QT" && orgBranch.InvCreateJvInCaseOfQtsale == "Yes")))
                             {
-                                string CustomerName = "";
-                                AccVoucherMaster accVoucherMaster = new AccVoucherMaster();
-                                accVoucherMaster.VoucherNo = m.OrderNo.ToString();
-                                accVoucherMaster.CreatedBy = m.CreatedBy;
-                                accVoucherMaster.CreatedDate = m.CreatedDate.HasValue ? m.CreatedDate.Value : DateTime.Now;
-                                accVoucherMaster.VoucherDate = m.OrderDate.HasValue ? m.OrderDate.Value : DateTime.Now;
-                                accVoucherMaster.BranchId = m.BranchId;
-                                accVoucherMaster.FiscalYearId = m.FiscalYearId;
-                                accVoucherMaster.VoucherType = "SAL";
-                                accVoucherMaster.VoucherStatus = "Approved";
-                                accVoucherMaster.Description = m.Remarks;
-                                if (m.CustomerId != 0)
+
+                                if (m != null && m.Id > 0)
                                 {
-                                    CustomerName = dbContext.InvCustomer.FirstOrDefault(ic => ic.Id == m.CustomerId).Name;
-                                    if (CustomerName != "" && CustomerName != null)
+                                    string CustomerName = "";
+                                    AccVoucherMaster accVoucherMaster = new AccVoucherMaster();
+                                    accVoucherMaster.VoucherNo = m.OrderNo.ToString();
+                                    accVoucherMaster.CreatedBy = m.CreatedBy;
+                                    accVoucherMaster.CreatedDate = m.CreatedDate.HasValue ? m.CreatedDate.Value : DateTime.Now;
+                                    accVoucherMaster.VoucherDate = m.OrderDate.HasValue ? m.OrderDate.Value : DateTime.Now;
+                                    accVoucherMaster.BranchId = m.BranchId;
+                                    accVoucherMaster.FiscalYearId = m.FiscalYearId;
+                                    accVoucherMaster.VoucherType = "SAL";
+                                    accVoucherMaster.VoucherStatus = "Approved";
+                                    accVoucherMaster.Description = m.Remarks;
+                                    if (m.CustomerId != 0)
                                     {
-                                        CustomerName = CustomerName + " - ";
+                                        CustomerName = dbContext.InvCustomer.FirstOrDefault(ic => ic.Id == m.CustomerId).Name;
+                                        if (CustomerName != "" && CustomerName != null)
+                                        {
+                                            CustomerName = CustomerName + " - ";
+                                        }
                                     }
-                                }
-                                if (m.Remarks != "" && m.Remarks != null)
-                                {
-                                    accVoucherMaster.Description = m.Remarks + " (" + CustomerName + m.PaymentType + ")";
-                                }
-                                else
-                                {
-                                    accVoucherMaster.Description = CustomerName + m.PaymentType;
-                                }
-                                accVoucherMaster.ReferenceId = m.Id;
-                                accVoucherMaster.Id = (int)dbContext.GetSequence("Id", "AccVoucherMaster");
-                                dbContext.AccVoucherMaster.Add(accVoucherMaster);
-                                if (accVoucherMaster.Id != 0)
-                                {
-                                    JvVoucherMasterId = accVoucherMaster.Id;
-                                    foreach (var detail in accVoucherDetails)
+                                    if (m.Remarks != "" && m.Remarks != null)
                                     {
-                                        detail.VoucherMasterId = JvVoucherMasterId;
-                                        detail.Type = "Detail";
-                                        dbContext.AccVoucherDetail.Add(detail);
+                                        accVoucherMaster.Description = m.Remarks + " (" + CustomerName + m.PaymentType + ")";
+                                    }
+                                    else
+                                    {
+                                        accVoucherMaster.Description = CustomerName + m.PaymentType;
+                                    }
+                                    accVoucherMaster.ReferenceId = m.Id;
+                                    accVoucherMaster.Id = (int)dbContext.GetSequence("Id", "AccVoucherMaster");
+                                    dbContext.AccVoucherMaster.Add(accVoucherMaster);
+                                    if (accVoucherMaster.Id != 0)
+                                    {
+                                        JvVoucherMasterId = accVoucherMaster.Id;
+                                        foreach (var detail in accVoucherDetails)
+                                        {
+                                            detail.VoucherMasterId = JvVoucherMasterId;
+                                            detail.Type = "Detail";
+                                            dbContext.AccVoucherDetail.Add(detail);
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                    });
-                    //dbContext.GetSequence()
+                        });
+                        try
+                        {
+                            dbContext.SaveChanges();
+                            transaction.Commit();
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            
+                            throw ex;
+                        }
+                    }
                     // dbContext.InvSaleMaster.AddRan
                 }
 
@@ -303,36 +346,38 @@ namespace AutoSynchAPI.Controllers
                     {
                         InvProduct Product = dbContext.InvProduct.FirstOrDefault(p=> p.Id ==  item.ProductId);
                         if (Product != null)
-                        { }
-                        item.ItemCostValue = Product.AverageCost;
-                        item.ProductName = Product.Name;
-                        if (item.ItemCostValue <= 0)
                         {
-                            item.ItemCostValue = item.Price * item.Qty;
+                            item.ItemCostValue = Product.AverageCost;
+                            item.ProductName = Product.Name;
+                            if (item.ItemCostValue <= 0)
+                            {
+                                item.ItemCostValue = item.Price * item.Qty;
+                            }
+                            decimal ProductTaxValue = (Product.Tax / (100 + Product.Tax)) * item.Price;
+                            if (Convert.ToBoolean(Product.IsRetailPriceInclusiveTax) == true)
+                            {
+                                decimal PriceExclusiveTax = item.Price - ProductTaxValue;
+                                item.ItemSaleValue = (item.Price - ProductTaxValue) * item.Qty;
+                                item.ItemTaxCharged = ProductTaxValue * item.Qty;
+                            }
+                            else
+                            {
+                                decimal PriceExclusiveTax = item.Price;
+                                item.ItemSaleValue = item.Price * item.Qty;
+                                item.ItemTaxCharged = ProductTaxValue * item.Qty;
+                            }
+                            item.ItemNetTotal = item.ItemSaleValue - item.ItemDiscount + item.ItemTaxCharged + item.ItemExtraTaxCharged;
+                            decimal ProfitAndLost = item.ItemSaleValue - item.ItemCostValue;
+                            if (ProfitAndLost > 0)
+                            {
+                                item.ItemProfit = ProfitAndLost;
+                            }
+                            else if (ProfitAndLost < 0)
+                            {
+                                item.ItemLost = ProfitAndLost * (-1);
+                            }
                         }
-                        decimal ProductTaxValue = (Product.Tax / (100 + Product.Tax)) * item.Price;
-                        if (Convert.ToBoolean(Product.IsRetailPriceInclusiveTax) == true)
-                        {
-                            decimal PriceExclusiveTax = item.Price - ProductTaxValue;
-                            item.ItemSaleValue = (item.Price - ProductTaxValue) * item.Qty;
-                            item.ItemTaxCharged = ProductTaxValue * item.Qty;
-                        }
-                        else
-                        {
-                            decimal PriceExclusiveTax = item.Price;
-                            item.ItemSaleValue = item.Price * item.Qty;
-                            item.ItemTaxCharged = ProductTaxValue * item.Qty;
-                        }
-                        item.ItemNetTotal = item.ItemSaleValue - item.ItemDiscount + item.ItemTaxCharged + item.ItemExtraTaxCharged;
-                        decimal ProfitAndLost = item.ItemSaleValue - item.ItemCostValue;
-                        if (ProfitAndLost > 0)
-                        {
-                            item.ItemProfit = ProfitAndLost;
-                        }
-                        else if (ProfitAndLost < 0)
-                        {
-                            item.ItemLost = ProfitAndLost * (-1);
-                        }
+                        
                     }
                     List<AccAccountsMapping> AccountsDetails = new List<AccAccountsMapping>();
                     if (masterData.IsReturn)

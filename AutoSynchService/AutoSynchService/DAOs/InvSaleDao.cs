@@ -15,7 +15,7 @@ namespace AutoSynchService.DAOs
         internal List<InvSaleMaster> GetSaleMaster()
         {
             SqliteManager sqlite = new SqliteManager();
-            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null)");
+            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000");
             Converter converter = new Converter();
             List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
             return saleMasters;
