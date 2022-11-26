@@ -44,10 +44,12 @@ namespace AutoSynchService
             return true;
         }
 
-        public static bool DownloadPublish()
+        public static bool DownloadPublish(FtpCredentials ftpCredentials)
         {
             FtpManager ftpManager = new FtpManager();
-            string folderName = @"c:\wworoot Folder";
+                      
+            
+            string folderName =ftpCredentials.Directory;
             string filename = "testzipfile.zip";
             string localFolder = System.IO.Path.Combine(folderName, "Publish Folder");
             string pathString = System.IO.Path.Combine(folderName, "Publish Folder", filename);
@@ -55,7 +57,8 @@ namespace AutoSynchService
 
             System.IO.Directory.CreateDirectory(localFolder);
             System.IO.Directory.CreateDirectory(extractPath);
-            if ( ftpManager.DownloadFilesFromFtp("66.219.22.159", 21, "cmsnet", "Hmis@360", pathString, filename))
+
+            if ( ftpManager.DownloadFilesFromFtp(ftpCredentials.IP, ftpCredentials.Port, ftpCredentials.Username, ftpCredentials.Password, pathString, filename))
             {
 
                 ZipFile.ExtractToDirectory(pathString, extractPath,true);

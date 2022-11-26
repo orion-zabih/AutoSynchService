@@ -122,3 +122,14 @@ C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\obj
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\obj\Debug\net6.0\AutoSynchAPI.pdb
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\obj\Debug\net6.0\AutoSynchAPI.genruntimeconfig.cache
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\obj\Debug\net6.0\ref\AutoSynchAPI.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.Configuration.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Json.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.FileSystemGlobbing.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\System.Text.Encodings.Web.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\System.Text.Json.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchAPI\bin\Debug\net6.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll

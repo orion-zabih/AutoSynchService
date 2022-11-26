@@ -148,3 +148,6 @@ C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\FluentFTP.dll
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchFtp.dll
 C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\AutoSynchFtp.pdb
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\System.Text.Encodings.Web.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\System.Text.Json.dll
+C:\Users\one\Documents\GitHub\AutoSynchService\AutoSynchService\AutoSynchService\bin\Debug\net6.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll

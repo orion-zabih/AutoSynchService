@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -26,8 +27,12 @@ namespace AutoSynchSqlite.DbManager
         {
             try
             {
-                dbConnection= "Data Source=C:\\autosynch\\cms_bakeman_db.db;Version=3;New=True;Compress=True;";
-            
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+              .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+              .AddJsonFile("appsettings.json")
+              .Build();
+                dbConnection = configuration.GetConnectionString("DefaultSqliteConnection");//"Data Source=C:\\autosynch\\cms_bakeman_db.db;Version=3;New=True;Compress=True;";
+
                 //string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
                 //string DbBinFile = "localLibrary.sqlite";
                 //string DbBinPath = string.Concat(dir, "/", DbBinFile);
@@ -37,23 +42,23 @@ namespace AutoSynchSqlite.DbManager
                 //System.Reflection.Assembly myassembly = System.Reflection.Assembly.GetExecutingAssembly();
                 //FileInfo fi = new FileInfo(myassembly.Location);
 
-            //string binPath = NativeMethods.AssemblyDirectory;
-            //var index = binPath.IndexOf(projectName, binPath.IndexOf(projectName));
+                //string binPath = NativeMethods.AssemblyDirectory;
+                //var index = binPath.IndexOf(projectName, binPath.IndexOf(projectName));
 
-            //var aStringBuilder = new StringBuilder(binPath);
-            //aStringBuilder.Remove(index, projectName.Length);
-            //aStringBuilder.Insert(index, "DataAccess");
-            //binPath = aStringBuilder.ToString();
+                //var aStringBuilder = new StringBuilder(binPath);
+                //aStringBuilder.Remove(index, projectName.Length);
+                //aStringBuilder.Insert(index, "DataAccess");
+                //binPath = aStringBuilder.ToString();
 
-            //string xpath = "x86";
-            //if (IntPtr.Size == 8) // or: if(Environment.Is64BitProcess) // .NET 4.0
-            //{
-            //    xpath = "x64";
-            //}
+                //string xpath = "x86";
+                //if (IntPtr.Size == 8) // or: if(Environment.Is64BitProcess) // .NET 4.0
+                //{
+                //    xpath = "x64";
+                //}
 
-            //string path = binPath + "\\" + xpath + "\\SQLite.Interop.DLL";
-            ////string paths = @"C:\Users\TNDUser\Documents\Visual Studio 2017\Projects\NcsBarcodeApp\DataAccess\bin\Debug\x86\\SQLite.Interop.DLL";
-            //System.IntPtr moduleHandle = NativeMethods.LoadLibrary(path);
+                //string path = binPath + "\\" + xpath + "\\SQLite.Interop.DLL";
+                ////string paths = @"C:\Users\TNDUser\Documents\Visual Studio 2017\Projects\NcsBarcodeApp\DataAccess\bin\Debug\x86\\SQLite.Interop.DLL";
+                //System.IntPtr moduleHandle = NativeMethods.LoadLibrary(path);
 
             }
             catch (Exception ex)
