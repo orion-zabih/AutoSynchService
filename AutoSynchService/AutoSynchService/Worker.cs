@@ -22,14 +22,7 @@ namespace AutoSynchService
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                var builder = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: false);
-
-                IConfiguration config = builder.Build();
-
-                FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
-
+               
                 
                 
                 if(BusinessLogic.UploadInvSaleToServer())
@@ -40,6 +33,14 @@ namespace AutoSynchService
                 {
                     _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
                 }
+                var builder = new ConfigurationBuilder()
+             .SetBasePath(Directory.GetCurrentDirectory())
+             .AddJsonFile("appsettings.json", optional: false);
+
+                IConfiguration config = builder.Build();
+
+                FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
+
                 if (BusinessLogic.DownloadPublish(ftpCredentials))
                 {
                     _logger.LogInformation("Publish files downloaded successfully at: {time}", DateTimeOffset.Now);

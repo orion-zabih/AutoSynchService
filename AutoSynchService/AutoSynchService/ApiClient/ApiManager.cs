@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using AutoSynchService.Classes;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,13 @@ namespace AutoSynchService.ApiClient
             var client = new HttpClient();
             try
             {
-                client.BaseAddress = new Uri("https://localhost:7061");
+                var builder = new ConfigurationBuilder()
+           .SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json", optional: false);
+
+                IConfiguration config = builder.Build();
+                                
+                client.BaseAddress = new Uri(config.GetSection("ApiLinks").GetValue<string>("BaseAddress"));
                 // Add an Accept header for JSON format.
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -56,7 +63,13 @@ namespace AutoSynchService.ApiClient
             try
             {
                 HttpClient client = new HttpClient();
-                client.BaseAddress = new Uri("https://localhost:7061");
+                var builder = new ConfigurationBuilder()
+           .SetBasePath(Directory.GetCurrentDirectory())
+           .AddJsonFile("appsettings.json", optional: false);
+
+                IConfiguration config = builder.Build();
+
+                client.BaseAddress = new Uri(config.GetSection("ApiLinks").GetValue<string>("BaseAddress"));
 
                 // Add an Accept header for JSON format.
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
