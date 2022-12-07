@@ -50,7 +50,7 @@ namespace AutoSynchService
                       
             
             string folderName =ftpCredentials.Directory;
-            string filename = "testzipfile.zip";
+            string filename = "Release.zip";
             string localFolder = System.IO.Path.Combine(folderName, "Publish Folder");
             string pathString = System.IO.Path.Combine(folderName, "Publish Folder", filename);
             string extractPath = System.IO.Path.Combine(folderName, "Publish Extract Folder");

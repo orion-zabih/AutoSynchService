@@ -22,7 +22,11 @@ namespace AutoSynchAPI.Controllers
             try
             {
                 using (Entities dbContext = new Entities())
-                {
+                {//branch id in appsettings
+                    //org//all
+                    //inv//all
+                    //usr//all
+                    //accfiscalyear, 
                     responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
                     responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
                     responseObj.sysFeatures = dbContext.SysFeature.ToList();
