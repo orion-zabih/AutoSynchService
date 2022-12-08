@@ -1,4 +1,5 @@
-﻿using AutoSynchService.Models;
+﻿using AutoSynchService.Classes;
+using AutoSynchService.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace AutoSynchService.ApiClient
                 try
                 {
 
-                    invSaleApiUrl += "/GetSysTables";
+                    invSaleApiUrl += "/GetSysTables?branch_id=" + Global.BranchId;
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 

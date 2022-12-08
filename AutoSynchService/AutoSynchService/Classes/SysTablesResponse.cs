@@ -62,6 +62,19 @@ namespace AutoSynchService.Models
         public List<InvVehicle> invVehicles { get; set; }
         public List<InvVendor> invVendors { get; set; }
         public List<InvWarehouse> invWarehouses { get; set; }
+
+        //Usr
+        public List<UsrSystemUser> UsrSystemUsers { get; set; }
+        public List<UsrUserBranchesMapping> UsrUserBranchesMappings { get; set; }
+        public List<UsrUserFormsMapping> UsrUserFormsMappings { get; set; }
+        public List<UsrUserParmsMapping> UsrUserParmsMappings { get; set; }
+        //Org
+        public List<OrgBranch> OrgBranchs { get; set; }
+        public List<OrgFeaturesMapping> OrgFeaturesMappings { get; set; }
+        public List<OrgOrganization> OrgOrganizations { get; set; }
+        public List<OrgOrgSystemsMapping> OrgOrgSystemsMappings { get; set; }
+        //AccFiscalYear
+        public List<AccFiscalYear> AccFiscalYears { get; set; }
         public SysTablesResponse()
         {
             sysControllesGroups = new List<SysControllesGroup>();
@@ -124,6 +137,20 @@ namespace AutoSynchService.Models
             invVendors = new List<InvVendor>();
             invWarehouses = new List<InvWarehouse>();
 
+            //Usr
+            UsrSystemUsers = new List<UsrSystemUser>();
+            UsrUserBranchesMappings = new List<UsrUserBranchesMapping>();
+            UsrUserFormsMappings = new List<UsrUserFormsMapping>();
+            UsrUserParmsMappings = new List<UsrUserParmsMapping>();
+
+            //Org
+            OrgBranchs = new List<OrgBranch>();
+            OrgFeaturesMappings = new List<OrgFeaturesMapping>();
+            OrgOrganizations = new List<OrgOrganization>();
+            OrgOrgSystemsMappings = new List<OrgOrgSystemsMapping>();
+
+            //AccFiscalYear
+            AccFiscalYears = new List<AccFiscalYear>();
         }
     }
 }
