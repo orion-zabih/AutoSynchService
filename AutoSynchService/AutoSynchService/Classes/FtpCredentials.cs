@@ -14,6 +14,12 @@ namespace AutoSynchService.Classes
         public string Username { get; set; }
         public string Password { get; set; }
         public string Directory { get; set; }
+        public string BinFolder { get; set; }
+        public FtpCredentials()
+        {
+            Port = 21;
+            IP = Username = Password = Directory = BinFolder = string.Empty;
+        }
     }
     public class MySettings
     {

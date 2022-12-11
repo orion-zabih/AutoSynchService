@@ -52,6 +52,7 @@ namespace AutoSynchService
             string folderName =ftpCredentials.Directory;
             string filename = "Release.zip";
             string localFolder = System.IO.Path.Combine(folderName, "Publish Folder");
+            string binFolder = System.IO.Path.Combine(folderName, "bin");
             string pathString = System.IO.Path.Combine(folderName, "Publish Folder", filename);
             string extractPath = System.IO.Path.Combine(folderName, "Publish Extract Folder");
 
@@ -62,9 +63,25 @@ namespace AutoSynchService
             {
 
                 ZipFile.ExtractToDirectory(pathString, extractPath,true);
+                System.IO.Directory.CreateDirectory(binFolder);
+                CopyFilesRecursively(extractPath, binFolder);
                 return true;
             }
             return false;
+        }
+        private static void CopyFilesRecursively(string sourcePath, string targetPath)
+        {
+            //Now Create all of the directories
+            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+            }
+
+            //Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+            }
         }
         public static bool GetAndReplaceSysTables()
         {
