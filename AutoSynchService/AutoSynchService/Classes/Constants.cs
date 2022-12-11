@@ -6,12 +6,12 @@
     }
     public enum SynchTypes
     {
-        Full,    // 0
-        OnlySysTables,   // 1
-        OnlyPurchaseTables,    // 2
-        OnlySaleTables, // 3
-        ExceptSaleMasterDetailTables, // 4
-        OnlySaleMasterDetailTables, // 5
-        Custom, // 6
+        full,    // 0
+        only_sys_tables,   // 1
+        only_purchase_tables,    // 2
+        only_sale_tables, // 3
+        except_sale_master_detail_tables, // 4
+        only_sale_master_detail_tables, // 5
+        custom, // 6
     }
 }

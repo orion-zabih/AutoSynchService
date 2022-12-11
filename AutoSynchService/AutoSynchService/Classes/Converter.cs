@@ -109,5 +109,28 @@ namespace AutoSynchService.Classes
             }
             return invSaleMasterList;
         }
+        internal static List<SynchSetting> GetSynchSetting(DataTable table)
+        {
+            var synchSettingList = new List<SynchSetting>(table.Rows.Count);
+            foreach (DataRow row in table.Rows)
+            {
+                var values = row.ItemArray;
+                var synchSetting = new SynchSetting()
+                {//setting_id,synch_method,synch_type,table_names,last_update_date,status
+                    setting_id = Convert.ToInt32(values[0]),
+                    synch_method = Convert.ToString(values[1] != DBNull.Value ? values[1] : ""),
+                    synch_type = Convert.ToString(values[2] != DBNull.Value ? values[2] : ""),
+                    table_names = Convert.ToString(values[3] != DBNull.Value ? values[3] : ""),
+                    status = Convert.ToString(values[4] != DBNull.Value ? values[4] : ""),
+                    insertion_timestamp = Convert.ToDateTime(values[5] != DBNull.Value ? values[5] : null),
+                    update_timestamp = Convert.ToDateTime(values[6] != DBNull.Value ? values[6] : null),
+
+
+                };
+                synchSettingList.Add(synchSetting);
+            }
+            return synchSettingList;
+        }
+
     }
 }

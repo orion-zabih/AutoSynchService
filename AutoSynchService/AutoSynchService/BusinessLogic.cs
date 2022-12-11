@@ -5,6 +5,7 @@ using AutoSynchService.DAOs;
 using AutoSynchService.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
@@ -55,16 +56,36 @@ namespace AutoSynchService
             string binFolder = System.IO.Path.Combine(folderName, "bin");
             string pathString = System.IO.Path.Combine(folderName, "Publish Folder", filename);
             string extractPath = System.IO.Path.Combine(folderName, "Publish Extract Folder");
-
-            System.IO.Directory.CreateDirectory(localFolder);
-            System.IO.Directory.CreateDirectory(extractPath);
+            if(!Directory.Exists(localFolder))
+                System.IO.Directory.CreateDirectory(localFolder);
+            if (!Directory.Exists(extractPath)) 
+                System.IO.Directory.CreateDirectory(extractPath);
 
             if ( ftpManager.DownloadFilesFromFtp(ftpCredentials.IP, ftpCredentials.Port, ftpCredentials.Username, ftpCredentials.Password, pathString, filename))
             {
 
                 ZipFile.ExtractToDirectory(pathString, extractPath,true);
-                System.IO.Directory.CreateDirectory(binFolder);
-                CopyFilesRecursively(extractPath, binFolder);
+
+                string pathBackupString = string.Empty;
+                
+                if (!Directory.Exists(binFolder)) 
+                    System.IO.Directory.CreateDirectory(binFolder);
+                else
+                {
+                    string format = "yyyy-MM-dd HHmmss";
+                    pathBackupString = System.IO.Path.Combine(folderName, "Publish Folder", "backup_" + DateTime.Now.ToString(format) + ".zip");
+                    ZipFile.CreateFromDirectory(binFolder, pathBackupString);
+                }
+                try
+                {
+                    CopyFilesRecursively(extractPath, binFolder);
+                }
+                catch (Exception)
+                {
+                    //if fails then restore backup 
+                    if(!string.IsNullOrEmpty(pathBackupString))
+                        ZipFile.ExtractToDirectory(pathBackupString, binFolder, true);
+                }
                 return true;
             }
             return false;
@@ -95,31 +116,75 @@ namespace AutoSynchService
              .AddJsonFile("appsettings.json")
              .Build();
                 dbPath = configuration.GetConnectionString("DbPath");
-                SynchTypes synchType = SynchTypes.Full;
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+
+                List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
+                SynchSetting lastSynchSetting = null;
+                SynchTypes synchType = SynchTypes.full;
                 if (!File.Exists(dbPath))
                 {
                     ReCreateStructureTables._CreateDatabase(dbPath);
-                    synchType = SynchTypes.Full;
+                    synchType = SynchTypes.full;
                 }
                 else
                 {
-                    synchType = SynchTypes.ExceptSaleMasterDetailTables;
+                    if (!synchSettingsDao.CheckSynchTable())
+                    {
+                        synchType = SynchTypes.except_sale_master_detail_tables;
+                    }
+                    else
+                    {
+                        pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database");
+                        if(pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
+                        {
+                            lastSynchSetting=pendingSynchSettings[0];
+                            if (lastSynchSetting != null)
+                            {
+                                Enum.TryParse(lastSynchSetting.synch_type, out synchType);
+                            }
+                            else
+                                return false;
+                        }
+                    }
                 }
                 TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType);
                 if (tableStructureResponse != null)
                 {
-                    if(ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse))
+                    if(lastSynchSetting!=null)
+                        synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "in process");
+                    if (ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse))
                     {
 
                         SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
                         if (sysTablesResponse != null)
                         {
-                            return ReCreateStructureTables._InsertData(new DateTime(), sysTablesResponse);
+                            if(ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse))
+                            {
+                                if(pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
+                                    synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s=>s.setting_id).ToList(), "done");
+                                return true;
+                            }
+                            else
+                            {
+
+                                if (lastSynchSetting != null)
+                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed");
+                                return false;
+                            }
                         }
-                        return false;
+                        else
+                        {
+                            if (lastSynchSetting != null)
+                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed");
+                            return false;
+                        }
                     }
+                    if (lastSynchSetting != null)
+                        synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed");
                     return false;
                 }
+                if(lastSynchSetting!=null)
+                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed");
                 return false;
             }
             catch (Exception ex)

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Reflection;
@@ -39,9 +40,9 @@ namespace AutoSynchService.Classes
 
                     //objSqliteManager.CreateDbFile(DbBinPath);
                     bool isStructureComplete = false;
-                   
-                   
-                    
+
+
+
                     if (objSqliteManager.ExecuteTransactionMultiQueries(objResponse.dropQueries)) ;
                     //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
                     isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(objResponse.createQueries);
@@ -74,66 +75,70 @@ namespace AutoSynchService.Classes
         {
             try
             {
-                SqliteManager objSqliteManager = new SqliteManager();                
-                    var listofClasses = typeof(SysTablesResponse).GetProperties().ToList();
-                    List<string> multiQueries = new List<string>();
+                SqliteManager objSqliteManager = new SqliteManager();
+                var listofClasses = typeof(SysTablesResponse).GetProperties().ToList();
+                List<string> multiQueries = new List<string>();
                 bool isStructureComplete = false;
-                        if (objResponse != null)
+                if (objResponse != null)
+                {
+                    Type myType = objResponse.GetType();
+                    IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+
+                    listofClasses.ForEach(t =>
+                    {
+                        var listProperties = t.PropertyType.GetProperties().ToList();
+                        var clas = listProperties[2].PropertyType;
+                        var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                        string columns = string.Join(",", fields.ToArray());
+
+                        PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
+                        IList collection = (IList)prop.GetValue(objResponse, null);
+                        foreach (object item in collection)
                         {
-                            Type myType = objResponse.GetType();
-                            IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
-
-                            listofClasses.ForEach(t =>
+                            string values = string.Empty;
+                            fields.ForEach(fiel =>
                             {
-                                var listProperties = t.PropertyType.GetProperties().ToList();
-                                var clas = listProperties[2].PropertyType;
-                                var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
-                                string columns = string.Join(",", fields.ToArray());
+                                object vlu = GetPropValue(item, fiel);
 
-                                PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
-                                IList collection = (IList)prop.GetValue(objResponse, null);
-                                foreach (object item in collection)
+                                if (vlu != null && vlu.ToString().Contains("'"))
                                 {
-                                    string values = string.Empty;
-                                    fields.ForEach(fiel =>
-                                    {
-                                        object vlu = GetPropValue(item, fiel);
-
-                                        if (vlu != null && vlu.ToString().Contains("'"))
-                                        {
-                                            values += "'" + vlu.ToString().Replace("'", "''") + "',";
-                                        }
-                                        else
-                                        {
-                                            values += "'" + vlu + "',";
-                                        }
-
-                                    });
-                                    multiQueries.Add("insert into " + clas.Name + "(" + columns + ") values(" + values.TrimEnd(',') + ")");
+                                    values += "'" + vlu.ToString().Replace("'", "''") + "',";
+                                }
+                                else
+                                {
+                                    values += "'" + vlu + "',";
                                 }
 
-
                             });
-                           // multiQueies.Add("create table app_setting(last_update_date varchar(16),next_update_date varchar(16))");
-                            //string format = "yyyy-MM-dd HH:mm:ss";    // modify the format depending upon input required in the column in database 
-                            //string insert = @" insert into app_setting(last_update_date,next_update_date) values('" + time.ToString(format) + "')";
+                            multiQueries.Add("insert into " + clas.Name + "(" + columns + ") values(" + values.TrimEnd(',') + ")");
+                        }
 
-                           // multiQueries.Add("insert into app_setting(last_update_date,next_update_date) values('" + dateTime.ToString(format) + "','" + dateTime.AddDays(7).ToString(format) + "')");
-                            isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries);
-                            if (isStructureComplete)
-                                return true;
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    
-                    
-                
+
+                    });
+                    //release, database
+                    DataTable dt = objSqliteManager.GetDataTable("SELECT name FROM sqlite_master WHERE type='table' AND name='synch_setting'");
+                    if (dt.Rows.Count == 0)
+                    {
+                        multiQueries.Add("create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names text,status default 'ready',insertion_timestamp datetime,update_timestamp datetime)");
+                        string format = "yyyy-MM-dd HH:mm:ss";    // modify the format depending upon input required in the column in database 
+                        multiQueries.Add(" insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,insertion_timestamp,update_timestamp) values(1,'database','" + SynchTypes.full + "','','done','" + dateTime.ToString(format) + "','" + dateTime.ToString(format) + "')");
+
+                    }
+                    isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries);
+                    if (isStructureComplete)
+                        return true;
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+
+
             }
             catch (Exception ex)
             {

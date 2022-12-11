@@ -21,7 +21,7 @@ namespace AutoSynchAPI.Controllers
         [HttpGet]
         public IActionResult GetTableData(string branch_id, string synch_type, string table_list)
         {
-            SynchTypes synchType = SynchTypes.Full;
+            SynchTypes synchType = SynchTypes.full;
             Enum.TryParse(synch_type, out synchType);
 
             Models.SysTablesResponse responseObj = new Models.SysTablesResponse();
@@ -34,7 +34,7 @@ namespace AutoSynchAPI.Controllers
                     {
                         using (Entities dbContext = new Entities())
                         {
-                            if (synchType == SynchTypes.Full)
+                            if (synchType == SynchTypes.full)
                             {
                                 responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
                                 responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
@@ -108,7 +108,7 @@ namespace AutoSynchAPI.Controllers
                                 //AccFiscalYear
                                 responseObj.AccFiscalYears = dbContext.AccFiscalYear.ToList();
                             }
-                            else if (synchType == SynchTypes.OnlySysTables)
+                            else if (synchType == SynchTypes.only_sys_tables)
                             {
                                 responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
                                 responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
@@ -169,14 +169,14 @@ namespace AutoSynchAPI.Controllers
         [HttpGet]
         public IActionResult GetTableStructure(string branch_id,string synch_type,string table_list)
         {
-            SynchTypes synchType = SynchTypes.Full;
+            SynchTypes synchType = SynchTypes.full;
             Enum.TryParse(synch_type, out synchType);
 
             Models.TableStructureResponse responseObj = new Models.TableStructureResponse();
             try
             {
                 List<string> SynchTbls = new List<string>();
-                if (synchType == SynchTypes.Full)
+                if (synchType == SynchTypes.full)
                 {
                     SynchTbls.Add("SysControllesGroup");
                     SynchTbls.Add("SysExecptionLogging");
@@ -247,7 +247,7 @@ namespace AutoSynchAPI.Controllers
                     SynchTbls.Add("AccFiscalYear");
 
                 }
-                else if (synchType == SynchTypes.OnlySysTables)
+                else if (synchType == SynchTypes.only_sys_tables)
                 {
                     SynchTbls.Add("SysControllesGroup");
                     SynchTbls.Add("SysExecptionLogging");
@@ -267,12 +267,12 @@ namespace AutoSynchAPI.Controllers
                     SynchTbls.Add("SysInvTypeWiseControll");
                 }
 
-                else if (synchType == SynchTypes.OnlySaleMasterDetailTables)
+                else if (synchType == SynchTypes.only_sale_master_detail_tables)
                 {
                     SynchTbls.Add("InvSaleDetail");
                     SynchTbls.Add("InvSaleMaster");
                 }
-                else if (synchType == SynchTypes.ExceptSaleMasterDetailTables)
+                else if (synchType == SynchTypes.except_sale_master_detail_tables)
                 {
 
                     SynchTbls.Add("SysControllesGroup");
@@ -343,7 +343,7 @@ namespace AutoSynchAPI.Controllers
                     SynchTbls.Add("OrgOrgSystemsMapping");
                     SynchTbls.Add("AccFiscalYear");
                 }
-                else if (synchType == SynchTypes.Custom)
+                else if (synchType == SynchTypes.custom)
                 {
                     if (!string.IsNullOrEmpty(table_list))
                         SynchTbls = table_list.Split(',').ToList();
