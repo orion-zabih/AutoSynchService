@@ -1,9 +1,12 @@
 ﻿using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,15 +16,18 @@ namespace AutoSynchService.Classes
 {
     internal class ReCreateStructureTables
     {
-        internal static bool _CreateDB(DateTime dateTime, SysTablesResponse objResponse)
+        internal static bool _CreateDatabase(string dbPath)
+        {
+            SqliteManager objSqliteManager = new SqliteManager();
+            objSqliteManager.CreateDbFile(dbPath);
+            return true;
+        }
+        internal static bool _CreateDBTables(DateTime dateTime, TableStructureResponse objResponse)
         {
             try
             {
                 SqliteManager objSqliteManager = new SqliteManager();
-                //if (File.Exists(DbBinPath))
-                //{
-                //    objSqliteManager.DeleteDbFile(DbBinPath);
-                //}
+
                 //if (!File.Exists(DbBinPath))
                 {
                     //if (!Directory.Exists(DbFolder))
@@ -33,44 +39,45 @@ namespace AutoSynchService.Classes
 
                     //objSqliteManager.CreateDbFile(DbBinPath);
                     bool isStructureComplete = false;
-                    List<string> multiQueries = new List<string>();
-                    List<string> multiQueriesDrops = new List<string>();
-                    var listofClasses = typeof(SysTablesResponse).GetProperties().ToList();
-
-                    listofClasses.ForEach(t =>
-                    {
-                        var listProperties = t.PropertyType.GetProperties().ToList();
-                        var clas = listProperties[2].PropertyType;
-                        var fields = clas.GetProperties().ToList().Select(p => p.Name);
-                        string columns = string.Join(" varchar(128),", fields.ToArray());
-                        multiQueriesDrops.Add("DROP TABLE IF EXISTS " + clas.Name);
-                        multiQueries.Add("create table " + clas.Name + "(" + columns + " varchar(128))");
-
-                    });
-                    if (objSqliteManager.ExecuteTransactionMultiQueries(multiQueriesDrops)) ;
+                   
+                   
+                    
+                    if (objSqliteManager.ExecuteTransactionMultiQueries(objResponse.dropQueries)) ;
                     //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
-                    isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries);
+                    isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(objResponse.createQueries);
 
                     if (isStructureComplete)
                     {
-                        multiQueries = new List<string>();
-                        //DB structure completed. now get libraries from server
-                        //Load Libraries from Service
-                        //EtoApiClient APIClient = new EtoApiClient();
+                        return true;
+                    }
+                    else
+                    {
+                        //bool isDbFileDeleted = objSqliteManager.DeleteDbFile(DbBinPath);
 
+                        return false;
+                    }
+                }
+                //else
+                //{
+                //    return false;
+                //}
+            }
+            catch (Exception ex)
+            {
+                //Logger.write("CreateDB", ex.ToString());
 
-                        //ApiIRequestData Eto_Libraries_Request = new ApiIRequestData
-                        //{
-                        //    username = Global.LOGGEDIN_USERNAME,
-                        //    userId = Global.LOGGEDIN_USERID,
-                        //    password = Global.LOGGEDIN_PASSWORD,
-                        //    siteId = Global.SITE_ID,
-                        //    clientIp = Global.CLIENT_IP,
-                        //    appVersion = Global.APPLICATION_VERSION
-                        //};
+                return false;
+            }
+        }
 
-                        //SysTablesResponse objResponse = APIClient.getEtoApplicationLibraries(Eto_Libraries_Request);
-
+        internal static bool _InsertData(DateTime dateTime, SysTablesResponse objResponse)
+        {
+            try
+            {
+                SqliteManager objSqliteManager = new SqliteManager();                
+                    var listofClasses = typeof(SysTablesResponse).GetProperties().ToList();
+                    List<string> multiQueries = new List<string>();
+                bool isStructureComplete = false;
                         if (objResponse != null)
                         {
                             Type myType = objResponse.GetType();
@@ -78,9 +85,6 @@ namespace AutoSynchService.Classes
 
                             listofClasses.ForEach(t =>
                             {
-
-                                //FieldInfo fld =typeof(objResponse).GetField(t.Name);
-
                                 var listProperties = t.PropertyType.GetProperties().ToList();
                                 var clas = listProperties[2].PropertyType;
                                 var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
@@ -110,7 +114,7 @@ namespace AutoSynchService.Classes
 
 
                             });
-                            //multiQueies.Add("create table app_setting(last_update_date varchar(16),next_update_date varchar(16))");
+                           // multiQueies.Add("create table app_setting(last_update_date varchar(16),next_update_date varchar(16))");
                             //string format = "yyyy-MM-dd HH:mm:ss";    // modify the format depending upon input required in the column in database 
                             //string insert = @" insert into app_setting(last_update_date,next_update_date) values('" + time.ToString(format) + "')";
 
@@ -127,18 +131,9 @@ namespace AutoSynchService.Classes
                         {
                             return false;
                         }
-                    }
-                    else
-                    {
-                        //bool isDbFileDeleted = objSqliteManager.DeleteDbFile(DbBinPath);
-
-                        return false;
-                    }
-                }
-                //else
-                //{
-                //    return false;
-                //}
+                    
+                    
+                
             }
             catch (Exception ex)
             {

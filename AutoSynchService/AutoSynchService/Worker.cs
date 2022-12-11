@@ -34,14 +34,7 @@ namespace AutoSynchService
                     if(int.TryParse(branchId, out _branchId))
                     {
                         Global.BranchId = _branchId;
-                        if (BusinessLogic.UploadInvSaleToServer())
-                        {
-                            _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
-                        }
+                        
 
                         FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
 
@@ -60,6 +53,14 @@ namespace AutoSynchService
                         else
                         {
                             _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
+                        }
+                        if (BusinessLogic.UploadInvSaleToServer())
+                        {
+                            _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
                         }
                     }
                 }

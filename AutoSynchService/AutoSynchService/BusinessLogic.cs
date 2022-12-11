@@ -71,12 +71,39 @@ namespace AutoSynchService
             try
             {
                 SysTablesClient sysTablesClient = new SysTablesClient();
-                SysTablesResponse sysTablesResponse = sysTablesClient.GetSysTables();
-                if (sysTablesResponse != null)
+
+                string dbPath = string.Empty;
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+             .AddJsonFile("appsettings.json")
+             .Build();
+                dbPath = configuration.GetConnectionString("DbPath");
+                SynchTypes synchType = SynchTypes.Full;
+                if (!File.Exists(dbPath))
                 {
-                    ReCreateStructureTables._CreateDB(new DateTime(), sysTablesResponse);
+                    ReCreateStructureTables._CreateDatabase(dbPath);
+                    synchType = SynchTypes.Full;
                 }
-                return true;
+                else
+                {
+                    synchType = SynchTypes.ExceptSaleMasterDetailTables;
+                }
+                TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType);
+                if (tableStructureResponse != null)
+                {
+                    if(ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse))
+                    {
+
+                        SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
+                        if (sysTablesResponse != null)
+                        {
+                            return ReCreateStructureTables._InsertData(new DateTime(), sysTablesResponse);
+                        }
+                        return false;
+                    }
+                    return false;
+                }
+                return false;
             }
             catch (Exception ex)
             {

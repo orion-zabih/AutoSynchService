@@ -199,11 +199,13 @@ namespace AutoSynchSqlite.DbManager
                     {
                         using (var transaction = sqliteCon.BeginTransaction())
                         {
+                            int c = 0;
                             //Add your query here.
                             try
                             {
                                 foreach (string Query in Queries)
                                 {
+                                    c++;
                                     cmd.CommandText = Query;
                                     cmd.ExecuteNonQuery();
                                 }

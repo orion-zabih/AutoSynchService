@@ -13,14 +13,15 @@ namespace AutoSynchService.ApiClient
     internal class SysTablesClient
     { 
         string invSaleApiUrl = "/api/SysTables";
-        public SysTablesResponse? GetSysTables()
+
+        public SysTablesResponse? GetTableData(SynchTypes synchType)
         {
             try
             {
                 try
                 {
 
-                    invSaleApiUrl += "/GetSysTables?branch_id=" + Global.BranchId;
+                    invSaleApiUrl = "/api/SysTables"+ "/GetTableData?branch_id=" + Global.BranchId + "&synch_type=" + synchType + "&table_list=notable";
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 
@@ -56,7 +57,49 @@ namespace AutoSynchService.ApiClient
                 return null;
             }
         }
+        public TableStructureResponse? GetTableStructure(SynchTypes synchType)
+        {
+            try
+            {
+                try
+                {
 
-        
+                    invSaleApiUrl = "/api/SysTables" + "/GetTableStructure?branch_id=" + Global.BranchId + "&synch_type="+synchType+"&table_list=notable";
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            TableStructureResponse response = JsonConvert.DeserializeObject<TableStructureResponse>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
     }
 }

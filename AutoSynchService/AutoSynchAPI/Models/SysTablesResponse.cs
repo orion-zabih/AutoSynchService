@@ -25,39 +25,39 @@ namespace AutoSynchAPI.Models
         public List<InvCompany> invCompanys { get; set; }
         public List<InvCustomer> invCustomers { get; set; }
         public List<InvCustomerType> invCustomerTypes { get; set; }
-        public List<InvDeliveryChallanDetail> invDeliveryChallanDetails { get; set; }
-        public List<InvDeliveryChallanMaster> invDeliveryChallanMasters { get; set; }
-        public List<InvDemandNote> invDemandNotes { get; set; }
-        public List<InvDemandNoteDetail> invDemandNoteDetails { get; set; }
-        public List<InvGatePassInDetail> invGatePassInDetails { get; set; }
-        public List<InvGatePassInMaster> invGatePassInMasters { get; set; }
+        //public List<InvDeliveryChallanDetail> invDeliveryChallanDetails { get; set; }
+        //public List<InvDeliveryChallanMaster> invDeliveryChallanMasters { get; set; }
+        //public List<InvDemandNote> invDemandNotes { get; set; }
+        //public List<InvDemandNoteDetail> invDemandNoteDetails { get; set; }
+        //public List<InvGatePassInDetail> invGatePassInDetails { get; set; }
+        //public List<InvGatePassInMaster> invGatePassInMasters { get; set; }
         public List<InvJcMonthSetting> invJcMonthSettings { get; set; }
         public List<InvLocation> invLocations { get; set; }
         public List<InvPackageProductsMapping> invPackageProductsMappings { get; set; }
         public List<InvPaymentType> invPaymentTypes { get; set; }
         public List<InvProduct> invProducts { get; set; }
         public List<InvProductBatch> invProductBatchs { get; set; }
-        public List<InvProductionDetail> invProductionDetails { get; set; }
-        public List<InvProductionMaster> invProductionMasters { get; set; }
+        //public List<InvProductionDetail> invProductionDetails { get; set; }
+        //public List<InvProductionMaster> invProductionMasters { get; set; }
         public List<InvProductLedger> invProductLedgers { get; set; }
-        public List<InvPurchaseDetail> invPurchaseDetails { get; set; }
-        public List<InvPurchaseMaster> invPurchaseMasters { get; set; }
-        public List<InvPurchaseOrderDetail> invPurchaseOrderDetails { get; set; }
-        public List<InvPurchaseOrderMaster> invPurchaseOrderMasters { get; set; }
-        public List<InvQuatationDetail> invQuatationDetails { get; set; }
-        public List<InvQuatationMaster> invQuatationMasters { get; set; }
-        public List<InvSaleClosing> invSaleClosings { get; set; }
-        public List<InvSaleClosingDetail> invSaleClosingDetails { get; set; }
-        public List<InvSaleDetail> invSaleDetails { get; set; }
+        //public List<InvPurchaseDetail> invPurchaseDetails { get; set; }
+        //public List<InvPurchaseMaster> invPurchaseMasters { get; set; }
+        //public List<InvPurchaseOrderDetail> invPurchaseOrderDetails { get; set; }
+        //public List<InvPurchaseOrderMaster> invPurchaseOrderMasters { get; set; }
+        //public List<InvQuatationDetail> invQuatationDetails { get; set; }
+        //public List<InvQuatationMaster> invQuatationMasters { get; set; }
+        //public List<InvSaleClosing> invSaleClosings { get; set; }
+        //public List<InvSaleClosingDetail> invSaleClosingDetails { get; set; }
+        //public List<InvSaleDetail> invSaleDetails { get; set; }
         public List<InvSalemanToRoutsMapping> invSalemanToRoutsMappings { get; set; }
-        public List<InvSaleMaster> invSaleMasters { get; set; }
-        public List<InvSchemeDetail> invSchemeDetails { get; set; }
-        public List<InvSchemeMaster> invSchemeMasters { get; set; }
+        //public List<InvSaleMaster> invSaleMasters { get; set; }
+        //public List<InvSchemeDetail> invSchemeDetails { get; set; }
+        //public List<InvSchemeMaster> invSchemeMasters { get; set; }
         public List<InvShift> invShifts { get; set; }
-        public List<InvStockAdjustment> invStockAdjustments { get; set; }
-        public List<InvStockAdjustmentDetail> invStockAdjustmentDetails { get; set; }
-        public List<InvStockTransfer> invStockTransfers { get; set; }
-        public List<InvStockTransferDetail> invStockTransferDetails { get; set; }
+        //public List<InvStockAdjustment> invStockAdjustments { get; set; }
+        //public List<InvStockAdjustmentDetail> invStockAdjustmentDetails { get; set; }
+        //public List<InvStockTransfer> invStockTransfers { get; set; }
+        //public List<InvStockTransferDetail> invStockTransferDetails { get; set; }
         public List<InvThirdPartyCustomer> invThirdPartyCustomers { get; set; }
         public List<InvUnit> invUnits { get; set; }
         public List<InvVehicle> invVehicles { get; set; }
@@ -100,39 +100,39 @@ namespace AutoSynchAPI.Models
             invCompanys = new List<InvCompany>();
             invCustomers = new List<InvCustomer>();
             invCustomerTypes = new List<InvCustomerType>();
-            invDeliveryChallanDetails = new List<InvDeliveryChallanDetail>();
-            invDeliveryChallanMasters = new List<InvDeliveryChallanMaster>();
-            invDemandNotes = new List<InvDemandNote>();
-            invDemandNoteDetails = new List<InvDemandNoteDetail>();
-            invGatePassInDetails = new List<InvGatePassInDetail>();
-            invGatePassInMasters = new List<InvGatePassInMaster>();
+            //invDeliveryChallanDetails = new List<InvDeliveryChallanDetail>();
+            //invDeliveryChallanMasters = new List<InvDeliveryChallanMaster>();
+            //invDemandNotes = new List<InvDemandNote>();
+            //invDemandNoteDetails = new List<InvDemandNoteDetail>();
+            //invGatePassInDetails = new List<InvGatePassInDetail>();
+            //invGatePassInMasters = new List<InvGatePassInMaster>();
             invJcMonthSettings = new List<InvJcMonthSetting>();
             invLocations = new List<InvLocation>();
             invPackageProductsMappings = new List<InvPackageProductsMapping>();
             invPaymentTypes = new List<InvPaymentType>();
             invProducts = new List<InvProduct>();
             invProductBatchs = new List<InvProductBatch>();
-            invProductionDetails = new List<InvProductionDetail>();
-            invProductionMasters = new List<InvProductionMaster>();
+            //invProductionDetails = new List<InvProductionDetail>();
+            //invProductionMasters = new List<InvProductionMaster>();
             invProductLedgers = new List<InvProductLedger>();
-            invPurchaseDetails = new List<InvPurchaseDetail>();
-            invPurchaseMasters = new List<InvPurchaseMaster>();
-            invPurchaseOrderDetails = new List<InvPurchaseOrderDetail>();
-            invPurchaseOrderMasters = new List<InvPurchaseOrderMaster>();
-            invQuatationDetails = new List<InvQuatationDetail>();
-            invQuatationMasters = new List<InvQuatationMaster>();
-            invSaleClosings = new List<InvSaleClosing>();
-            invSaleClosingDetails = new List<InvSaleClosingDetail>();
-            invSaleDetails = new List<InvSaleDetail>();
+            //invPurchaseDetails = new List<InvPurchaseDetail>();
+            //invPurchaseMasters = new List<InvPurchaseMaster>();
+            //invPurchaseOrderDetails = new List<InvPurchaseOrderDetail>();
+            //invPurchaseOrderMasters = new List<InvPurchaseOrderMaster>();
+            //invQuatationDetails = new List<InvQuatationDetail>();
+            //invQuatationMasters = new List<InvQuatationMaster>();
+            //invSaleClosings = new List<InvSaleClosing>();
+            //invSaleClosingDetails = new List<InvSaleClosingDetail>();
+            //invSaleDetails = new List<InvSaleDetail>();
             invSalemanToRoutsMappings = new List<InvSalemanToRoutsMapping>();
-            invSaleMasters = new List<InvSaleMaster>();
-            invSchemeDetails = new List<InvSchemeDetail>();
-            invSchemeMasters = new List<InvSchemeMaster>();
+            //invSaleMasters = new List<InvSaleMaster>();
+            //invSchemeDetails = new List<InvSchemeDetail>();
+            //invSchemeMasters = new List<InvSchemeMaster>();
             invShifts = new List<InvShift>();
-            invStockAdjustments = new List<InvStockAdjustment>();
-            invStockAdjustmentDetails = new List<InvStockAdjustmentDetail>();
-            invStockTransfers = new List<InvStockTransfer>();
-            invStockTransferDetails = new List<InvStockTransferDetail>();
+            //invStockAdjustments = new List<InvStockAdjustment>();
+            //invStockAdjustmentDetails = new List<InvStockAdjustmentDetail>();
+            //invStockTransfers = new List<InvStockTransfer>();
+            //invStockTransferDetails = new List<InvStockTransferDetail>();
             invThirdPartyCustomers = new List<InvThirdPartyCustomer>();
             invUnits = new List<InvUnit>();
             invVehicles = new List<InvVehicle>();
