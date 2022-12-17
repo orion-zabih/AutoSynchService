@@ -37,7 +37,7 @@ namespace AutoSynchAPI.Controllers
                             if (synchType == SynchTypes.full)
                             {
                                 responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
-                                responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
+                                //responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
                                 responseObj.sysFeatures = dbContext.SysFeature.ToList();
                                 responseObj.sysOrgFormsMappings = dbContext.SysOrgFormsMapping.ToList();
                                 responseObj.sysForms = dbContext.SysForm.ToList();
@@ -50,28 +50,49 @@ namespace AutoSynchAPI.Controllers
                                 responseObj.sysMonthNames = dbContext.SysMonthName.ToList();
                                 responseObj.sysYears = dbContext.SysYear.ToList();
                                 responseObj.sysLableContents = dbContext.SysLableContent.ToList();
-                                responseObj.sysHtmls = dbContext.SysHtml.ToList();
+                                responseObj.sysHtmls = dbContext.SysHtml.Where(g => g.BranchId== _branchId).ToList();
                                 responseObj.sysInvTypeWiseControlls = dbContext.SysInvTypeWiseControll.ToList();
                                 //Inv
-                                responseObj.invCategorys = dbContext.InvCategory.ToList();
-                                responseObj.invCompanys = dbContext.InvCompany.ToList();
-                                responseObj.invCustomers = dbContext.InvCustomer.ToList();
-                                responseObj.invCustomerTypes = dbContext.InvCustomerType.ToList();
+                                responseObj.invCategorys = dbContext.InvCategory.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invCompanys = dbContext.InvCompany.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invCustomers = dbContext.InvCustomer.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invCustomerTypes = dbContext.InvCustomerType.Where(g => g.BranchId == _branchId).ToList();                               
+                                responseObj.invJcMonthSettings = dbContext.InvJcMonthSetting.ToList();
+                                responseObj.invLocations = dbContext.InvLocation.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
+                                responseObj.invPaymentTypes = dbContext.InvPaymentType.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invProductBatchs = dbContext.InvProductBatch.ToList();
+                                responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invSalemanToRoutsMappings = dbContext.InvSalemanToRoutsMapping.ToList();
+                                responseObj.invShifts = dbContext.InvShift.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invThirdPartyCustomers = dbContext.InvThirdPartyCustomer.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invUnits = dbContext.InvUnit.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invVehicles = dbContext.InvVehicle.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.invWarehouses = dbContext.InvWarehouse.Where(g => g.BranchId == _branchId).ToList();
+                                //Usr
+                                responseObj.UsrSystemUsers = dbContext.UsrSystemUser.ToList();
+                                responseObj.UsrUserBranchesMappings = dbContext.UsrUserBranchesMapping.Where(g => g.BranchId == _branchId).ToList();
+                                responseObj.UsrUserFormsMappings = dbContext.UsrUserFormsMapping.ToList();
+                                responseObj.UsrUserParmsMappings = dbContext.UsrUserParmsMapping.Where(g => g.BranchId == _branchId).ToList();
+                                //Org
+                                responseObj.OrgBranchs = dbContext.OrgBranch.Where(g => g.Id == _branchId).ToList();
+                                responseObj.OrgFeaturesMappings = dbContext.OrgFeaturesMapping.ToList();
+                                responseObj.OrgOrganizations = dbContext.OrgOrganization.ToList();
+                                responseObj.OrgOrgSystemsMappings = dbContext.OrgOrgSystemsMapping.ToList();
+                                //AccFiscalYear
+                                responseObj.AccFiscalYears = dbContext.AccFiscalYear.Where(g => g.BranchId == _branchId).ToList();
+
+
                                 //responseObj.invDeliveryChallanDetails = dbContext.InvDeliveryChallanDetail.ToList();
                                 //responseObj.invDeliveryChallanMasters = dbContext.InvDeliveryChallanMaster.ToList();
                                 //responseObj.invDemandNotes = dbContext.InvDemandNote.ToList();
                                 //responseObj.invDemandNoteDetails = dbContext.InvDemandNoteDetail.ToList();
                                 //responseObj.invGatePassInDetails = dbContext.InvGatePassInDetail.ToList();
                                 //responseObj.invGatePassInMasters = dbContext.InvGatePassInMaster.ToList();
-                                responseObj.invJcMonthSettings = dbContext.InvJcMonthSetting.ToList();
-                                responseObj.invLocations = dbContext.InvLocation.ToList();
-                                responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
-                                responseObj.invPaymentTypes = dbContext.InvPaymentType.ToList();
-                                responseObj.invProducts = dbContext.InvProduct.ToList();
-                                responseObj.invProductBatchs = dbContext.InvProductBatch.ToList();
                                 //responseObj.invProductionDetails = dbContext.InvProductionDetail.ToList();
                                 //responseObj.invProductionMasters = dbContext.InvProductionMaster.ToList();
-                                responseObj.invProductLedgers = dbContext.InvProductLedger.ToList();
                                 //responseObj.invPurchaseDetails = dbContext.InvPurchaseDetail.ToList();
                                 //responseObj.invPurchaseMasters = dbContext.InvPurchaseMaster.ToList();
                                 //responseObj.invPurchaseOrderDetails = dbContext.InvPurchaseOrderDetail.ToList();
@@ -81,32 +102,13 @@ namespace AutoSynchAPI.Controllers
                                 //responseObj.invSaleClosings = dbContext.InvSaleClosing.ToList();
                                 //responseObj.invSaleClosingDetails = dbContext.InvSaleClosingDetail.ToList();
                                 //responseObj.invSaleDetails = dbContext.InvSaleDetail.ToList();
-                                responseObj.invSalemanToRoutsMappings = dbContext.InvSalemanToRoutsMapping.ToList();
                                 //responseObj.invSaleMasters = dbContext.InvSaleMaster.ToList();
                                 //responseObj.invSchemeDetails = dbContext.InvSchemeDetail.ToList();
                                 //responseObj.invSchemeMasters = dbContext.InvSchemeMaster.ToList();
-                                responseObj.invShifts = dbContext.InvShift.ToList();
                                 //responseObj.invStockAdjustments = dbContext.InvStockAdjustment.ToList();
                                 //responseObj.invStockAdjustmentDetails = dbContext.InvStockAdjustmentDetail.ToList();
                                 //responseObj.invStockTransfers = dbContext.InvStockTransfer.ToList();
                                 //responseObj.invStockTransferDetails = dbContext.InvStockTransferDetail.ToList();
-                                responseObj.invThirdPartyCustomers = dbContext.InvThirdPartyCustomer.ToList();
-                                responseObj.invUnits = dbContext.InvUnit.ToList();
-                                responseObj.invVehicles = dbContext.InvVehicle.ToList();
-                                responseObj.invVendors = dbContext.InvVendor.ToList();
-                                responseObj.invWarehouses = dbContext.InvWarehouse.ToList();
-                                //Usr
-                                responseObj.UsrSystemUsers = dbContext.UsrSystemUser.ToList();
-                                responseObj.UsrUserBranchesMappings = dbContext.UsrUserBranchesMapping.ToList();
-                                responseObj.UsrUserFormsMappings = dbContext.UsrUserFormsMapping.ToList();
-                                responseObj.UsrUserParmsMappings = dbContext.UsrUserParmsMapping.ToList();
-                                //Org
-                                responseObj.OrgBranchs = dbContext.OrgBranch.ToList();
-                                responseObj.OrgFeaturesMappings = dbContext.OrgFeaturesMapping.ToList();
-                                responseObj.OrgOrganizations = dbContext.OrgOrganization.ToList();
-                                responseObj.OrgOrgSystemsMappings = dbContext.OrgOrgSystemsMapping.ToList();
-                                //AccFiscalYear
-                                responseObj.AccFiscalYears = dbContext.AccFiscalYear.ToList();
                             }
                             else if (synchType == SynchTypes.only_sys_tables)
                             {
@@ -124,7 +126,7 @@ namespace AutoSynchAPI.Controllers
                                 responseObj.sysMonthNames = dbContext.SysMonthName.ToList();
                                 responseObj.sysYears = dbContext.SysYear.ToList();
                                 responseObj.sysLableContents = dbContext.SysLableContent.ToList();
-                                responseObj.sysHtmls = dbContext.SysHtml.ToList();
+                                responseObj.sysHtmls = dbContext.SysHtml.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.sysInvTypeWiseControlls = dbContext.SysInvTypeWiseControll.ToList();
                               
                             }

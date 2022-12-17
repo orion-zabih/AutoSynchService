@@ -21,6 +21,7 @@ namespace AutoSynchService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
                 var builder = new ConfigurationBuilder()
              .SetBasePath(Directory.GetCurrentDirectory())

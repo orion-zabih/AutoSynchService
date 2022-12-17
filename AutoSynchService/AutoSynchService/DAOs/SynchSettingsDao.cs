@@ -12,6 +12,61 @@ namespace AutoSynchService.DAOs
 {
     internal class SynchSettingsDao
     {
+        //private static string filePath = Environment.CurrentDirectory;
+        public string filePath { get; set; } = string.Empty;
+        public string filename { get; set; } = string.Empty;
+        public string bkupFilename { get; set; } = string.Empty;
+        internal string BackupDatabase(string sourcDpPath) {
+            filename = Path.GetFileName(sourcDpPath);
+            bkupFilename = Path.GetFileNameWithoutExtension(filename) + ".bak";
+
+            //CreateDB(filePath, filename);
+            filePath = Path.GetDirectoryName(sourcDpPath);
+            BackupDB(filePath, filename, bkupFilename);
+           
+            string format = "yyyyMMddHHmmss";
+           return filePath;
+        }
+
+        internal  bool RestoreDB(string filePath, string srcFilename, string destFileName, bool IsCopy = false)
+        {
+            var srcfile = Path.Combine(filePath, srcFilename);
+            var destfile = Path.Combine(filePath, destFileName);
+
+            if (File.Exists(destfile)) File.Delete(destfile);
+
+            if (IsCopy)
+                BackupDB(filePath, srcFilename, destFileName);
+            else
+                File.Move(srcfile, destfile);
+            return true;
+        }
+
+        private static void BackupDB(string filePath, string srcFilename, string destFileName)
+        {
+            var srcfile = Path.Combine(filePath, srcFilename);
+            var destfile = Path.Combine(filePath, destFileName);
+
+            if (File.Exists(destfile)) File.Delete(destfile);
+
+            try
+            {
+
+                File.Copy(srcfile, destfile);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
+        private static void CreateDB(string filePath, string filename)
+        {
+            var fullfile = Path.Combine(filePath, filename);
+            if (File.Exists(fullfile)) File.Delete(fullfile);
+
+            File.WriteAllText(fullfile, "this is the dummy data");
+        }
         internal bool CheckSynchTable()
         {
             SqliteManager sqlite = new SqliteManager();
@@ -22,6 +77,7 @@ namespace AutoSynchService.DAOs
             }
             return true;
         }
+
         internal List<SynchSetting> GetPendingSynchSetting(string synch_method)
         {
             SqliteManager sqlite = new SqliteManager();

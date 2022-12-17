@@ -66,7 +66,33 @@ namespace AutoSynchSqlite.DbManager
                 Log("[SqliteManager:SqliteManager()]", ex.Message);
             }
         }
+        public bool BackupDatabaseSqlite(string backupConString,string sourceConString, string dbBackupName, string dbBackupSource)
+        {
+            try
+            {
 
+                
+                using (SQLiteConnection sqliteCon = new SQLiteConnection(sourceConString))
+                {
+                    sqliteCon.Open();
+                    using (SQLiteConnection backup = new SQLiteConnection(backupConString))
+                    {
+                        //SQLiteConnection.CreateFile(backupConString);
+                        backup.Open();
+                        backup.BackupDatabase(sqliteCon, dbBackupName, dbBackupSource, -1, null, 10000);// (backup);
+                        backup.Close();
+                    }
+                    sqliteCon.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("[SqliteManager:BackupDatabaseSqlite()]", ex.Message);
+                // throw ex;
+                return false;
+            }
+            return true;
+        }
         public DataTable GetDataTable(string Query)
         {
             try
@@ -89,6 +115,7 @@ namespace AutoSynchSqlite.DbManager
                 return new DataTable();
             }
         }
+
         public int ExecuteNonQuery(string Query)
         {
             int rowsUpdated = 0;

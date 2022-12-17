@@ -116,11 +116,13 @@ namespace AutoSynchService
              .AddJsonFile("appsettings.json")
              .Build();
                 dbPath = configuration.GetConnectionString("DbPath");
+                
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
 
                 List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
                 SynchSetting lastSynchSetting = null;
                 SynchTypes synchType = SynchTypes.full;
+                
                 if (!File.Exists(dbPath))
                 {
                     ReCreateStructureTables._CreateDatabase(dbPath);
@@ -150,7 +152,14 @@ namespace AutoSynchService
                 TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType);
                 if (tableStructureResponse != null)
                 {
-                    if(lastSynchSetting!=null)
+                    if (File.Exists(dbPath))
+                    {
+                        //string DefaultSqliteBackup = configuration.GetConnectionString("DefaultSqliteBackup");
+                        //string dbConnection = configuration.GetConnectionString("DefaultSqliteConnection");
+                        //ReCreateStructureTables._CreateDatabase(DefaultSqliteBackup);
+                        synchSettingsDao.BackupDatabase(dbPath);
+                    }
+                    if (lastSynchSetting!=null)
                         synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "in process");
                     if (ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse))
                     {
@@ -166,7 +175,7 @@ namespace AutoSynchService
                             }
                             else
                             {
-
+                                synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
                                 if (lastSynchSetting != null)
                                     synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed");
                                 return false;
@@ -174,6 +183,8 @@ namespace AutoSynchService
                         }
                         else
                         {
+                            synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
+
                             if (lastSynchSetting != null)
                                 synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed");
                             return false;
@@ -195,5 +206,6 @@ namespace AutoSynchService
             }
 
         }
+        
     }
 }
