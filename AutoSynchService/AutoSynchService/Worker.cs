@@ -38,14 +38,16 @@ namespace AutoSynchService
                         
 
                         FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
-
-                        if (BusinessLogic.DownloadPublish(ftpCredentials))
+                        if(ftpCredentials!=null && ftpCredentials.EnableFtpSynch == "true")
                         {
-                            _logger.LogInformation("Publish files downloaded successfully at: {time}", DateTimeOffset.Now);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
+                            if (BusinessLogic.DownloadPublish(ftpCredentials))
+                            {
+                                _logger.LogInformation("Publish files downloaded successfully at: {time}", DateTimeOffset.Now);
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
+                            }
                         }
                         if (BusinessLogic.GetAndReplaceSysTables())
                         {

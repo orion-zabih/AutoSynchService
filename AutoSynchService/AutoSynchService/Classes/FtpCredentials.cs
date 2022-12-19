@@ -8,7 +8,7 @@ namespace AutoSynchService.Classes
 {
     public class FtpCredentials
     {
-        
+        public string EnableFtpSynch { get; set; }
         public string IP { get; set; }
         public int Port { get; set; }
         public string Username { get; set; }
@@ -18,7 +18,7 @@ namespace AutoSynchService.Classes
         public FtpCredentials()
         {
             Port = 21;
-            IP = Username = Password = Directory = BinFolder = string.Empty;
+            EnableFtpSynch = IP = Username = Password = Directory = BinFolder = string.Empty;
         }
     }
     public class MySettings
