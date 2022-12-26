@@ -15,7 +15,7 @@ namespace AutoSynchService.DAOs
         internal List<InvSaleMaster> GetSaleMaster()
         {
             SqliteManager sqlite = new SqliteManager();
-            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000");
+            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleMaster where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000");
             Converter converter = new Converter();
             List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
             return saleMasters;
@@ -23,7 +23,7 @@ namespace AutoSynchService.DAOs
         internal List<InvSaleDetail> GetSaleDetails(decimal BillId)
         {
             SqliteManager sqlite = new SqliteManager();
-            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleDetailTmp where BillId = '" + BillId + "'");
+            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleDetail where BillId = '" + BillId + "'");
             Converter converter = new Converter();
             List<InvSaleDetail> saleDetails = Converter.GetInvSaleDetails(PendingOrdersSQlite);
             return saleDetails;
@@ -33,7 +33,7 @@ namespace AutoSynchService.DAOs
             SqliteManager sqlite = new SqliteManager();
             List<string> queries = new List<string>();
             Ids.ForEach(id =>
-            queries.Add("update InvSaleMasterTmp set IsUploaded = 1 where Id = '" + id + "'")
+            queries.Add("update InvSaleMaster set IsUploaded = 1 where Id = '" + id + "'")
             );
             sqlite.ExecuteTransactionMultiQueries(queries);
             return true;
