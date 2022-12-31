@@ -109,7 +109,7 @@ namespace AutoSynchService
             try
             {
                 SysTablesClient sysTablesClient = new SysTablesClient();
-
+                bool fileExists=false;
                 string dbPath = string.Empty;
                 IConfigurationRoot configuration = new ConfigurationBuilder()
              .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -130,6 +130,7 @@ namespace AutoSynchService
                 }
                 else
                 {
+                    fileExists=true;
                     if (!synchSettingsDao.CheckSynchTable())
                     {
                         synchType = SynchTypes.except_sale_master_detail_tables;
@@ -152,7 +153,7 @@ namespace AutoSynchService
                 TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType);
                 if (tableStructureResponse != null)
                 {
-                    if (File.Exists(dbPath))
+                    if (fileExists)
                     {
                         //string DefaultSqliteBackup = configuration.GetConnectionString("DefaultSqliteBackup");
                         //string dbConnection = configuration.GetConnectionString("DefaultSqliteConnection");
