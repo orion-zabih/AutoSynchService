@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class OrgOrganization
     {
@@ -79,10 +79,8 @@ namespace AutoSynchService.Models
         public string DmGenDomicile { get; set; } = null!;
         public string DmGenCity { get; set; } = null!;
         public int PayProBankAccountId { get; set; }
-        public decimal PayProCharges { get; set; }
         public string? DmFnsdFoodAvailablity { get; set; }
-        public string? TechnicalSupportContactNo { get; set; }
-        public string? IsStudentPhotoMandatory { get; set; }
+        public decimal PayProCharges { get; set; }
         public string? OrgShortName { get; set; }
         public string? SmsApiUrl { get; set; }
         public string? SmsApiSender { get; set; }
@@ -90,9 +88,20 @@ namespace AutoSynchService.Models
         public string? DmInsDiscipline { get; set; }
         public string? IsOnlineFormSaveInSections { get; set; }
         public string? IsRequiredLoginForOnlineAdmin { get; set; }
+        public string? IsStudentPhotoMandatory { get; set; }
+        public string? TechnicalSupportContactNo { get; set; }
         public string? BankLogo { get; set; }
         public string? IsShowSingleReceiptInPrint { get; set; }
         public string? IsShowBankReceiptInPrint { get; set; }
         public string? IsShowUndertakenInPrint { get; set; }
+        public string? IsShowPayProChallanNoOnBankRecipt { get; set; }
+        public string? PaymentMode { get; set; }
+        public string? BankAccountNo { get; set; }
+        public string? DmInsStudentGroup { get; set; }
+        public string? DmInsTimeSlot { get; set; }
+        public string? DmPayWages { get; set; }
+        public string? DmEmployeeGroup { get; set; }
+        public string? DmProject { get; set; }
+        public string? DmBankBranch { get; set; }
     }
 }

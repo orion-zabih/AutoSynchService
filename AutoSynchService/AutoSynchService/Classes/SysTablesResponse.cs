@@ -1,4 +1,6 @@
 ﻿
+using AutoSynchSqlServer.Models;
+
 namespace AutoSynchService.Models
 {
     public class SysTablesResponse
@@ -24,8 +26,8 @@ namespace AutoSynchService.Models
         public List<InvCompany> invCompanys { get; set; }
         public List<InvCustomer> invCustomers { get; set; }
         public List<InvCustomerType> invCustomerTypes { get; set; }
-        public List<InvDeliveryChallanDetail> invDeliveryChallanDetails { get; set; }
-        public List<InvDeliveryChallanMaster> invDeliveryChallanMasters { get; set; }
+        //public List<InvDeliveryChallanDetail> invDeliveryChallanDetails { get; set; }
+        //public List<InvDeliveryChallanMaster> invDeliveryChallanMasters { get; set; }
         public List<InvDemandNote> invDemandNotes { get; set; }
         public List<InvDemandNoteDetail> invDemandNoteDetails { get; set; }
         public List<InvGatePassInDetail> invGatePassInDetails { get; set; }
@@ -98,8 +100,8 @@ namespace AutoSynchService.Models
             invCompanys = new List<InvCompany>();
             invCustomers = new List<InvCustomer>();
             invCustomerTypes = new List<InvCustomerType>();
-            invDeliveryChallanDetails = new List<InvDeliveryChallanDetail>();
-            invDeliveryChallanMasters = new List<InvDeliveryChallanMaster>();
+            //invDeliveryChallanDetails = new List<InvDeliveryChallanDetail>();
+            //invDeliveryChallanMasters = new List<InvDeliveryChallanMaster>();
             invDemandNotes = new List<InvDemandNote>();
             invDemandNoteDetails = new List<InvDemandNoteDetail>();
             invGatePassInDetails = new List<InvGatePassInDetail>();

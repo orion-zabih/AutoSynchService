@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsStudentCateogry
     {
@@ -16,5 +16,7 @@ namespace AutoSynchService.Models
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public bool IsDefault { get; set; }
+        public int DomicileId { get; set; }
+        public string? Gender { get; set; }
     }
 }

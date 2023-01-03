@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvVendor
     {
@@ -37,5 +37,6 @@ namespace AutoSynchService.Models
         public string? SaleTaxNumber { get; set; }
         public string? NtnNo { get; set; }
         public string? TaxType { get; set; }
+        public string? Cnicno { get; set; }
     }
 }

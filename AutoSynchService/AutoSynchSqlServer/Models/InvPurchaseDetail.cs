@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvPurchaseDetail
     {
@@ -21,5 +21,6 @@ namespace AutoSynchService.Models
         public decimal AverageCost { get; set; }
         public decimal CutQty { get; set; }
         public decimal AdditionalTaxAmount { get; set; }
+        public decimal SaleTaxInPercent { get; set; }
     }
 }

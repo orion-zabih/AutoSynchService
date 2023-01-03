@@ -1,5 +1,5 @@
 ﻿using AutoSynchAPI.Classes;
-using AutoSynchService.Models;
+using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;

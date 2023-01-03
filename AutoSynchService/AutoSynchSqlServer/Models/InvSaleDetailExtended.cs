@@ -1,5 +1,5 @@
 ﻿
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public class InvSaleDetailExtended: InvSaleDetail
     {

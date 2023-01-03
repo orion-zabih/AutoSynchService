@@ -1,5 +1,7 @@
 ﻿
 
+using AutoSynchSqlServer.Models;
+
 namespace AutoSynchService.Models
 {
     public class DataResponse

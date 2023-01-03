@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class OrgBranch
     {
@@ -74,8 +74,8 @@ namespace AutoSynchService.Models
         public bool InvIsShowCounterSaleCashPos { get; set; }
         public bool? InvIsItemComboLoadOnStart { get; set; }
         public bool InvShowOnlyInvoices { get; set; }
-        public string? SmsApiKey { get; set; }
         public bool InvIsEnableSmsOnSale { get; set; }
+        public string? SmsApiKey { get; set; }
         public int InvMixSaleQtyCount { get; set; }
         public int AccDiscountOutAccountId { get; set; }
         public int AccFrieghtOutAccountId { get; set; }
@@ -85,8 +85,8 @@ namespace AutoSynchService.Models
         public string? InventoryType { get; set; }
         public bool InvIsEnableSmsOnPurchase { get; set; }
         public string? AccBussinessType { get; set; }
-        public string? InvDefaultPaymentType { get; set; }
         public string? InvRowAddingStyle { get; set; }
+        public string? InvDefaultPaymentType { get; set; }
         public string? InvSaleAccInteg { get; set; }
         public string? InvPurchaseAccInteg { get; set; }
         public string? InsFeeAccInteg { get; set; }
@@ -95,13 +95,15 @@ namespace AutoSynchService.Models
         public string? InvCreateJvInCaseOfQtsale { get; set; }
         public string? InvSaleInvoiceDate { get; set; }
         public string? InvUpdateLastPrices { get; set; }
-        public string? InvItemCodeReadOnly { get; set; }
         public int ResDefaultOrderTypeId { get; set; }
         public int InvDefaultOrderTypeId { get; set; }
         public string? UseDataInMerging { get; set; }
         public int AccInvSaleFiscalYearId { get; set; }
         public int AccPurchaseFiscalYearId { get; set; }
         public int AccVoucherFiscalYearId { get; set; }
+        public string? InvItemCodeReadOnly { get; set; }
         public string? InvSkipSchargesIfBillIsQt { get; set; }
+        public string? InvPurCheckRetailWcost { get; set; }
+        public string? InvSaleQtyPriceSeq { get; set; }
     }
 }

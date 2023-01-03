@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvProductionMaster
     {
@@ -21,12 +21,10 @@ namespace AutoSynchService.Models
         public bool IsCancelled { get; set; }
         public int FiscalYearId { get; set; }
         public int BranchId { get; set; }
-        public decimal TotalMaterial { get; set; }
         public decimal TotalProduction { get; set; }
-        public decimal GridMeterUnits { get; set; }
-        public decimal ProductionMeterUnits { get; set; }
-        public decimal TotalTimeInHours { get; set; }
+        public decimal Wastage { get; set; }
         public decimal ProductionPerUnitCost { get; set; }
-        public decimal TotalWasteMaterialCost { get; set; }
+        public string? TotalTime { get; set; }
+        public decimal ElectricityUnitConsume { get; set; }
     }
 }

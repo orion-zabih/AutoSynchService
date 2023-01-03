@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class HrmCategory
     {
@@ -16,5 +16,6 @@ namespace AutoSynchService.Models
         public int BranchId { get; set; }
         public int DisplayOrder { get; set; }
         public string? Code { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

@@ -49,6 +49,7 @@ namespace AutoSynchService
                                 _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
                             }
                         }
+                        //BusinessLogic.GetAndReplaceSysTables();
                         if (BusinessLogic.GetAndReplaceSysTables())
                         {
                             _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
@@ -57,14 +58,14 @@ namespace AutoSynchService
                         {
                             _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
                         }
-                        if (BusinessLogic.UploadInvSaleToServer())
-                        {
-                            _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
-                        }
+                        //if (BusinessLogic.UploadInvSaleToServer())
+                        //{
+                        //    _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
+                        //}
+                        //else
+                        //{
+                        //    _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
+                        //}
                     }
                 }
                 

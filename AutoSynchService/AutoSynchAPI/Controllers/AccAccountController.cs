@@ -1,6 +1,6 @@
 ﻿using AutoSynchAPI.Classes;
 using AutoSynchAPI.Models;
-using AutoSynchService.Models;
+using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -21,8 +21,8 @@ namespace AutoSynchAPI.Controllers
             {
                 using (Entities dbContext = new Entities())
                 {
-                    responseObj.accAccounts = dbContext.AccAccount.ToList();
-                    if (responseObj.accAccounts != null && responseObj.accAccounts.Count!=0)
+                    responseObj.invProduct = dbContext.InvProduct.Where(g => g.BranchId == 1).ToList();
+                    if (responseObj.invProduct != null && responseObj.invProduct.Count!=0)
                     {
                         responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
                         responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;

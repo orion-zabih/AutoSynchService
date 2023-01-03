@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvVehicle
     {
@@ -20,5 +20,9 @@ namespace AutoSynchService.Models
         public int ReadingPerDayInKm { get; set; }
         public int ServiceAfterReadingInKm { get; set; }
         public string? VehicleName { get; set; }
+        public DateTime? RcvDate { get; set; }
+        public string? VehicleRegNo { get; set; }
+        public string? JobCard { get; set; }
+        public string? FrameNo { get; set; }
     }
 }

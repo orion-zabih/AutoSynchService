@@ -174,7 +174,7 @@ namespace AutoSynchService
                                     synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s=>s.setting_id).ToList(), "done");
                                 return true;
                             }
-                            else
+                            else if(fileExists)
                             {
                                 synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
                                 if (lastSynchSetting != null)
@@ -182,7 +182,7 @@ namespace AutoSynchService
                                 return false;
                             }
                         }
-                        else
+                        else if (fileExists)
                         {
                             synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
 

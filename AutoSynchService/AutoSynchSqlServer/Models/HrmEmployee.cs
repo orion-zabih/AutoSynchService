@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class HrmEmployee
     {
@@ -29,7 +29,7 @@ namespace AutoSynchService.Models
         public int? QualificationId { get; set; }
         public string? Remarks { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public int? CreatedBy { get; set; }
+        public int CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public int? UpdatedBy { get; set; }
         public int? BranchId { get; set; }
@@ -39,34 +39,33 @@ namespace AutoSynchService.Models
         public string? Nic { get; set; }
         public int? CurrentStage { get; set; }
         public string? LinkCode { get; set; }
-        public bool? IsDeleted { get; set; }
-        public bool? IsAvailForCreditLimit { get; set; }
-        public decimal? FnsdLimitBalance { get; set; }
+        public bool IsDeleted { get; set; }
+        public bool IsAvailForCreditLimit { get; set; }
+        public decimal FnsdLimitBalance { get; set; }
         public string? EmployeeGroup { get; set; }
-        public string? Domicile { get; set; }
-        public DateTime? RetirementDate { get; set; }
-        public DateTime? PDate { get; set; }
-        public DateTime? UDate { get; set; }
-        public string? Qualification { get; set; }
-        public string? StateS { get; set; }
-        public DateTime? Ldate { get; set; }
-        public string? BankAccountNo { get; set; }
-        public string? BankName { get; set; }
-        public string? Gpid { get; set; }
-        public DateTime? DateOfMarriage { get; set; }
         public int NoOfDependents { get; set; }
-        public int CityId { get; set; }
+        public DateTime? DateOfMarriage { get; set; }
         public string? Nationality { get; set; }
-        public string? ReasonForAction { get; set; }
+        public int CityId { get; set; }
         public int DomicileId { get; set; }
+        public string? ReasonForAction { get; set; }
         public string? EmployeeGrade { get; set; }
         public string? CurrentGovt { get; set; }
         public DateTime? EntryDate { get; set; }
         public string? LastName { get; set; }
         public string? FirstName { get; set; }
-        public string? Pdate1 { get; set; }
-        public string? Udate1 { get; set; }
-        public string? Rdate { get; set; }
-        public string? LDate1 { get; set; }
+        public string? EmployeeType { get; set; }
+        public string? PhotoName { get; set; }
+        public string? PermanentAddress { get; set; }
+        public string? PostalAddress { get; set; }
+        public int GroupId { get; set; }
+        public int BankBranchId { get; set; }
+        public string? SalaryTransferType { get; set; }
+        public string? OrgLastEmployment { get; set; }
+        public int ProjectId { get; set; }
+        public string? IsGovtEmployee { get; set; }
+        public int PreviousStage { get; set; }
+        public DateTime? LastUpgradationDate { get; set; }
+        public DateTime? LastPromotionDate { get; set; }
     }
 }

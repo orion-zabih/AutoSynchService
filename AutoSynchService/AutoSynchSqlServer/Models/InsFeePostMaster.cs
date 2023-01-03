@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsFeePostMaster
     {
@@ -21,5 +21,7 @@ namespace AutoSynchService.Models
         public bool IsRestrictDeletion { get; set; }
         public int ClassId { get; set; }
         public int ProgramId { get; set; }
+        public int ApprovedBy { get; set; }
+        public DateTime? ApprovedDate { get; set; }
     }
 }

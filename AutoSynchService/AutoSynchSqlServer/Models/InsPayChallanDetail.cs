@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsPayChallanDetail
     {
@@ -13,7 +13,7 @@ namespace AutoSynchService.Models
         public bool IsDeleted { get; set; }
         public string? PaidStatus { get; set; }
         public int FeeItemPostedId { get; set; }
-        public string? ItemFeeDescription { get; set; }
         public string? ItemSource { get; set; }
+        public string? ItemFeeDescription { get; set; }
     }
 }

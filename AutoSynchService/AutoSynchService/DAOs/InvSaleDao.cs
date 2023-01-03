@@ -1,6 +1,7 @@
 ﻿using AutoSynchService.Classes;
 using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
+using AutoSynchSqlServer.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;

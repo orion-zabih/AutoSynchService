@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsDiscipline
     {
@@ -17,8 +17,6 @@ namespace AutoSynchService.Models
         public decimal AdmissionFee { get; set; }
         public int BranchId { get; set; }
         public bool IsDeleted { get; set; }
-        public int MaxNoOfQualifications { get; set; }
-        public string? IsMultipeCategory { get; set; }
         public int MaxAgeLimit { get; set; }
         public string? IsGovtEmploymentOption { get; set; }
         public DateTime? AdmissionExpiryDate { get; set; }
@@ -27,6 +25,11 @@ namespace AutoSynchService.Models
         public string? IsTestRequired { get; set; }
         public decimal TestFee { get; set; }
         public int ApproximatelyAge { get; set; }
+        public int MaxNoOfQualifications { get; set; }
+        public string? IsMultipeCategory { get; set; }
         public string? QualificationsRequired { get; set; }
+        public string? IsQualiPercentageOnTotal { get; set; }
+        public decimal? TestMarksPercentage { get; set; }
+        public string? ResultSystem { get; set; }
     }
 }

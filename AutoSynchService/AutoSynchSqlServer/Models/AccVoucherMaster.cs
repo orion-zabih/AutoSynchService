@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class AccVoucherMaster
     {
@@ -25,11 +25,11 @@ namespace AutoSynchService.Models
         public string? JvFormType { get; set; }
         public string? DebitableCreditable { get; set; }
         public string? PaidToReceivedFrom { get; set; }
-        public string? CancelReason { get; set; }
-        public string? BankName { get; set; }
-        public string? ChequeNo { get; set; }
-        public string? BankAccountNo { get; set; }
         public int SerialNumber { get; set; }
+        public string? BankAccountNo { get; set; }
+        public string? ChequeNo { get; set; }
+        public string? BankName { get; set; }
+        public string? CancelReason { get; set; }
         public string? VoucherStatus { get; set; }
         public int StatusChangedById { get; set; }
         public DateTime? StatusChangedDate { get; set; }

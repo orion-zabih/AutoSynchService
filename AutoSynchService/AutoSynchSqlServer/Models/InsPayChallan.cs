@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsPayChallan
     {
@@ -35,11 +35,15 @@ namespace AutoSynchService.Models
         public DateTime? PaidDate { get; set; }
         public DateTime? DeletedDate { get; set; }
         public int DeletedBy { get; set; }
-        public string? ReferenceChallanNo { get; set; }
-        public string? BlockedReason { get; set; }
-        public int BlockedBy { get; set; }
+        public string? CreatedFromChallanNo { get; set; }
         public DateTime? BlockedDate { get; set; }
+        public int BlockedBy { get; set; }
+        public string? BlockedReason { get; set; }
         public int FormNo { get; set; }
         public string? ChallanSource { get; set; }
+        public int StudentMeritListId { get; set; }
+        public int SessionId { get; set; }
+        public string? CustomerType { get; set; }
+        public int CustomerId { get; set; }
     }
 }

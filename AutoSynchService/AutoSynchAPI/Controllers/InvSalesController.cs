@@ -1,6 +1,6 @@
 ﻿using AutoSynchAPI.Classes;
 using AutoSynchAPI.Models;
-using AutoSynchService.Models;
+using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 

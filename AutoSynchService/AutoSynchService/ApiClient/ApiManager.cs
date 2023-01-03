@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -76,6 +77,7 @@ namespace AutoSynchService.ApiClient
 
                 try
                 {
+                    client.Timeout = TimeSpan.FromMinutes(20);
                     // List data response.
                     HttpResponseMessage responses = client.GetAsync(apiMethod).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
                     if (responses.IsSuccessStatusCode)

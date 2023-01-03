@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsSubject
     {
@@ -19,5 +19,6 @@ namespace AutoSynchService.Models
         public bool? IsActive { get; set; }
         public int BranchId { get; set; }
         public bool IsDeleted { get; set; }
+        public decimal CreditHours { get; set; }
     }
 }

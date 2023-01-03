@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvCustomer
     {
@@ -32,5 +32,8 @@ namespace AutoSynchService.Models
         public int BranchId { get; set; }
         public int RouteId { get; set; }
         public bool IsDeleted { get; set; }
+        public string? Ntnno { get; set; }
+        public string? Gstno { get; set; }
+        public string? Cnicno { get; set; }
     }
 }

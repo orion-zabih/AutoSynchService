@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsStudent
     {
@@ -37,7 +37,7 @@ namespace AutoSynchService.Models
         public int BranchId { get; set; }
         public string Status { get; set; } = null!;
         public string? PlcNo { get; set; }
-        public int DomicileId { get; set; }
+        public string? Domicile { get; set; }
         public int JoiningSessionId { get; set; }
         public string? GuardianName { get; set; }
         public int? FeeGroupId { get; set; }
@@ -65,5 +65,10 @@ namespace AutoSynchService.Models
         public int? FormNo { get; set; }
         public string? PreviouslyEnrolledInOrg { get; set; }
         public string? CommunicableDisease { get; set; }
+        public int GroupId { get; set; }
+        public string? OutSource { get; set; }
+        public string? InSource { get; set; }
+        public DateTime? AdmittedDate { get; set; }
+        public string? EnrollmentNo { get; set; }
     }
 }

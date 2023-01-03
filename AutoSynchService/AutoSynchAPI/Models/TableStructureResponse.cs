@@ -1,4 +1,4 @@
-﻿using AutoSynchService.Models;
+﻿using AutoSynchSqlServer.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoSynchAPI.Models

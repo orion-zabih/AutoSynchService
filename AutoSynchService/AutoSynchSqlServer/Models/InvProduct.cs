@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvProduct
     {
@@ -45,10 +45,13 @@ namespace AutoSynchService.Models
         public bool IsRetailPriceInclusiveTax { get; set; }
         public string? BillType { get; set; }
         public bool IsSalePriceOpen { get; set; }
+        public string? CategoryName { get; set; }
+        public string? Gst { get; set; }
         public int MixtureId { get; set; }
         public decimal MaterialSize { get; set; }
         public bool IsProduction { get; set; }
         public string? ChargeMeterType { get; set; }
+        public decimal Rate { get; set; }
         public string? SaleTaxCalMethodInPur { get; set; }
         public decimal CostIncTax { get; set; }
     }

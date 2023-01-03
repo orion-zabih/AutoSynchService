@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InsFeeGroup
     {
@@ -18,5 +18,7 @@ namespace AutoSynchService.Models
         public DateTime? UpdatedDate { get; set; }
         public bool? IsApplyChangesOnStudents { get; set; }
         public int CategoryId { get; set; }
+        public int SessionId { get; set; }
+        public int ProgramId { get; set; }
     }
 }

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class Entities
     {
@@ -40,7 +40,7 @@ namespace AutoSynchService.Models
         }
 
 
-        public decimal GetSequence(string Column,string Table,decimal Branch)
+        public decimal GetSequence(string Column, string Table, decimal Branch)
         {
             var SeqValue = Sequence.FromSqlRaw($"select ISNULL(max({Column}), 0) + 1 as nextval from {Table} where BranchId = '{Branch}'").AsEnumerable().FirstOrDefault().nextval;
             return SeqValue;

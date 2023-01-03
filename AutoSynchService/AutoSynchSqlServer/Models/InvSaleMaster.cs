@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace AutoSynchService.Models
+namespace AutoSynchSqlServer.Models
 {
     public partial class InvSaleMaster
     {
@@ -73,5 +73,6 @@ namespace AutoSynchService.Models
         public string? PaymentType { get; set; }
         public string? VehicleNo { get; set; }
         public string? ScaleNumber { get; set; }
+        public int QuatationId { get; set; }
     }
 }
