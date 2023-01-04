@@ -3,7 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseKestrel(options =>
 {
     options.Limits.MaxConcurrentConnections = 100;
-    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(60);
+    options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(20);
 });
 // Add services to the container.
 

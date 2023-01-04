@@ -364,14 +364,14 @@ namespace AutoSynchAPI.Controllers
 
                     lstTables.ForEach(table =>
                     {
-                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + table.GetTableName());
+                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName()));
                     });
 
                     string qry = string.Empty;
 
                     lstTables.ForEach(table =>
                     {
-                        qry = "create table " + table.GetTableName() + "(";
+                        qry = "create table " + getTableName(table.GetTableName()) + "(";
                         var columns = table.GetProperties().ToList();
                         string cols = string.Empty;
                         foreach (var column in columns)
@@ -406,6 +406,26 @@ namespace AutoSynchAPI.Controllers
                 //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
                 return BadRequest(responseObj);
             }
+        }
+        private string getTableName(string className)
+        {
+            switch (className.ToLower())
+            {
+                case "invsaledetail":
+                    {
+                        className = "InvSaleDetailTmp";
+                    }
+                    break;
+                case "invsalemaster":
+                    {
+                        className = "InvSaleMasterTmp";
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return className;
+
         }
         private string ReturnColumnType(string colType)
         {

@@ -43,7 +43,7 @@ namespace AutoSynchService.Classes
 
 
 
-                    if (objSqliteManager.ExecuteTransactionMultiQueries(objResponse.dropQueries)) ;
+                    if (objSqliteManager.ExecuteTransactionMultiQueries(objResponse.dropQueries)) 
                     //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
                     isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(objResponse.createQueries);
 
@@ -110,7 +110,8 @@ namespace AutoSynchService.Classes
                                 }
 
                             });
-                            multiQueries.Add("insert into " + clas.Name + "(" + columns + ") values(" + values.TrimEnd(',') + ")");
+
+                            multiQueries.Add("insert into " + getTableName(clas.Name) + "(" + columns + ") values(" + values.TrimEnd(',') + ")");
                         }
 
 
@@ -146,6 +147,26 @@ namespace AutoSynchService.Classes
 
                 return false;
             }
+        }
+        private static string getTableName(string className)
+        {
+            switch (className.ToLower())
+            {
+                case "invsaledetail":
+                    {
+                        className = "InvSaleDetailTmp";
+                    }
+                    break;
+                case "invsalemaster":
+                    {
+                        className = "InvSaleMasterTmp";
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return className;
+
         }
         private static object GetPropValue(object src, string propName)
         {
