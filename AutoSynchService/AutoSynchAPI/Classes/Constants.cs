@@ -2,8 +2,10 @@
 {
     public class Constants
     {
-        
+        public const string SqlServer = "sqlserver";
+        public const string Sqlite = "sqlite";
     }
+
     public enum SynchTypes
     {
         full,    // 0

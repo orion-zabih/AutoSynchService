@@ -34,7 +34,7 @@ namespace AutoSynchAPI.Controllers
                     {
                         using (Entities dbContext = new Entities())
                         {
-                            if (synchType == SynchTypes.full)
+                            if (synchType == SynchTypes.full || synchType==SynchTypes.except_sale_master_detail_tables)
                             {
                                 responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
                                 //responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
@@ -61,7 +61,11 @@ namespace AutoSynchAPI.Controllers
                                 responseObj.invLocations = dbContext.InvLocation.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
                                 responseObj.invPaymentTypes = dbContext.InvPaymentType.Where(g => g.BranchId == _branchId).ToList();
-                                responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId).ToList();
+                                var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId);
+                                foreach (var item in invProducts)
+                                {
+                                    responseObj.invProducts.Add(item);
+                                }
                                 responseObj.invProductBatchs = dbContext.InvProductBatch.ToList();
                                 responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.invSalemanToRoutsMappings = dbContext.InvSalemanToRoutsMapping.ToList();
@@ -169,7 +173,7 @@ namespace AutoSynchAPI.Controllers
 
         [Route("GetTableStructure")]
         [HttpGet]
-        public IActionResult GetTableStructure(string branch_id,string synch_type,string table_list)
+        public IActionResult GetTableStructure(string branch_id,string synch_type,string table_list,string local_db)
         {
             SynchTypes synchType = SynchTypes.full;
             Enum.TryParse(synch_type, out synchType);
@@ -368,19 +372,44 @@ namespace AutoSynchAPI.Controllers
                     });
 
                     string qry = string.Empty;
-
-                    lstTables.ForEach(table =>
+                    switch (local_db)
                     {
-                        qry = "create table " + getTableName(table.GetTableName()) + "(";
-                        var columns = table.GetProperties().ToList();
-                        string cols = string.Empty;
-                        foreach (var column in columns)
-                        {//column.IsNullable
-                            cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + ",";
-                        }
-                        qry += cols.TrimEnd(',') + ")";
-                        responseObj.createQueries.Add(qry);
-                    });
+                        case Constants.Sqlite:
+                            {
+                                lstTables.ForEach(table =>
+                                {
+                                    qry = "create table " + getTableName(table.GetTableName()) + "(";
+                                    var columns = table.GetProperties().ToList();
+                                    string cols = string.Empty;
+                                    foreach (var column in columns)
+                                    {//column.IsNullable
+                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + ",";
+                                    }
+                                    qry += cols.TrimEnd(',') + ")";
+                                    responseObj.createQueries.Add(qry);
+                                });
+                            }
+                            break;
+                        case Constants.SqlServer:
+                            {
+                                lstTables.ForEach(table =>
+                                {
+                                    qry = "create table " + getTableName(table.GetTableName()) + "(";
+                                    var columns = table.GetProperties().ToList();
+                                    string cols = string.Empty;
+                                    foreach (var column in columns)
+                                    {//column.IsNullable
+                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
+                                    }
+                                    qry += cols.TrimEnd(',') + ")";
+                                    responseObj.createQueries.Add(qry);
+                                });
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    
 
 
                     //int=dbContext.AccAccountHead.FirstOrDefault().HeadName.ma
@@ -465,6 +494,30 @@ namespace AutoSynchAPI.Controllers
                         colType = "text";
                     }
                     break;
+                default:
+                    break;
+            }
+            //if (maxLength > 0)
+            //{
+            //    colType = colType/* + " (" + maxLength + ")"*/;
+            //}
+            return colType;
+        }
+        private string ReturnColumnTypeSqlserver(string colType)
+        {
+            switch (colType)
+            {
+                case "string":
+                    {
+                        colType = "varchar";
+                    }
+                    break;               
+
+                case "bool":
+                    {
+                        colType = "bit";
+                    }
+                    break;               
                 default:
                     break;
             }

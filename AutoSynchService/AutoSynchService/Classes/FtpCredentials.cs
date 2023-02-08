@@ -26,11 +26,13 @@ namespace AutoSynchService.Classes
         public string BranchId { get; set; }    
         public string BackoffTimerUnit { get; set; }
         public int BackoffTimer { get; set; }
+        public string LocalDb { get; set; }
         public MySettings()
         {
             BranchId = "";
             BackoffTimerUnit = "hr";
             BackoffTimer = 24;
+            LocalDb = "";                
         }
     }
    

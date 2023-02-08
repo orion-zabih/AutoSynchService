@@ -2,6 +2,7 @@
 using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServer.Models;
+using AutoSynchSqlServerLocal;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,7 +14,7 @@ namespace AutoSynchService.DAOs
 {
     internal class InvSaleDao
     {
-        internal List<InvSaleMaster> GetSaleMaster()
+        internal List<InvSaleMaster> GetSaleMaster(string dbtype)
         {
             SqliteManager sqlite = new SqliteManager();
             DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleMaster where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000");
@@ -21,7 +22,7 @@ namespace AutoSynchService.DAOs
             List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
             return saleMasters;
         }
-        internal List<InvSaleDetail> GetSaleDetails(decimal BillId)
+        internal List<InvSaleDetail> GetSaleDetails(decimal BillId, string dbtype)
         {
             SqliteManager sqlite = new SqliteManager();
             DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from InvSaleDetail where BillId = '" + BillId + "'");
@@ -29,15 +30,35 @@ namespace AutoSynchService.DAOs
             List<InvSaleDetail> saleDetails = Converter.GetInvSaleDetails(PendingOrdersSQlite);
             return saleDetails;
         }
-        internal bool UpdateMasterIsUploaded(List<int> Ids)
+        internal bool UpdateMasterIsUploaded(List<int> Ids, string dbtype)
         {
             SqliteManager sqlite = new SqliteManager();
             List<string> queries = new List<string>();
             Ids.ForEach(id =>
-            queries.Add("update InvSaleMaster set IsUploaded = 1 where Id = '" + id + "'")
-            );
-            sqlite.ExecuteTransactionMultiQueries(queries);
-            return true;
+                queries.Add("update InvSaleMaster set IsUploaded = 1 where Id = '" + id + "'")
+                );
+            if (dbtype.Equals(Constants.Sqlite))
+            {                
+                sqlite.ExecuteTransactionMultiQueries(queries);
+                return true;
+            }
+            else
+            {
+                MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                try
+                {
+                    queries.ForEach(q => { msSqlDbManager.ExecuteTransQuery(q); });
+                    msSqlDbManager.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    msSqlDbManager.RollBack();
+                    return false;
+                }
+
+
+            }
         }
     }
 }

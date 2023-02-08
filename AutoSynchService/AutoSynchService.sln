@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchAPI", "AutoSynchAP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchSqlite", "AutoSynchSqlite\AutoSynchSqlite.csproj", "{A2AAA1D0-974D-4611-8575-590DE2D4AAF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchFtp", "AutoSynchFtp\AutoSynchFtp.csproj", "{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchFtp", "AutoSynchFtp\AutoSynchFtp.csproj", "{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrintingService", "PrintingService\PrintingService.csproj", "{08390C6C-7639-4CE0-8DDB-8301BF32CBDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchSqlServerLocal", "AutoSynchSqlServerLocal\AutoSynchSqlServerLocal.csproj", "{066EC6C7-F90B-4B9D-A097-BE190EBEC3CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DB688F1-AA92-43F8-AF59-62C5FFB9F03C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08390C6C-7639-4CE0-8DDB-8301BF32CBDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08390C6C-7639-4CE0-8DDB-8301BF32CBDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08390C6C-7639-4CE0-8DDB-8301BF32CBDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08390C6C-7639-4CE0-8DDB-8301BF32CBDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{066EC6C7-F90B-4B9D-A097-BE190EBEC3CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{066EC6C7-F90B-4B9D-A097-BE190EBEC3CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{066EC6C7-F90B-4B9D-A097-BE190EBEC3CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{066EC6C7-F90B-4B9D-A097-BE190EBEC3CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

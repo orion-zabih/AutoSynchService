@@ -10,4 +10,5 @@ namespace AutoSynchAPI
 
         public string? Summary { get; set; }
     }
+
 }

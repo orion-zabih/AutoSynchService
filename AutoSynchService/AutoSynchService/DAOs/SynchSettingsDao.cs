@@ -1,6 +1,7 @@
 ﻿using AutoSynchService.Classes;
 using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
+using AutoSynchSqlServerLocal;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -41,7 +42,21 @@ namespace AutoSynchService.DAOs
                 File.Move(srcfile, destfile);
             return true;
         }
+        public bool BackupDatabase(string dbname, string dbpath)
+        {
+            MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+            try
+            {
 
+                sqlDbManager.ExecuteNonQuery($"Backup database {dbname} to disk='{dbpath + "//" + dbname}.bak'");
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
         private static void BackupDB(string filePath, string srcFilename, string destFileName)
         {
             var srcfile = Path.Combine(filePath, srcFilename);
@@ -67,35 +82,83 @@ namespace AutoSynchService.DAOs
 
             File.WriteAllText(fullfile, "this is the dummy data");
         }
-        internal bool CheckSynchTable()
+        internal bool CheckSynchTable(string dbtype)
         {
-            SqliteManager sqlite = new SqliteManager();
-            DataTable dt = sqlite.GetDataTable("SELECT name FROM sqlite_master WHERE type='table' AND name='synch_setting'");
-            if (dt.Rows.Count == 0)
-            {
-                return false;
+            if (dbtype.Equals(Constants.Sqlite)) {
+
+                string qry = "SELECT name FROM sqlite_master WHERE type='table' AND name='synch_setting'";
+                SqliteManager sqlite = new SqliteManager();
+                DataTable dt = sqlite.GetDataTable(qry);
+                if (dt.Rows.Count == 0)
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
+            else {
+
+                string qry = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' and TABLE_NAME='synch_setting'";
+                MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                DataTable dt = sqlDbManager.GetDataTable(qry);
+                if (dt.Rows.Count == 0)
+                {
+                    return false;
+                }
+                return true;
+            }
+            
         }
 
-        internal List<SynchSetting> GetPendingSynchSetting(string synch_method)
+        internal List<SynchSetting> GetPendingSynchSetting(string synch_method,string dbtype)
         {
-            SqliteManager sqlite = new SqliteManager();
-            DataTable PendingOrdersSQlite = sqlite.GetDataTable("select * from synch_setting where synch_method='"+synch_method+ "' and status = 'ready' order by insertion_timestamp desc");
-            Converter converter = new Converter();
-            List<SynchSetting> saleDetails = Converter.GetSynchSetting(PendingOrdersSQlite);
-            return saleDetails;
+            string qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = 'ready' order by insertion_timestamp desc";
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+                SqliteManager sqlite = new SqliteManager();
+                DataTable PendingOrdersSQlite = sqlite.GetDataTable(qry);
+                Converter converter = new Converter();
+                List<SynchSetting> saleDetails = Converter.GetSynchSetting(PendingOrdersSQlite);
+                return saleDetails;
+            }
+            else
+            {
+                MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                DataTable PendingOrdersSQlite = sqlDbManager.GetDataTable(qry);
+                Converter converter = new Converter();
+                List<SynchSetting> saleDetails = Converter.GetSynchSetting(PendingOrdersSQlite);
+                return saleDetails;
+            }
         }
-        internal bool UpdatePendingSynchSettings(List<int> Ids,string status)
+        internal bool UpdatePendingSynchSettings(List<int> Ids,string status, string dbtype)
         {
-            SqliteManager sqlite = new SqliteManager();
+           
             List<string> queries = new List<string>();
             string format = "yyyy-MM-dd HH:mm:ss";
             Ids.ForEach(id =>
             queries.Add("update synch_setting set status = '"+ status + "',update_timestamp='"+DateTime.Now.ToString(format) +"' where setting_id = '" + id + "'")
             );
-            sqlite.ExecuteTransactionMultiQueries(queries);
-            return true;
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+                SqliteManager sqlite = new SqliteManager();
+                sqlite.ExecuteTransactionMultiQueries(queries);
+                return true;
+            }
+            else
+            {
+                MsSqlDbManager sqlDbManager= new MsSqlDbManager();
+                try
+                {
+                    queries.ForEach(q => { sqlDbManager.ExecuteTransQuery(q); });
+                    sqlDbManager.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    sqlDbManager.RollBack();
+                    return false;
+                }
+                
+            }
         }
     }
 }

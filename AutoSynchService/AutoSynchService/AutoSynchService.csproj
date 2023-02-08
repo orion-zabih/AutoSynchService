@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AutoSynchFtp\AutoSynchFtp.csproj" />
     <ProjectReference Include="..\AutoSynchSqlite\AutoSynchSqlite.csproj" />
+    <ProjectReference Include="..\AutoSynchSqlServerLocal\AutoSynchSqlServerLocal.csproj" />
     <ProjectReference Include="..\AutoSynchSqlServer\AutoSynchSqlServer.csproj" />
   </ItemGroup>
 </Project>

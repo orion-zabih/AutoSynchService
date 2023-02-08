@@ -57,14 +57,14 @@ namespace AutoSynchService.ApiClient
                 return null;
             }
         }
-        public TableStructureResponse? GetTableStructure(SynchTypes synchType)
+        public TableStructureResponse? GetTableStructure(SynchTypes synchType,string dbType)
         {
             try
             {
                 try
                 {
 
-                    invSaleApiUrl = "/api/SysTables" + "/GetTableStructure?branch_id=" + Global.BranchId + "&synch_type="+synchType+"&table_list=notable";
+                    invSaleApiUrl = "/api/SysTables" + "/GetTableStructure?branch_id=" + Global.BranchId + "&synch_type="+synchType+"&table_list=notable" + "&local_db="+dbType;
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 
