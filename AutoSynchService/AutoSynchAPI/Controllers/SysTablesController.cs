@@ -34,7 +34,7 @@ namespace AutoSynchAPI.Controllers
                     {
                         using (Entities dbContext = new Entities())
                         {
-                            if (synchType == SynchTypes.full || synchType==SynchTypes.except_sale_master_detail_tables)
+                            if (synchType == SynchTypes.full || synchType==SynchTypes.except_product_sale_master_detail_tables)
                             {
                                 responseObj.sysControllesGroups = dbContext.SysControllesGroup.ToList();
                                 //responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
@@ -61,13 +61,13 @@ namespace AutoSynchAPI.Controllers
                                 responseObj.invLocations = dbContext.InvLocation.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
                                 responseObj.invPaymentTypes = dbContext.InvPaymentType.Where(g => g.BranchId == _branchId).ToList();
-                                var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId);
-                                foreach (var item in invProducts)
-                                {
-                                    responseObj.invProducts.Add(item);
-                                }
+                                //var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId);
+                                //foreach (var item in invProducts)
+                                //{
+                                //    responseObj.invProducts.Add(item);
+                                //}
                                 responseObj.invProductBatchs = dbContext.InvProductBatch.ToList();
-                                responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).ToList();
+                                //responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.invSalemanToRoutsMappings = dbContext.InvSalemanToRoutsMapping.ToList();
                                 responseObj.invShifts = dbContext.InvShift.Where(g => g.BranchId == _branchId).ToList();
                                 responseObj.invThirdPartyCustomers = dbContext.InvThirdPartyCustomer.Where(g => g.BranchId == _branchId).ToList();
@@ -140,6 +140,105 @@ namespace AutoSynchAPI.Controllers
                                 //responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
                                 //responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
                                 return Ok(responseObj);
+                            }
+                            else
+                            {
+                                //responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+                                //responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+                                return NotFound(responseObj);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                        //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                        return BadRequest(responseObj);
+                    }
+                }
+                else
+                {
+                    //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                    return BadRequest(responseObj);
+                }
+            }
+            else
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(responseObj);
+            }
+        }
+        [Route("GetProducts")]
+        [HttpGet]
+        public IActionResult GetProducts(string branch_id, string max_prod_id,string product_ledger)
+        {
+           
+            Models.InvProductsResponse responseObj = new Models.InvProductsResponse();
+            int _branchId = 0;
+            if (!string.IsNullOrEmpty(branch_id))
+            {
+                if (int.TryParse(branch_id, out _branchId))
+                {
+                    try
+                    {
+                        using (Entities dbContext = new Entities())
+                        {
+                            int prodId = 0;
+                            if (int.TryParse(max_prod_id, out prodId))
+                            {
+                                if(product_ledger.Equals("true"))
+                                {
+                                    if (prodId <= 0)
+                                    {
+                                        prodId = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+
+                                    }
+                                    responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId && g.Id > prodId && g.Id <= prodId + 1000).ToList();
+                                }
+                                else
+                                {
+                                    if(prodId <= 0)                                    
+                                    {
+                                        prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+
+                                    }
+                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.Id > prodId && g.Id <= (prodId + 1000)).ToList();
+
+
+                                }
+                                //foreach (var item in invProducts)
+                                //{
+                                //    responseObj.invProducts.Add(item);
+                                //}
+                            }
+                            if (responseObj.invProducts != null)
+                            {
+                                if(responseObj.invProducts.Count > 0)
+                                {
+                                    responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
+                                    responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                                    return Ok(responseObj);
+                                }
+                                else
+                                {
+                                    if (dbContext.InvProduct.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= prodId)
+                                    {
+                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                        return Ok(responseObj);
+                                    }
+                                    else if (product_ledger.Equals("true") && dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= prodId)
+                                    {
+                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                        return Ok(responseObj);
+                                    }
+                                    else
+                                    return Ok(responseObj);
+                                }
+                                
                             }
                             else
                             {

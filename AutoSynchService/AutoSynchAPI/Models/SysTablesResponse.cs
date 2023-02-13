@@ -4,6 +4,7 @@ namespace AutoSynchAPI.Models
 {
     public class SysTablesResponse
     {
+        public ApiResponse Response { get; set; }
         public List<SysControllesGroup> sysControllesGroups { get; set; }
         public List<SysExecptionLogging> sysExecptionLoggings { get; set; }
         public List<SysFeature> sysFeatures { get; set; }
@@ -35,11 +36,11 @@ namespace AutoSynchAPI.Models
         public List<InvLocation> invLocations { get; set; }
         public List<InvPackageProductsMapping> invPackageProductsMappings { get; set; }
         public List<InvPaymentType> invPaymentTypes { get; set; }
-        public List<InvProduct> invProducts { get; set; }
+        //public List<InvProduct> invProducts { get; set; }
         public List<InvProductBatch> invProductBatchs { get; set; }
         //public List<InvProductionDetail> invProductionDetails { get; set; }
         //public List<InvProductionMaster> invProductionMasters { get; set; }
-        public List<InvProductLedger> invProductLedgers { get; set; }
+        //public List<InvProductLedger> invProductLedgers { get; set; }
         //public List<InvPurchaseDetail> invPurchaseDetails { get; set; }
         //public List<InvPurchaseMaster> invPurchaseMasters { get; set; }
         //public List<InvPurchaseOrderDetail> invPurchaseOrderDetails { get; set; }
@@ -78,6 +79,7 @@ namespace AutoSynchAPI.Models
         public List<AccFiscalYear> AccFiscalYears { get; set; }
         public SysTablesResponse()
         {
+            Response = new ApiResponse();
             sysControllesGroups = new List<SysControllesGroup>();
             sysExecptionLoggings = new List<SysExecptionLogging>();
             sysFeatures = new List<SysFeature>();
@@ -110,11 +112,11 @@ namespace AutoSynchAPI.Models
             invLocations = new List<InvLocation>();
             invPackageProductsMappings = new List<InvPackageProductsMapping>();
             invPaymentTypes = new List<InvPaymentType>();
-            invProducts = new List<InvProduct>();
+            //invProducts = new List<InvProduct>();
             invProductBatchs = new List<InvProductBatch>();
             //invProductionDetails = new List<InvProductionDetail>();
             //invProductionMasters = new List<InvProductionMaster>();
-            invProductLedgers = new List<InvProductLedger>();
+            //invProductLedgers = new List<InvProductLedger>();
             //invPurchaseDetails = new List<InvPurchaseDetail>();
             //invPurchaseMasters = new List<InvPurchaseMaster>();
             //invPurchaseOrderDetails = new List<InvPurchaseOrderDetail>();
@@ -150,6 +152,20 @@ namespace AutoSynchAPI.Models
             OrgOrgSystemsMappings = new List<OrgOrgSystemsMapping>();
             //AccFiscalYear
             AccFiscalYears = new List<AccFiscalYear>();
+        }
+    }
+
+    public class InvProductsResponse
+    {
+        public ApiResponse Response { get; set; }
+        public List<InvProduct> invProducts { get; set; }
+        public List<InvProductLedger> invProductLedgers { get; set; }
+        
+        public InvProductsResponse()
+        {
+            Response=new ApiResponse();
+            invProducts = new List<InvProduct>();
+            invProductLedgers = new List<InvProductLedger>();
         }
     }
 }
