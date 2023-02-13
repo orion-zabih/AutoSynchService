@@ -11,6 +11,9 @@
         public const string NOT_EXISTS_CODE = "104";
         public const string NOT_EXISTS_MESSAGE = "id not exist";
 
+        public const string MAX_REACHED_CODE = "105";
+        public const string MAX_REACHED_MESSAGE = "latest record already downloaded";
+
         public const string GENERIC_ERROR_CODE = "201";
         public const string GENERIC_ERROR_MESSAGE = "error occurred on server please try again later ";
     }

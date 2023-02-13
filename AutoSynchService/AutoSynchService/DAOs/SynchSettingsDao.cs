@@ -2,6 +2,7 @@
 using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
+using FluentFTP.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -109,9 +110,12 @@ namespace AutoSynchService.DAOs
             
         }
 
-        internal List<SynchSetting> GetPendingSynchSetting(string synch_method,string dbtype)
+        internal List<SynchSetting> GetPendingSynchSetting(string synch_method,string dbtype,string status="ready")
         {
-            string qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = 'ready' order by insertion_timestamp desc";
+            string qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = '"+status+"'";
+            if (status == null){
+                qry = "select * from synch_setting where synch_method='" + synch_method + "'+";
+            }
             if (dbtype.Equals(Constants.Sqlite))
             {
                 SqliteManager sqlite = new SqliteManager();
@@ -158,6 +162,52 @@ namespace AutoSynchService.DAOs
                     return false;
                 }
                 
+            }
+        }
+        internal int GetMaxId(string table,string col)
+        {
+            try
+            {
+
+                MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                var maxid = sqlDbManager.ExecuteScalar($"select max(isnull({col},0)) from {table}");
+                if (maxid == null)
+                    return 0;
+                else return int.Parse(s: maxid.ToString());
+            }
+            catch (Exception ex)
+            {
+                
+                return 0;
+            }
+        }
+        internal bool InsertSynchSettings(string synchMethod,string synchType,DateTime synchTime, string status, string dbtype)
+        {
+
+            List<string> queries = new List<string>();
+            string format = "yyyy-MM-dd HH:mm:ss";
+            string qry2 = $"insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,sync_timestamp,insertion_timestamp,update_timestamp) values({GetMaxId("synch_setting", "setting_id")+1}, '" + synchMethod + "','" + synchType + "','','ready','" + synchTime.ToString(format) + "','" + DateTime.Now.ToString(format) + "','" + DateTime.Now.ToString(format) + "')";
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+                SqliteManager sqlite = new SqliteManager();
+                sqlite.ExecuteTransaction(qry2);
+                return true;
+            }
+            else
+            {
+                MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                try
+                {
+                    sqlDbManager.ExecuteTransQuery(qry2);
+                    sqlDbManager.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    sqlDbManager.RollBack();
+                    return false;
+                }
+
             }
         }
     }

@@ -14,6 +14,7 @@ namespace AutoSynchService.Classes
         public string? synch_type { get; set; }
         public string? table_names { get; set; }
         public string? status { get; set; }
+        public DateTime? sync_timestamp { get; set; }
         public DateTime? update_timestamp { get; set; }
         public DateTime? insertion_timestamp{ get; set; }
 

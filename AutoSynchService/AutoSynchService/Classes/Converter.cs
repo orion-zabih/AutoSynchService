@@ -123,8 +123,9 @@ namespace AutoSynchService.Classes
                     synch_type = Convert.ToString(values[2] != DBNull.Value ? values[2] : ""),
                     table_names = Convert.ToString(values[3] != DBNull.Value ? values[3] : ""),
                     status = Convert.ToString(values[4] != DBNull.Value ? values[4] : ""),
-                    insertion_timestamp = Convert.ToDateTime(values[5] != DBNull.Value ? values[5] : null),
-                    update_timestamp = Convert.ToDateTime(values[6] != DBNull.Value ? values[6] : null),
+                    sync_timestamp = Convert.ToDateTime(values[5] != DBNull.Value ? values[5] : null),
+                    insertion_timestamp = Convert.ToDateTime(values[6] != DBNull.Value ? values[6] : null),
+                    update_timestamp = Convert.ToDateTime(values[7] != DBNull.Value ? values[7] : null),
 
 
                 };

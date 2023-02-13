@@ -57,6 +57,50 @@ namespace AutoSynchService.ApiClient
                 return null;
             }
         }
+        public InvProductsResponse? GetProducts(string maxProdId,string prodLedger="false")
+        {
+            try
+            {
+                try
+                {
+
+                    invSaleApiUrl = "/api/SysTables" + "/GetProducts?branch_id=" + Global.BranchId + "&max_prod_id=" + maxProdId+"&product_ledger="+prodLedger;
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            InvProductsResponse response = JsonConvert.DeserializeObject<InvProductsResponse>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public TableStructureResponse? GetTableStructure(SynchTypes synchType,string dbType)
         {
             try

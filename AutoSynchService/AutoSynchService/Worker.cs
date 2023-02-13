@@ -64,9 +64,14 @@ namespace AutoSynchService
                         else if (settings.LocalDb.Equals(Constants.SqlServer))
                         {
 
-                            if (BusinessLogic.GetAndReplaceSysTablesSqlServer())
+                            if (BusinessLogic.GetAndReplaceTablesSqlServer())
                             {
                                 _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
+                                if (BusinessLogic.GetAndReplaceDataSqlServer())
+                                {
+                                    _logger.LogInformation("Data Downloaded successfully successfully at: {time}", DateTimeOffset.Now);
+                                }
+
                             }
                             else
                             {

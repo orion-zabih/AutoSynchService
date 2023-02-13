@@ -106,7 +106,128 @@ namespace AutoSynchService
             }
         }
         internal static bool isFreshdb { get; set; }
-        public static bool GetAndReplaceSysTablesSqlServer()
+        //public static bool GetAndReplaceSysTablesSqlServer()
+        //{
+        //    try
+        //    {
+        //        SysTablesClient sysTablesClient = new SysTablesClient();
+        //        bool fileExists = false;
+        //        string dbName = string.Empty;
+        //        string dbPath = string.Empty;
+        //        int dbSize = 10;
+        //        int dbMaxSize = 20;
+        //        int dbGrowth = 10;
+        //        IConfigurationRoot configuration = new ConfigurationBuilder()
+        //     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+        //     .AddJsonFile("appsettings.json")
+        //     .Build();
+        //        dbPath = configuration.GetConnectionString("SqlDbPath");
+        //        dbName = configuration.GetConnectionString("SqlDb");
+        //        dbSize = int.Parse(configuration.GetConnectionString("SqlDbSize"));
+        //        dbMaxSize = int.Parse(configuration.GetConnectionString("SqlDbMaxSize"));
+        //        dbGrowth = int.Parse(configuration.GetConnectionString("SqlDbGrowth"));
+
+        //        SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+
+        //        List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
+        //        SynchSetting lastSynchSetting = null;
+        //        SynchTypes synchType = SynchTypes.full;
+        //        MsSqlDbManager dbManager = new MsSqlDbManager();
+        //        if (!dbManager.CheckDatabaseExists(dbName))
+        //        {
+        //            isFreshdb = true;
+        //            if (dbManager.CreateDb(dbName,dbPath,dbSize,dbMaxSize,dbGrowth))
+        //            synchType = SynchTypes.full;
+        //            else
+        //            {
+        //                Console.WriteLine("unable to create database");
+        //                return false; }    
+        //        }
+        //        else
+        //        {
+        //            fileExists = true;
+        //            if (!synchSettingsDao.CheckSynchTable(Constants.SqlServer))
+        //            {
+        //                synchType = SynchTypes.except_sale_master_detail_tables;
+        //            }
+        //            else
+        //            {
+        //                pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database",Constants.SqlServer);
+        //                if (pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
+        //                {
+        //                    lastSynchSetting = pendingSynchSettings[0];
+        //                    if (lastSynchSetting != null)
+        //                    {
+        //                        Enum.TryParse(lastSynchSetting.synch_type, out synchType);
+        //                    }
+        //                    else
+        //                        return false;
+        //                }
+        //            }
+        //        }
+        //        TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
+        //        if (tableStructureResponse != null)
+        //        {
+        //            if (fileExists)
+        //            {
+        //                //string DefaultSqliteBackup = configuration.GetConnectionString("DefaultSqliteBackup");
+        //                //string dbConnection = configuration.GetConnectionString("DefaultSqliteConnection");
+        //                //ReCreateStructureTables._CreateDatabase(DefaultSqliteBackup);
+        //                //dbManager = new MsSqlDbManager();
+        //                synchSettingsDao.BackupDatabase(dbName,dbPath);
+        //            }
+        //            if (lastSynchSetting != null)
+        //                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "in process",Constants.SqlServer);
+        //            if (ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse,Constants.SqlServer))
+        //            {
+
+        //                SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
+        //                if (sysTablesResponse != null)
+        //                {
+        //                    if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse,Constants.SqlServer))
+        //                    {
+        //                        if (pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
+        //                            synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
+        //                        return true;
+        //                    }
+        //                    else if (fileExists)
+        //                    {
+        //                        synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
+        //                        if (lastSynchSetting != null)
+        //                            synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed", Constants.SqlServer);
+        //                        return false;
+        //                    }
+        //                }
+        //                else if (fileExists)
+        //                {
+        //                    synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
+
+        //                    if (lastSynchSetting != null)
+        //                        synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed", Constants.SqlServer);
+        //                    return false;
+        //                }
+        //            }
+        //            if (lastSynchSetting != null)
+        //                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed", Constants.SqlServer);
+        //            return false;
+        //        }
+        //        else
+        //        {
+        //            Console.WriteLine("unable to receive database tables structure from service");
+        //        }
+        //        if (lastSynchSetting != null)
+        //            synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed", Constants.SqlServer);
+        //        return false;
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        Console.WriteLine(ex.Message);
+        //        return false;
+        //    }
+
+        //}
+        public static bool GetAndReplaceTablesSqlServer()
         {
             try
             {
@@ -136,85 +257,185 @@ namespace AutoSynchService
                 if (!dbManager.CheckDatabaseExists(dbName))
                 {
                     isFreshdb = true;
-                    if (dbManager.CreateDb(dbName,dbPath,dbSize,dbMaxSize,dbGrowth))
                     synchType = SynchTypes.full;
-                    else
+                    TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
+                    if (tableStructureResponse != null)
                     {
-                        Console.WriteLine("unable to create database");
-                        return false; }    
-                }
-                else
-                {
-                    fileExists = true;
-                    if (!synchSettingsDao.CheckSynchTable(Constants.SqlServer))
-                    {
-                        synchType = SynchTypes.except_sale_master_detail_tables;
-                    }
-                    else
-                    {
-                        pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database",Constants.SqlServer);
-                        if (pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
+                        Console.WriteLine("successfully got database structure from server. now creating database.");
+                        if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
                         {
-                            lastSynchSetting = pendingSynchSettings[0];
-                            if (lastSynchSetting != null)
+                            Console.WriteLine("successfully created database file. now creating tables.");
+                            if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
                             {
-                                Enum.TryParse(lastSynchSetting.synch_type, out synchType);
-                            }
-                            else
-                                return false;
-                        }
-                    }
-                }
-                TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
-                if (tableStructureResponse != null)
-                {
-                    if (fileExists)
-                    {
-                        //string DefaultSqliteBackup = configuration.GetConnectionString("DefaultSqliteBackup");
-                        //string dbConnection = configuration.GetConnectionString("DefaultSqliteConnection");
-                        //ReCreateStructureTables._CreateDatabase(DefaultSqliteBackup);
-                        //dbManager = new MsSqlDbManager();
-                        synchSettingsDao.BackupDatabase(dbName,dbPath);
-                    }
-                    if (lastSynchSetting != null)
-                        synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "in process",Constants.SqlServer);
-                    if (ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse,Constants.SqlServer))
-                    {
-
-                        SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
-                        if (sysTablesResponse != null)
-                        {
-                            if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse,Constants.SqlServer))
-                            {
-                                if (pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
-                                    synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
+                                Console.WriteLine("successfully created tables in database");
                                 return true;
                             }
-                            else if (fileExists)
+                            else
                             {
-                                synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
-                                if (lastSynchSetting != null)
-                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed", Constants.SqlServer);
+                                Console.WriteLine("unable to create tables in database");
                                 return false;
                             }
                         }
-                        else if (fileExists)
+                        else
                         {
-                            synchSettingsDao.RestoreDB(synchSettingsDao.filePath, synchSettingsDao.bkupFilename, synchSettingsDao.filename, true);
-
-                            if (lastSynchSetting != null)
-                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "insert data failed", Constants.SqlServer);
+                            Console.WriteLine("unable to create database");
                             return false;
                         }
                     }
-                    if (lastSynchSetting != null)
-                        synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed", Constants.SqlServer);
-                    return false;
+                    else
+                    {
+                        Console.WriteLine("unable to receive database tables structure from service");
+                        return false;
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("unable to receive database tables structure from service");
+                    pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database", Constants.SqlServer, "ready");
+                    if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
+                    {
+                        lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
+                        if (lastSynchSetting != null)
+                        {
+                            if(lastSynchSetting.synch_method ==SynchMethods.database_structure.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) > 0))
+                            {
+                                if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
+                                {
+                                    TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
+                                    if (tableStructureResponse != null)
+                                    {
+                                        Console.WriteLine("successfully got database structure from server. now creating database.");
+                                        if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
+                                        {
+                                            Console.WriteLine("successfully created database file. now creating tables.");
+                                            if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
+                                            {
+                                                Console.WriteLine("successfully created tables in database");
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("unable to create tables in database");
+                                                return false;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("unable to create database");
+                                            return false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("unable to receive database tables structure from service");
+                                        return false;
+                                    }
+                                }
+                                
+                            }
+                        }
+                    }
+                    return true;
                 }
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+
+        }
+        public static bool GetAndReplaceDataSqlServer()
+        {
+            try
+            {
+                SysTablesClient sysTablesClient = new SysTablesClient();
+                bool fileExists = false;
+                string dbName = string.Empty;
+                string dbPath = string.Empty;
+                int dbSize = 10;
+                int dbMaxSize = 20;
+                int dbGrowth = 10;
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+             .AddJsonFile("appsettings.json")
+             .Build();
+                dbPath = configuration.GetConnectionString("SqlDbPath");
+                dbName = configuration.GetConnectionString("SqlDb");
+                dbSize = int.Parse(configuration.GetConnectionString("SqlDbSize"));
+                dbMaxSize = int.Parse(configuration.GetConnectionString("SqlDbMaxSize"));
+                dbGrowth = int.Parse(configuration.GetConnectionString("SqlDbGrowth"));
+
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+
+                List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
+                SynchSetting lastSynchSetting = null;
+                SynchTypes synchType = SynchTypes.full;
+                MsSqlDbManager dbManager = new MsSqlDbManager();
+                pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting(SynchMethods.database_data.ToString(), Constants.SqlServer,"ready");
+                if(pendingSynchSettings != null && pendingSynchSettings.Count>0)
+                {
+                    lastSynchSetting= pendingSynchSettings.OrderBy(s=>s.setting_id).First();
+                    if (lastSynchSetting != null)
+                    {
+                        if (lastSynchSetting.synch_method == SynchMethods.database_data.ToString() && (!lastSynchSetting.sync_timestamp.HasValue || (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0)))
+                        {
+                            if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
+                            {
+                                if(!(lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()) || lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())))
+                                {
+                                    SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
+                                    if (sysTablesResponse != null)
+                                    {
+                                        if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer))
+                                        {
+                                            synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
+                                            synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
+                                            synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_ledger_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
+                                            return true;
+                                        }
+
+                                    }
+                                }
+                                else
+                                {
+                                    bool downlaodedAll = false;
+                                    while (!downlaodedAll)
+                                    {
+                                        ProductsDao productsDao = new ProductsDao();
+                                        InvProductsResponse invProductsResponse = null;
+                                        if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
+                                        {
+                                            invProductsResponse= sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProduct", "Id").ToString());
+                                        }
+                                        else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
+
+                                            invProductsResponse = sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProductLedger", "Id").ToString(), "true");
+                                        }
+                                         
+                                        if (invProductsResponse != null)
+                                        {
+                                            if (ReCreateStructureTables._InsertData(DateTime.Now, null,invProductsResponse, Constants.SqlServer))
+                                            {
+                                                if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
+                                                {
+                                                    downlaodedAll = true;
+                                                }
+                                                
+                                            }
+
+                                        }
+
+                                    }
+                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int>{ lastSynchSetting.setting_id}, "done", Constants.SqlServer);
+                                    return true;
+                                }
+                                
+                            }
+                        }
+                    }
+                }
+               
                 if (lastSynchSetting != null)
                     synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "create table failed", Constants.SqlServer);
                 return false;
@@ -227,7 +448,6 @@ namespace AutoSynchService
             }
 
         }
-
         public static bool GetAndReplaceSysTablesSqlite()
         {
             try
@@ -293,7 +513,7 @@ namespace AutoSynchService
                         SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
                         if (sysTablesResponse != null)
                         {
-                            if(ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse,Constants.Sqlite))
+                            if(ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse,null,Constants.Sqlite))
                             {
                                 if(pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
                                     synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s=>s.setting_id).ToList(), "done", Constants.Sqlite);
