@@ -45,5 +45,7 @@ namespace AutoSynchSqlServer.Models
         public int SessionId { get; set; }
         public string? CustomerType { get; set; }
         public int CustomerId { get; set; }
+        public bool IsDeleted { get; set; }
+        public int ClassId { get; set; }
     }
 }

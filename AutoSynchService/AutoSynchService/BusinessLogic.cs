@@ -382,7 +382,7 @@ namespace AutoSynchService
                         {
                             if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
                             {
-                                if(!(lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()) || lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())))
+                                if(!lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                 {
                                     SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
                                     if (sysTablesResponse != null)
@@ -391,7 +391,7 @@ namespace AutoSynchService
                                         {
                                             synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
                                             synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
-                                            synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_ledger_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
+                                           // synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_ledger_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
                                             return true;
                                         }
 
@@ -408,10 +408,10 @@ namespace AutoSynchService
                                         {
                                             invProductsResponse= sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProduct", "Id").ToString());
                                         }
-                                        else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
+                                        //else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
 
-                                            invProductsResponse = sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProductLedger", "Id").ToString(), "true");
-                                        }
+                                        //    invProductsResponse = sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProductLedger", "Id").ToString(), "true");
+                                        //}
                                          
                                         if (invProductsResponse != null)
                                         {

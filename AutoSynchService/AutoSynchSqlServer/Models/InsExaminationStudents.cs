@@ -22,5 +22,6 @@ namespace AutoSynchSqlServer.Models
         public int HallId { get; set; }
         public int HallRowNo { get; set; }
         public bool? IsAppear { get; set; }
+        public string? Remarks { get; set; }
     }
 }

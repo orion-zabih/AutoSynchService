@@ -17,7 +17,7 @@
         except_product_sale_master_detail_tables, // 7
         custom, // 8
         products_quick, // 9
-        products_ledger_quick, // 9
+        //products_ledger_quick, // 9
     }
     public enum SynchMethods
     {

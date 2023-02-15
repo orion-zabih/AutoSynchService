@@ -28,5 +28,6 @@ namespace AutoSynchSqlServer.Models
         public int EnrNoBodyLength { get; set; }
         public int EnrStartNo { get; set; }
         public int EnrCurrentNo { get; set; }
+        public int DepartmentId { get; set; }
     }
 }

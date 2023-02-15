@@ -20,5 +20,8 @@ namespace AutoSynchSqlServer.Models
         public decimal OverAllResultInPercent { get; set; }
         public bool IsFinalized { get; set; }
         public decimal HighestMarks { get; set; }
+        public DateTime? ResultDeclarationDate { get; set; }
+        public int AdditionalCriteriaId { get; set; }
+        public string? DistributionType { get; set; }
     }
 }

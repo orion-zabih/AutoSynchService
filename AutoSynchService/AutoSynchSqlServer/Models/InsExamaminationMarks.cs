@@ -23,5 +23,7 @@ namespace AutoSynchSqlServer.Models
         public bool IsSubjectPractical { get; set; }
         public bool IsPresentInTheory { get; set; }
         public bool IsPresentInPractical { get; set; }
+        public int? PracticalSheetNo { get; set; }
+        public int? TheorySheetNo { get; set; }
     }
 }

@@ -15,5 +15,6 @@ namespace AutoSynchSqlServer.Models
         public int FeeItemPostedId { get; set; }
         public string? ItemSource { get; set; }
         public string? ItemFeeDescription { get; set; }
+        public int FeeItemId { get; set; }
     }
 }

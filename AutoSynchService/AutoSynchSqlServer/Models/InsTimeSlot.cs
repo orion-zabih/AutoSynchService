@@ -16,5 +16,7 @@ namespace AutoSynchSqlServer.Models
         public DateTime? CreatedDate { get; set; }
         public int LastUpdatedById { get; set; }
         public DateTime? LastUpdatedDate { get; set; }
+        public string? PartOfDay { get; set; }
+        public string? ModuleName { get; set; }
     }
 }

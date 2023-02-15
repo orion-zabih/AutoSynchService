@@ -67,5 +67,8 @@ namespace AutoSynchSqlServer.Models
         public int PreviousStage { get; set; }
         public DateTime? LastUpgradationDate { get; set; }
         public DateTime? LastPromotionDate { get; set; }
+        public bool IsCreatedLogin { get; set; }
+        public string? Ntn { get; set; }
+        public string? TaxType { get; set; }
     }
 }

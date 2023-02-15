@@ -13,5 +13,8 @@ namespace AutoSynchSqlServer.Models
         public decimal PassingTheoryMarks { get; set; }
         public decimal PassingPracticalMarks { get; set; }
         public string? Remarks { get; set; }
+        public int SessionId { get; set; }
+        public decimal TotalInternalMarks { get; set; }
+        public decimal PassingInternalMarks { get; set; }
     }
 }

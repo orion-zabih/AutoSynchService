@@ -2,6 +2,7 @@
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace AutoSynchAPI.Controllers
@@ -172,7 +173,7 @@ namespace AutoSynchAPI.Controllers
         }
         [Route("GetProducts")]
         [HttpGet]
-        public IActionResult GetProducts(string branch_id, string max_prod_id,string product_ledger)
+        public IActionResult GetProducts(string branch_id, string max_prod_id)//,string product_ledger
         {
            
             Models.InvProductsResponse responseObj = new Models.InvProductsResponse();
@@ -188,23 +189,25 @@ namespace AutoSynchAPI.Controllers
                             int prodId = 0;
                             if (int.TryParse(max_prod_id, out prodId))
                             {
-                                if(product_ledger.Equals("true"))
-                                {
-                                    if (prodId <= 0)
-                                    {
-                                        prodId = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                //if(product_ledger.Equals("true"))
+                                //{
+                                //    if (prodId <= 0)
+                                //    {
+                                //        prodId = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Min(m => m.Id);
 
-                                    }
-                                    responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId && g.Id > prodId && g.Id <= prodId + 1000).ToList();
-                                }
-                                else
+                                //    }
+                                //    responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId && g.Id > prodId && g.Id <= prodId + 1000).ToList();
+                                //}
+                                //else
                                 {
                                     if(prodId <= 0)                                    
                                     {
-                                        prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                        prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch==true).Min(m => m.Id);
 
                                     }
-                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.Id > prodId && g.Id <= (prodId + 1000)).ToList();
+                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + 1000)).ToList();
+                                    responseObj.invProducts.ForEach(p => p.IsSynch = false);
+                                    dbContext.SaveChanges();
 
 
                                 }
@@ -229,12 +232,12 @@ namespace AutoSynchAPI.Controllers
                                         responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
                                         return Ok(responseObj);
                                     }
-                                    else if (product_ledger.Equals("true") && dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= prodId)
-                                    {
-                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
-                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
-                                        return Ok(responseObj);
-                                    }
+                                    //else if (product_ledger.Equals("true") && dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= prodId)
+                                    //{
+                                    //    responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                    //    responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                    //    return Ok(responseObj);
+                                    //}
                                     else
                                     return Ok(responseObj);
                                 }
@@ -283,75 +286,88 @@ namespace AutoSynchAPI.Controllers
                 List<string> SynchTbls = new List<string>();
                 if (synchType == SynchTypes.full)
                 {
-                    SynchTbls.Add("SysControllesGroup");
-                    SynchTbls.Add("SysExecptionLogging");
-                    SynchTbls.Add("SysFeature");
-                    SynchTbls.Add("SysOrgFormsMapping");
-                    SynchTbls.Add("SysForm");
-                    SynchTbls.Add("SysOrgModulesMapping");
-                    SynchTbls.Add("SysLayout");
-                    SynchTbls.Add("SysModule");
-                    SynchTbls.Add("SysModuleFormsMapping");
-                    SynchTbls.Add("SysSystem");
-                    SynchTbls.Add("SysWeekDay");
-                    SynchTbls.Add("SysMonthName");
-                    SynchTbls.Add("SysYear");
-                    SynchTbls.Add("SysLableContent");
-                    SynchTbls.Add("SysHtml");
-                    SynchTbls.Add("SysInvTypeWiseControll");
-                    SynchTbls.Add("InvCategory");
-                    SynchTbls.Add("InvCompany");
-                    SynchTbls.Add("InvCustomer");
-                    SynchTbls.Add("InvCustomerType");
-                    SynchTbls.Add("InvDeliveryChallanDetail");
-                    SynchTbls.Add("InvDeliveryChallanMaster");
-                    SynchTbls.Add("InvDemandNote");
-                    SynchTbls.Add("InvDemandNoteDetail");
-                    SynchTbls.Add("InvGatePassInDetail");
-                    SynchTbls.Add("InvGatePassInMaster");
-                    SynchTbls.Add("InvJcMonthSetting");
-                    SynchTbls.Add("InvLocation");
-                    SynchTbls.Add("InvPackageProductsMapping");
-                    SynchTbls.Add("InvPaymentType");
-                    SynchTbls.Add("InvProduct");
-                    SynchTbls.Add("InvProductBatch");
-                    SynchTbls.Add("InvProductionDetail");
-                    SynchTbls.Add("InvProductionMaster");
-                    SynchTbls.Add("InvProductLedger");
-                    SynchTbls.Add("InvPurchaseDetail");
-                    SynchTbls.Add("InvPurchaseMaster");
-                    SynchTbls.Add("InvPurchaseOrderDetail");
-                    SynchTbls.Add("InvPurchaseOrderMaster");
-                    SynchTbls.Add("InvQuatationDetail");
-                    SynchTbls.Add("InvQuatationMaster");
-                    SynchTbls.Add("InvSaleClosing");
-                    SynchTbls.Add("InvSaleClosingDetail");
-                    SynchTbls.Add("InvSaleDetail");
-                    SynchTbls.Add("InvSalemanToRoutsMapping");
-                    SynchTbls.Add("InvSaleMaster");
-                    SynchTbls.Add("InvSchemeDetail");
-                    SynchTbls.Add("InvSchemeMaster");
-                    SynchTbls.Add("InvShift");
-                    SynchTbls.Add("InvStockAdjustment");
-                    SynchTbls.Add("InvStockAdjustmentDetail");
-                    SynchTbls.Add("InvStockTransfer");
-                    SynchTbls.Add("InvStockTransferDetail");
-                    SynchTbls.Add("InvThirdPartyCustomer");
-                    SynchTbls.Add("InvUnit");
-                    SynchTbls.Add("InvVehicle");
-                    SynchTbls.Add("InvVendor");
-                    SynchTbls.Add("InvWarehouse");
-                    SynchTbls.Add("UsrSystemUser");
-                    SynchTbls.Add("UsrUserBranchesMapping");
-                    SynchTbls.Add("UsrUserFormsMapping");
-                    SynchTbls.Add("UsrUserParmsMapping");
-                    SynchTbls.Add("OrgBranch");
-                    SynchTbls.Add("OrgFeaturesMapping");
-                    SynchTbls.Add("OrgOrganization");
-                    SynchTbls.Add("OrgOrgSystemsMapping");
-                    SynchTbls.Add("AccFiscalYear");
+                    using (Entities dbContext = new Entities())
+                    {
+                        //dbContext.InvSaleMaster
+                        //List<string> lstTables = new List<string>();
+                        //lstTables.Add()
 
-                }
+                        SynchTbls = dbContext.Model.GetEntityTypes().Where(et=>et.GetTableName()!="Timestamp" && et.GetTableName() != "Sequence").Select(et => et.GetTableName()).ToList();
+
+                        //lstTables.ForEach(table =>
+                        //{
+                        //    SynchTbls.Add(getTableName(table));
+                        //});
+                    }
+                        //SynchTbls.Add("SysControllesGroup");
+                        //SynchTbls.Add("SysExecptionLogging");
+                        //SynchTbls.Add("SysFeature");
+                        //SynchTbls.Add("SysOrgFormsMapping");
+                        //SynchTbls.Add("SysForm");
+                        //SynchTbls.Add("SysOrgModulesMapping");
+                        //SynchTbls.Add("SysLayout");
+                        //SynchTbls.Add("SysModule");
+                        //SynchTbls.Add("SysModuleFormsMapping");
+                        //SynchTbls.Add("SysSystem");
+                        //SynchTbls.Add("SysWeekDay");
+                        //SynchTbls.Add("SysMonthName");
+                        //SynchTbls.Add("SysYear");
+                        //SynchTbls.Add("SysLableContent");
+                        //SynchTbls.Add("SysHtml");
+                        //SynchTbls.Add("SysInvTypeWiseControll");
+                        //SynchTbls.Add("InvCategory");
+                        //SynchTbls.Add("InvCompany");
+                        //SynchTbls.Add("InvCustomer");
+                        //SynchTbls.Add("InvCustomerType");
+                        //SynchTbls.Add("InvDeliveryChallanDetail");
+                        //SynchTbls.Add("InvDeliveryChallanMaster");
+                        //SynchTbls.Add("InvDemandNote");
+                        //SynchTbls.Add("InvDemandNoteDetail");
+                        //SynchTbls.Add("InvGatePassInDetail");
+                        //SynchTbls.Add("InvGatePassInMaster");
+                        //SynchTbls.Add("InvJcMonthSetting");
+                        //SynchTbls.Add("InvLocation");
+                        //SynchTbls.Add("InvPackageProductsMapping");
+                        //SynchTbls.Add("InvPaymentType");
+                        //SynchTbls.Add("InvProduct");
+                        //SynchTbls.Add("InvProductBatch");
+                        //SynchTbls.Add("InvProductionDetail");
+                        //SynchTbls.Add("InvProductionMaster");
+                        //SynchTbls.Add("InvProductLedger");
+                        //SynchTbls.Add("InvPurchaseDetail");
+                        //SynchTbls.Add("InvPurchaseMaster");
+                        //SynchTbls.Add("InvPurchaseOrderDetail");
+                        //SynchTbls.Add("InvPurchaseOrderMaster");
+                        //SynchTbls.Add("InvQuatationDetail");
+                        //SynchTbls.Add("InvQuatationMaster");
+                        //SynchTbls.Add("InvSaleClosing");
+                        //SynchTbls.Add("InvSaleClosingDetail");
+                        //SynchTbls.Add("InvSaleDetail");
+                        //SynchTbls.Add("InvSalemanToRoutsMapping");
+                        //SynchTbls.Add("InvSaleMaster");
+                        //SynchTbls.Add("InvSchemeDetail");
+                        //SynchTbls.Add("InvSchemeMaster");
+                        //SynchTbls.Add("InvShift");
+                        //SynchTbls.Add("InvStockAdjustment");
+                        //SynchTbls.Add("InvStockAdjustmentDetail");
+                        //SynchTbls.Add("InvStockTransfer");
+                        //SynchTbls.Add("InvStockTransferDetail");
+                        //SynchTbls.Add("InvThirdPartyCustomer");
+                        //SynchTbls.Add("InvUnit");
+                        //SynchTbls.Add("InvVehicle");
+                        //SynchTbls.Add("InvVendor");
+                        //SynchTbls.Add("InvWarehouse");
+                        //SynchTbls.Add("UsrSystemUser");
+                        //SynchTbls.Add("UsrUserBranchesMapping");
+                        //SynchTbls.Add("UsrUserFormsMapping");
+                        //SynchTbls.Add("UsrUserParmsMapping");
+                        //SynchTbls.Add("OrgBranch");
+                        //SynchTbls.Add("OrgFeaturesMapping");
+                        //SynchTbls.Add("OrgOrganization");
+                        //SynchTbls.Add("OrgOrgSystemsMapping");
+                        //SynchTbls.Add("AccFiscalYear");
+
+                    }
                 else if (synchType == SynchTypes.only_sys_tables)
                 {
                     SynchTbls.Add("SysControllesGroup");
@@ -494,11 +510,15 @@ namespace AutoSynchAPI.Controllers
                                 lstTables.ForEach(table =>
                                 {
                                     qry = "create table " + getTableName(table.GetTableName()) + "(";
+                                    if (getTableName(table.GetTableName()).ToLower().Equals("sysform"))
+                                    {
+
+                                    }
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
-                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
+                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
                                     }
                                     qry += cols.TrimEnd(',') + ")";
                                     responseObj.createQueries.Add(qry);
@@ -534,6 +554,48 @@ namespace AutoSynchAPI.Controllers
                 //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
                 return BadRequest(responseObj);
             }
+        }
+        private string getColumnName(string columnName)
+        {
+            switch (columnName.ToLower())
+            {
+                case "group":
+                    {
+                        columnName= "[group]";
+                    }
+                    break;
+                case "key":
+                    {
+                        columnName = "[key]";
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return columnName;
+        }
+        private string isIdentityColumn(IProperty? column,IEntityType table)
+        {
+            if (column == null)
+                return string.Empty;
+            string idProp=string.Empty;
+            if (column.IsPrimaryKey())
+            {
+                if (column.GetColumnType() == "int" && !column.IsColumnNullable())
+                    idProp = " IDENTITY (1,1)";
+            }
+            else
+            {
+                var other_columns = table.GetProperties().Where(p=>p.Name!=column.Name && p.IsPrimaryKey()).ToList();
+                if (!other_columns.Any())
+                {
+                    if (column.GetColumnType() == "int" && !column.IsColumnNullable())
+                        idProp = " IDENTITY (1,1)";
+                }
+
+            }
+
+            return idProp;
         }
         private string getTableName(string className)
         {
@@ -604,13 +666,18 @@ namespace AutoSynchAPI.Controllers
         }
         private string ReturnColumnTypeSqlserver(string colType)
         {
-            switch (colType)
+            switch (colType.ToLower())
             {
                 case "string":
                     {
                         colType = "varchar";
                     }
-                    break;               
+                    break;
+                case "number":
+                    {
+                        colType = "int";
+                    }
+                    break;
 
                 case "bool":
                     {

@@ -38,5 +38,7 @@ namespace AutoSynchSqlServer.Models
         public bool? InvIsOpenTellLimitOpening { get; set; }
         public int UserDepartmentId { get; set; }
         public string? LoginType { get; set; }
+        public string? ProfileType { get; set; }
+        public int ProfileId { get; set; }
     }
 }

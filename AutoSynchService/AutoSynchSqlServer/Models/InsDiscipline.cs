@@ -31,5 +31,9 @@ namespace AutoSynchSqlServer.Models
         public string? IsQualiPercentageOnTotal { get; set; }
         public decimal? TestMarksPercentage { get; set; }
         public string? ResultSystem { get; set; }
+        public string? ResultSheetFt { get; set; }
+        public decimal InternalPercentage { get; set; }
+        public decimal FinalTermPercentage { get; set; }
+        public decimal MidTermPercentage { get; set; }
     }
 }

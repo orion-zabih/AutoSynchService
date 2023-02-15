@@ -103,5 +103,6 @@ namespace AutoSynchSqlServer.Models
         public string? DmEmployeeGroup { get; set; }
         public string? DmProject { get; set; }
         public string? DmBankBranch { get; set; }
+        public string? DmExamAdtCreteria { get; set; }
     }
 }

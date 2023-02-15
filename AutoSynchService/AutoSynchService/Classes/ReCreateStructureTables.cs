@@ -69,7 +69,13 @@ namespace AutoSynchService.Classes
                         });
                        // objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
-                            msSqlDbManager.ExecuteTransQuery(q);
+                            try
+                            {
+                                msSqlDbManager.ExecuteTransQuery(q);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
                         });
                         msSqlDbManager.Commit();    
                         isStructureComplete=true;
@@ -103,8 +109,9 @@ namespace AutoSynchService.Classes
             try
             {
                 var listofClasses = objResponse != null ? typeof(SysTablesResponse).GetProperties().ToList(): typeof(InvProductsResponse).GetProperties().ToList();
-                List<string> multiQueries = new List<string>();
+                List<TableDataCls> multiQueries = new List<TableDataCls>();
                 bool isStructureComplete = false;
+                List<string> tableNames=new List<string>();
                 if (objResponse != null || objProductjResponse != null)
                 {
                     Type myType = objResponse!=null? objResponse.GetType() : objProductjResponse.GetType();
@@ -113,10 +120,12 @@ namespace AutoSynchService.Classes
                     listofClasses.ForEach(t =>
                     {
                         var listProperties = t.PropertyType.GetProperties().ToList();
-                        if(listProperties.Count>2)
+                        if (listProperties.Count > 2)
 
                         {
                             var clas = listProperties[2].PropertyType;
+                            tableNames.Add(getTableName(clas.Name));
+                            //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
                         var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
                         string columns = string.Join(",", fields.ToArray());
 
@@ -139,11 +148,15 @@ namespace AutoSynchService.Classes
                                         {
                                             values += "'" + vlu + "',";
                                         }
-
+                                        if(vlu != null && fiel != null && fiel.ToLower().Equals("id"))
+                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "delete from " + getTableName(clas.Name) + " where " + fiel + "=" + vlu });
                                     });
 
-                                    multiQueries.Add("insert into " + getTableName(clas.Name) + "(" + columns + ") values(" + values.TrimEnd(',') + ")");
+
+                                    multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "insert into " + getTableName(clas.Name) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
                                 }
+
+                               // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
                             }
                         }
 
@@ -157,12 +170,13 @@ namespace AutoSynchService.Classes
                         DataTable dt = objSqliteManager.GetDataTable("SELECT name FROM sqlite_master WHERE type='table' AND name='synch_setting'");
                         if (dt.Rows.Count == 0)
                         {
-                            multiQueries.Add("create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names text,status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)");
+                            tableNames.Add("synch_setting");
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = "create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names text,status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)" });
                             // modify the format depending upon input required in the column in database 
-                            multiQueries.Add(qry);
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = qry });
 
                         }
-                        isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries);                        
+                        isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries.Select(q=>q.Qry).ToList());                        
                     }
                     else
                     {
@@ -170,24 +184,70 @@ namespace AutoSynchService.Classes
                         DataTable dt = msSqlDbManager.GetDataTable("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' and TABLE_NAME='synch_setting'");
                         if (dt.Rows.Count == 0)
                         {
-                            multiQueries.Add("create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names varchar(max),status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)");
+                            tableNames.Add("synch_setting");
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = "create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names varchar(max),status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)" });
                             // modify the format depending upon input required in the column in database 
-                            multiQueries.Add(qry);
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = qry });
                         }
                         try
                         {
-                            for (int i = 0; i < multiQueries.Count; i+=1000)
-                            {
-                                msSqlDbManager = new MsSqlDbManager();
-                                int uBound = 1000;
-                                if (i + 1000 >= multiQueries.Count)
-                                    uBound = (multiQueries.Count % 1000) != 0 ? (multiQueries.Count % 1000) : 1000;
-                                multiQueries.GetRange(i,uBound).ForEach(q => {
+                            tableNames.ForEach(t => {
+                                List<string> quries = multiQueries.Where(q=>q.TableName==t).Select(s=>s.Qry).ToList();
+                                if(quries.Count > 0)
+                                {
+                                    if(t.Equals("InvCategory"))
+                                    {
+
+                                    }
+                                    msSqlDbManager = new MsSqlDbManager();
+                                    try
+                                    {
+                                        msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " ON");
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                    //msSqlDbManager.Commit();
+                                    try
+                                    {
+                                      //  msSqlDbManager = new MsSqlDbManager();
+                                        for (int i = 0; i < quries.Count; i++)
+                                        {
+                                            msSqlDbManager.ExecuteTransQuery(quries[i]);
+                                        }
+                                    }
+                                    catch (Exception)
+                                    {
+                                        msSqlDbManager.RollBack();
+                                        throw;
+                                    }
+                                    finally{
+                                        try
+                                        {
+                                            msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " OFF");
+                                        }
+                                        catch (Exception)
+                                        {
+                                        }
+                                        msSqlDbManager.Commit();
+                                    }
                                     
-                                    msSqlDbManager.ExecuteTransQuery(q);
-                                });
-                                msSqlDbManager.Commit();
-                            }
+                                    
+                                }
+                                //for (int i = 0; i < quries.Count; i += 1000)
+                                //{
+                                //    msSqlDbManager = new MsSqlDbManager();
+                                //    int uBound = 1000;
+                                //    if (i + 1000 >= multiQueries.Count)
+                                //        uBound = (multiQueries.Count % 1000) != 0 ? (multiQueries.Count % 1000) : 1000;
+                                //    multiQueries.GetRange(i, uBound).ForEach(q => {
+                                //        msSqlDbManager.ExecuteTransQuery(q);
+
+                                //    });
+                                //    msSqlDbManager.Commit();
+                                //}
+                            });
+                            
                             
                             isStructureComplete = true;
                         }
@@ -244,6 +304,14 @@ namespace AutoSynchService.Classes
         private static object GetPropValue(object src, string propName)
         {
             return src.GetType().GetProperty(propName).GetValue(src, null);
+        }
+    }
+    internal class TableDataCls
+    {
+        public string TableName { get; set; }
+        public string Qry { get; set; }
+        public TableDataCls() {
+            TableName = Qry = string.Empty;
         }
     }
 }

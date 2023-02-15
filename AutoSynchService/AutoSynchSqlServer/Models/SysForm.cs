@@ -14,5 +14,8 @@ namespace AutoSynchSqlServer.Models
         public int FormGroupId { get; set; }
         public bool IsDeleted { get; set; }
         public string? ReportParms { get; set; }
+        public bool IsTeachProtalFrm { get; set; }
+        public bool IsEmpProtalFrm { get; set; }
+        public bool IsStuProtalFrm { get; set; }
     }
 }

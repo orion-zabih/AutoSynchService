@@ -159,13 +159,13 @@ namespace AutoSynchAPI.Models
     {
         public ApiResponse Response { get; set; }
         public List<InvProduct> invProducts { get; set; }
-        public List<InvProductLedger> invProductLedgers { get; set; }
+       // public List<InvProductLedger> invProductLedgers { get; set; }
         
         public InvProductsResponse()
         {
             Response=new ApiResponse();
             invProducts = new List<InvProduct>();
-            invProductLedgers = new List<InvProductLedger>();
+           // invProductLedgers = new List<InvProductLedger>();
         }
     }
 }

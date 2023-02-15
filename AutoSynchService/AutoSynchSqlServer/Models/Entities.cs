@@ -47,8 +47,13 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<InsClassToSubjects> InsClassToSubjects { get; set; } = null!;
         public virtual DbSet<InsDiscipline> InsDiscipline { get; set; } = null!;
         public virtual DbSet<InsDivision> InsDivision { get; set; } = null!;
+        public virtual DbSet<InsExamAdditionalCreteria> InsExamAdditionalCreteria { get; set; } = null!;
+        public virtual DbSet<InsExamGradingA> InsExamGradingA { get; set; } = null!;
+        public virtual DbSet<InsExamGradingB> InsExamGradingB { get; set; } = null!;
+        public virtual DbSet<InsExamGradingC> InsExamGradingC { get; set; } = null!;
         public virtual DbSet<InsExamaminationMarks> InsExamaminationMarks { get; set; } = null!;
         public virtual DbSet<InsExamination> InsExamination { get; set; } = null!;
+        public virtual DbSet<InsExaminationDateSheet> InsExaminationDateSheet { get; set; } = null!;
         public virtual DbSet<InsExaminationStudents> InsExaminationStudents { get; set; } = null!;
         public virtual DbSet<InsFeeGroup> InsFeeGroup { get; set; } = null!;
         public virtual DbSet<InsFeeGroupFeeItemsMapping> InsFeeGroupFeeItemsMapping { get; set; } = null!;
@@ -57,6 +62,7 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<InsFeePostMaster> InsFeePostMaster { get; set; } = null!;
         public virtual DbSet<InsFeeTerm> InsFeeTerm { get; set; } = null!;
         public virtual DbSet<InsInstitute> InsInstitute { get; set; } = null!;
+        public virtual DbSet<InsMarksEvaluation> InsMarksEvaluation { get; set; } = null!;
         public virtual DbSet<InsMeritFormula> InsMeritFormula { get; set; } = null!;
         public virtual DbSet<InsMeritList> InsMeritList { get; set; } = null!;
         public virtual DbSet<InsNotification> InsNotification { get; set; } = null!;
@@ -562,6 +568,10 @@ namespace AutoSynchSqlServer.Models
                     .HasMaxLength(50)
                     .HasColumnName("NIC");
 
+                entity.Property(e => e.Ntn)
+                    .HasMaxLength(100)
+                    .HasColumnName("NTN");
+
                 entity.Property(e => e.OrgLastEmployment).HasMaxLength(10);
 
                 entity.Property(e => e.PayrollType)
@@ -577,6 +587,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.SalaryTransferType).HasMaxLength(10);
 
                 entity.Property(e => e.Status).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TaxType).HasMaxLength(20);
 
                 entity.Property(e => e.UpdatedBy).HasDefaultValueSql("((0))");
 
@@ -710,11 +722,15 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.ToTable("InsClassToSubjects", "dbo");
 
+                entity.Property(e => e.PassingInternalMarks).HasColumnType("decimal(18, 2)");
+
                 entity.Property(e => e.PassingPracticalMarks).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.PassingTheoryMarks).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Remarks).HasMaxLength(500);
+
+                entity.Property(e => e.TotalInternalMarks).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.TotalPracticalMarks).HasColumnType("decimal(18, 2)");
 
@@ -731,6 +747,10 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.Code).HasMaxLength(50);
 
+                entity.Property(e => e.FinalTermPercentage).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.InternalPercentage).HasColumnType("decimal(18, 2)");
+
                 entity.Property(e => e.IsAdmissionOpen).HasMaxLength(10);
 
                 entity.Property(e => e.IsGovtEmploymentOption).HasMaxLength(10);
@@ -742,6 +762,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.IsTestRequired)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('Yes')");
+
+                entity.Property(e => e.MidTermPercentage).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Name).HasMaxLength(200);
 
@@ -769,6 +791,62 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.PercentageFrom).HasColumnType("numeric(6, 2)");
 
                 entity.Property(e => e.PercentageTo).HasColumnType("numeric(6, 2)");
+            });
+
+            modelBuilder.Entity<InsExamAdditionalCreteria>(entity =>
+            {
+                entity.ToTable("InsExamAdditionalCreteria", "dbo");
+
+                entity.Property(e => e.CreatedById).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DistributionType).HasMaxLength(50);
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.Name).HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<InsExamGradingA>(entity =>
+            {
+                entity.ToTable("InsExamGradingA", "dbo");
+
+                entity.Property(e => e.Description).HasMaxLength(200);
+
+                entity.Property(e => e.Grade).HasMaxLength(2);
+
+                entity.Property(e => e.GradePointFrom).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.GradePointTo).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.PercentageFrom).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.PercentageTo).HasColumnType("decimal(18, 2)");
+            });
+
+            modelBuilder.Entity<InsExamGradingB>(entity =>
+            {
+                entity.ToTable("InsExamGradingB", "dbo");
+
+                entity.Property(e => e.Grade).HasMaxLength(2);
+
+                entity.Property(e => e.GradePoint).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.MarksInPercentage).HasColumnType("decimal(18, 2)");
+            });
+
+            modelBuilder.Entity<InsExamGradingC>(entity =>
+            {
+                entity.ToTable("InsExamGradingC", "dbo");
+
+                entity.Property(e => e.Gpa)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("GPA");
+
+                entity.Property(e => e.Grade).HasMaxLength(2);
+
+                entity.Property(e => e.Percentage).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<InsExamaminationMarks>(entity =>
@@ -802,6 +880,8 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.ToTable("InsExamination", "dbo");
 
+                entity.Property(e => e.DistributionType).HasMaxLength(20);
+
                 entity.Property(e => e.ExamStartDate).HasColumnType("date");
 
                 entity.Property(e => e.HighestMarks).HasColumnType("decimal(18, 2)");
@@ -809,6 +889,15 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Name).HasMaxLength(200);
 
                 entity.Property(e => e.OverAllResultInPercent).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.ResultDeclarationDate).HasColumnType("date");
+            });
+
+            modelBuilder.Entity<InsExaminationDateSheet>(entity =>
+            {
+                entity.ToTable("InsExaminationDateSheet", "dbo");
+
+                entity.Property(e => e.Date).HasColumnType("date");
             });
 
             modelBuilder.Entity<InsExaminationStudents>(entity =>
@@ -923,6 +1012,13 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.Name).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<InsMarksEvaluation>(entity =>
+            {
+                entity.ToTable("InsMarksEvaluation", "dbo");
+
+                entity.Property(e => e.MarksInPercent).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<InsMeritFormula>(entity =>
@@ -1393,6 +1489,10 @@ namespace AutoSynchSqlServer.Models
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
 
+                entity.Property(e => e.ModuleName).HasMaxLength(50);
+
+                entity.Property(e => e.PartOfDay).HasMaxLength(50);
+
                 entity.Property(e => e.SlotDescription).HasMaxLength(500);
 
                 entity.Property(e => e.StartTime).HasMaxLength(50);
@@ -1620,6 +1720,10 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.ImageName).HasMaxLength(300);
 
+                entity.Property(e => e.IsSynch)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
                 entity.Property(e => e.MaterialSize)
                     .HasColumnType("decimal(18, 2)")
                     .HasDefaultValueSql("((1))");
@@ -1645,6 +1749,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.ReorderQty).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.RetailPrice).HasColumnType("decimal(18, 6)");
+
+                entity.Property(e => e.RetailPriceExclusiveTax).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.SaleDiscount)
                     .HasColumnType("decimal(18, 2)")
@@ -2308,6 +2414,10 @@ namespace AutoSynchSqlServer.Models
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
 
+                entity.Property(e => e.IsShowSohinOpening)
+                    .HasMaxLength(10)
+                    .HasColumnName("IsShowSOHInOpening");
+
                 entity.Property(e => e.LongAddress).HasMaxLength(500);
 
                 entity.Property(e => e.MobileNumber).HasMaxLength(50);
@@ -2449,6 +2559,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.DmEmployeeGroup)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('Merge')");
+
+                entity.Property(e => e.DmExamAdtCreteria).HasMaxLength(10);
 
                 entity.Property(e => e.DmExamination)
                     .HasMaxLength(10)
@@ -3758,6 +3870,8 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.LoginType).HasMaxLength(20);
+
+                entity.Property(e => e.ProfileType).HasMaxLength(20);
 
                 entity.Property(e => e.UserRole).HasMaxLength(50);
 

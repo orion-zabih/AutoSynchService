@@ -6,6 +6,7 @@ Microsoft.EntityFrameworkCore.Tools
 
 RUN FOLLOWING IN PACKAGE MANAGER CONSOLE TO GENERATE CLASSES
  Scaffold-DbContext "Data Source=ONE;User ID=sa;Password=Nadra@123;Database=cmsnet_inventory_db;Persist Security Info=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force -NoPluralize -NoOnConfiguring -Context Entities
+ Scaffold-DbContext "Data Source=66.219.22.159;User ID=cmsnet_bakeman_usr;Password=Hmis@360;Database=cmsnet_bakeman_db;Persist Security Info=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force -NoPluralize -NoOnConfiguring -Context Entities
 
 
 Data Source=ONE;User ID=sa;Password=Nadra@123;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False

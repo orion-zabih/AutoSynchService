@@ -105,5 +105,6 @@ namespace AutoSynchSqlServer.Models
         public string? InvSkipSchargesIfBillIsQt { get; set; }
         public string? InvPurCheckRetailWcost { get; set; }
         public string? InvSaleQtyPriceSeq { get; set; }
+        public string? IsShowSohinOpening { get; set; }
     }
 }

@@ -54,5 +54,7 @@ namespace AutoSynchSqlServer.Models
         public decimal Rate { get; set; }
         public string? SaleTaxCalMethodInPur { get; set; }
         public decimal CostIncTax { get; set; }
+        public decimal RetailPriceExclusiveTax { get; set; }
+        public bool? IsSynch { get; set; }
     }
 }
