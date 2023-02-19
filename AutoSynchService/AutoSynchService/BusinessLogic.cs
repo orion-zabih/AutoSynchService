@@ -345,7 +345,7 @@ namespace AutoSynchService
             }
 
         }
-        public static bool GetAndReplaceDataSqlServer()
+        public static bool GetAndReplaceDataSqlServer(int recordsToFetch)
         {
             try
             {
@@ -406,7 +406,7 @@ namespace AutoSynchService
                                         InvProductsResponse invProductsResponse = null;
                                         if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                         {
-                                            invProductsResponse= sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProduct", "Id").ToString());
+                                            invProductsResponse= sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProduct", "Id").ToString(), recordsToFetch);
                                         }
                                         //else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
 

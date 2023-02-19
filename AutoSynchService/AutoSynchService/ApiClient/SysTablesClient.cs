@@ -57,14 +57,14 @@ namespace AutoSynchService.ApiClient
                 return null;
             }
         }
-        public InvProductsResponse? GetProducts(string maxProdId)//,string prodLedger="false"
+        public InvProductsResponse? GetProducts(string maxProdId, int recordsToFetch)//,string prodLedger="false"
         {
             try
             {
                 try
                 {
 
-                    invSaleApiUrl = "/api/SysTables" + "/GetProducts?branch_id=" + Global.BranchId + "&max_prod_id=" + maxProdId;// +"&product_ledger="+prodLedger;
+                    invSaleApiUrl = "/api/SysTables" + "/GetProducts?branch_id=" + Global.BranchId + "&max_prod_id=" + maxProdId +"&records_to_fetch="+ recordsToFetch;
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 

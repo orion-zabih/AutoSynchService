@@ -173,7 +173,7 @@ namespace AutoSynchAPI.Controllers
         }
         [Route("GetProducts")]
         [HttpGet]
-        public IActionResult GetProducts(string branch_id, string max_prod_id)//,string product_ledger
+        public IActionResult GetProducts(string branch_id, string max_prod_id,string records_to_fetch)//,string product_ledger
         {
            
             Models.InvProductsResponse responseObj = new Models.InvProductsResponse();
@@ -189,6 +189,8 @@ namespace AutoSynchAPI.Controllers
                             int prodId = 0;
                             if (int.TryParse(max_prod_id, out prodId))
                             {
+                                int recordsToFetch = 1000;
+                                int.TryParse(records_to_fetch, out recordsToFetch);
                                 //if(product_ledger.Equals("true"))
                                 //{
                                 //    if (prodId <= 0)
@@ -205,7 +207,11 @@ namespace AutoSynchAPI.Controllers
                                         prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch==true).Min(m => m.Id);
 
                                     }
-                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + 1000)).ToList();
+                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
+                                    if(responseObj.invProducts==null || responseObj.invProducts.Count == 0)
+                                    {
+                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).ToList();
+                                    }
                                     responseObj.invProducts.ForEach(p => p.IsSynch = false);
                                     dbContext.SaveChanges();
 

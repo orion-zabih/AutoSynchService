@@ -27,12 +27,14 @@ namespace AutoSynchService.Classes
         public string BackoffTimerUnit { get; set; }
         public int BackoffTimer { get; set; }
         public string LocalDb { get; set; }
+        public string RecordsToFetch { get; set; }
         public MySettings()
         {
             BranchId = "";
             BackoffTimerUnit = "hr";
             BackoffTimer = 24;
-            LocalDb = "";                
+            LocalDb = "";
+            RecordsToFetch = "1000";
         }
     }
    

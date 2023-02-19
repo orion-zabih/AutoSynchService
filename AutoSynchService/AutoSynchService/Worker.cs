@@ -63,11 +63,12 @@ namespace AutoSynchService
                         }
                         else if (settings.LocalDb.Equals(Constants.SqlServer))
                         {
-
+                            int recordsToFetch = 1000;
+                            int.TryParse(settings.RecordsToFetch, out recordsToFetch);
                             if (BusinessLogic.GetAndReplaceTablesSqlServer())
                             {
                                 _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
-                                if (BusinessLogic.GetAndReplaceDataSqlServer())
+                                if (BusinessLogic.GetAndReplaceDataSqlServer(recordsToFetch))
                                 {
                                     _logger.LogInformation("Data Downloaded successfully successfully at: {time}", DateTimeOffset.Now);
                                 }
