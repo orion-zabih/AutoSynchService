@@ -23,18 +23,37 @@ namespace AutoSynchService
                 InvSaleDao invSaleDao = new InvSaleDao();
                 DataResponse dataResponse = new DataResponse();
                 dataResponse.invSaleMaster = invSaleDao.GetSaleMaster(dbtype);
-                dataResponse.invSaleMaster.ForEach(m => {
-                    dataResponse.invSaleDetails.AddRange(invSaleDao.GetSaleDetails(m.Id,dbtype));
-                });
-
-                InvSaleClient invSaleClient = new InvSaleClient();
-
-                ApiResponse apiResponse = invSaleClient.PostInvSaleDetails(dataResponse);
-                if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
+                if(dataResponse.invSaleMaster != null && dataResponse.invSaleMaster.Count>0)
                 {
 
-                    invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m => m.Id).ToList(), dbtype);
+                    dataResponse.invSaleMaster.ForEach(m => {
+                        dataResponse.invSaleDetails.AddRange(invSaleDao.GetSaleDetails(m.Id, dbtype));
+                    });
+                    if(dataResponse.invSaleDetails!=null && dataResponse.invSaleDetails.Count>0)
+                    {
+                        InvSaleClient invSaleClient = new InvSaleClient();
+                        Console.WriteLine("uploading sales data");
+                        ApiResponse apiResponse = invSaleClient.PostInvSaleDetails(dataResponse);
+                        if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
+                        {
+                            Console.WriteLine("sales data uploaded successfully");
+                            invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m => m.Id).ToList(), dbtype);
 
+                        }
+                        else
+                        {
+                            Console.WriteLine("sales data did not uploaded successfully. please contact support");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("no pending sales data");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("no pending sales data");
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -406,6 +425,7 @@ namespace AutoSynchService
                                         InvProductsResponse invProductsResponse = null;
                                         if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                         {
+                                            Console.WriteLine("Getting some products");
                                             invProductsResponse= sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProduct", "Id").ToString(), recordsToFetch);
                                         }
                                         //else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
@@ -415,10 +435,12 @@ namespace AutoSynchService
                                          
                                         if (invProductsResponse != null)
                                         {
+                                            Console.WriteLine("Saving products.");
                                             if (ReCreateStructureTables._InsertData(DateTime.Now, null,invProductsResponse, Constants.SqlServer))
                                             {
                                                 if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
                                                 {
+                                                    Console.WriteLine("All products downloaded.");
                                                     downlaodedAll = true;
                                                 }
                                                 

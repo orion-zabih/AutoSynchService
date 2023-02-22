@@ -489,7 +489,7 @@ namespace AutoSynchAPI.Controllers
 
                     lstTables.ForEach(table =>
                     {
-                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName()));
+                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
                     });
 
                     string qry = string.Empty;
@@ -499,14 +499,19 @@ namespace AutoSynchAPI.Controllers
                             {
                                 lstTables.ForEach(table =>
                                 {
-                                    qry = "create table " + getTableName(table.GetTableName()) + "(";
+                                    qry = "create table " + getTableName(table.GetTableName(),local_db) + "(";
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
                                         cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + ",";
                                     }
-                                    qry += cols.TrimEnd(',') + ")";
+                                    if (getTableName(table.GetTableName(), local_db).ToLower().Equals("invsalemastertmp"))
+                                    {
+                                        qry += cols + " IsUploaded bit default 0 " + ")";
+                                    }
+                                    else
+                                        qry += cols.TrimEnd(',') + ")";
                                     responseObj.createQueries.Add(qry);
                                 });
                             }
@@ -515,18 +520,23 @@ namespace AutoSynchAPI.Controllers
                             {
                                 lstTables.ForEach(table =>
                                 {
-                                    qry = "create table " + getTableName(table.GetTableName()) + "(";
-                                    if (getTableName(table.GetTableName()).ToLower().Equals("sysform"))
-                                    {
-
-                                    }
+                                    qry = "create table " + getTableName(table.GetTableName(),local_db) + "(";
+                                    
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
                                         cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
                                     }
-                                    qry += cols.TrimEnd(',') + ")";
+                                    if (getTableName(table.GetTableName(), local_db).ToLower().Equals("invsalemaster"))
+                                    {
+                                        qry += cols+ " IsUploaded bit default 0 " + ")";
+                                    }
+                                    else
+                                    {
+                                        qry += cols.TrimEnd(',') + ")";
+                                    }
+                                    
                                     responseObj.createQueries.Add(qry);
                                 });
                             }
@@ -603,8 +613,10 @@ namespace AutoSynchAPI.Controllers
 
             return idProp;
         }
-        private string getTableName(string className)
+        private string getTableName(string className,string local_db)
         {
+            if (local_db.Equals(Constants.SqlServer))
+                return className;
             switch (className.ToLower())
             {
                 case "invsaledetail":

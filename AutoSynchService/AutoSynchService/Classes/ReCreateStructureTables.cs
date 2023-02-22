@@ -124,7 +124,7 @@ namespace AutoSynchService.Classes
 
                         {
                             var clas = listProperties[2].PropertyType;
-                            tableNames.Add(getTableName(clas.Name));
+                            tableNames.Add(getTableName(clas.Name, dbtype));
                             //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
                         var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
                         string columns = string.Join(",", fields.ToArray());
@@ -149,11 +149,11 @@ namespace AutoSynchService.Classes
                                             values += "'" + vlu + "',";
                                         }
                                         if(vlu != null && fiel != null && fiel.ToLower().Equals("id"))
-                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "delete from " + getTableName(clas.Name) + " where " + fiel + "=" + vlu });
+                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "delete from " + getTableName(clas.Name, dbtype) + " where " + fiel + "=" + vlu });
                                     });
 
 
-                                    multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "insert into " + getTableName(clas.Name) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                    multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
                                 }
 
                                // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
@@ -281,8 +281,10 @@ namespace AutoSynchService.Classes
                 return false;
             }
         }
-        private static string getTableName(string className)
+        private static string getTableName(string className,string local_db)
         {
+            if (local_db.Equals(Constants.SqlServer))
+                return className;
             switch (className.ToLower())
             {
                 case "invsaledetail":

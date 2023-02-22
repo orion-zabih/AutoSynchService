@@ -79,7 +79,8 @@ namespace AutoSynchService
                                 _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
                             }
                         }
-                        if(!BusinessLogic.isFreshdb)
+                        //if(!BusinessLogic.isFreshdb)
+                        Console.WriteLine("Preparing to upload data from server");
                         if (BusinessLogic.UploadInvSaleToServer(settings.LocalDb))
                         {
                             _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);

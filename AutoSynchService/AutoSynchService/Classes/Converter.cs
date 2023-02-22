@@ -1,5 +1,7 @@
 ﻿using AutoSynchService.Models;
 using AutoSynchSqlServer.Models;
+using Microsoft.Extensions.Configuration.EnvironmentVariables;
+using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -16,26 +18,27 @@ namespace AutoSynchService.Classes
         internal static List<InvSaleDetail> GetInvSaleDetails(DataTable table)
         {
             var invSaleDetailList = new List<InvSaleDetail>(table.Rows.Count);
-            foreach (DataRow row in table.Rows)
+            for (int i = 0; i < table.Rows.Count; i++)
             {
-                var values = row.ItemArray;
+                DataRow row = table.Rows[i];
+            
                 var invSaleDetail = new InvSaleDetail()
                 {
-                    Id = Convert.ToInt32(values[0]),
-                    BillId = Convert.ToInt32(values[1]),
-                    ProductId = Convert.ToInt32(values[2]),
-                    Price = Convert.ToDecimal(values[3]),
-                    Qty = Convert.ToDecimal(values[4]),
-                    Total = Convert.ToDecimal(values[5]),
-                    IsDeleted = (bool)values[6],
-                    SaleValue = Convert.ToDecimal(values[7]),
-                    TaxCharged = Convert.ToDecimal(values[8]),
-                    TaxRate = Convert.ToDecimal(values[9]),
-                    Pctcode = Convert.ToString(values[10] != DBNull.Value ? values[10]:""),
-                    FurtherTax = Convert.ToDecimal(values[11]),
-                    Discount = Convert.ToDecimal(values[12]),
-                    InvoiceType = Convert.ToInt32(values[13]),
-                    PriceExclusiveTax = Convert.ToDecimal(values[14])
+                    Id = row.Field<int>("Id"),
+                    BillId = row.Field<int>("BillId"),
+                    ProductId = row.Field<int>("ProductId"),
+                    Price = row.Field<decimal>("Price"),
+                    Qty = row.Field<decimal>("Qty"),
+                    Total = row.Field<decimal>("Total"),
+                    IsDeleted = row.Field<bool>("IsDeleted"),
+                    SaleValue = row.Field<decimal>("SaleValue"),
+                    TaxCharged = row.Field<decimal>("TaxCharged"),
+                    TaxRate = row.Field<decimal>("TaxRate"),
+                    Pctcode = row["Pctcode"] != DBNull.Value ? row.Field<string>("Pctcode") :"",
+                    FurtherTax = row.Field<decimal>("FurtherTax"),
+                    Discount = row.Field<decimal>("Discount"),
+                    InvoiceType = row.Field<int>("InvoiceType"),
+                    PriceExclusiveTax = row.Field<decimal>("PriceExclusiveTax")
                     
                 };
                 invSaleDetailList.Add(invSaleDetail);
@@ -45,71 +48,73 @@ namespace AutoSynchService.Classes
         internal static List<InvSaleMaster> GetInvSaleMaster(DataTable table)
         {
             var invSaleMasterList = new List<InvSaleMaster>(table.Rows.Count);
-            foreach (DataRow row in table.Rows)
+            for (int i = 0; i < table.Rows.Count; i++)
             {
-                var values = row.ItemArray;
+                DataRow row = table.Rows[i];
+
                 var invSaleMaster = new InvSaleMaster()
                 {
-                    Id = Convert.ToInt32(row["Id"]),
-                    OrderDate = Convert.ToDateTime(row["OrderDate"]),
-                    CustomerId = Convert.ToInt32(row["CustomerId"]),
-                    CustomerTypeId = Convert.ToInt32(row["CustomerTypeId"]),
-                    InvoiceTotal = Convert.ToDecimal(row["InvoiceTotal"]),
-                    DiscountPercent = Convert.ToDecimal(row["DiscountPercent"]),
-                    TaxCalculated = Convert.ToDecimal(row["TaxCalculated"]),
-                    ServiceChargesCalculated = Convert.ToDecimal(row["ServiceChargesCalculated"]),
-                    GrandTotal = Convert.ToDecimal(row["GrandTotal"]),
-                    PaymentReceived = Convert.ToDecimal(row["PaymentReceived"]),
-                    Change = Convert.ToDecimal(row["Change"]),
-                    IsCanceled = Convert.ToBoolean(row["IsCanceled"]),
-                    OrderStatus = Convert.ToString(row["OrderStatus"]),
-                    DiscountRemarks = row["DiscountRemarks"].ToString(),
-                    BranchId = Convert.ToInt32(row["BranchId"]),
-                    SessionId = Convert.ToInt32(row["SessionId"]),
-                    IsDeleted = Convert.ToBoolean(row["IsDeleted"]),
-                    ThirdPartyId = Convert.ToInt32(row["ThirdPartyId"]),
-                    CustomerName = row["CustomerName"].ToString(),
-                    CustomerContact = row["CustomerContact"].ToString(),
-                    EmployeeId = Convert.ToInt32(row["EmployeeId"]),
-                    Remarks = row["Remarks"].ToString(),
-                    CreatedBy = Convert.ToInt32(row["CreatedBy"]),
-                    CreatedDate = Convert.ToDateTime(row["CreatedDate"]),
-                    UpdatedBy = Convert.ToInt32(row["UpdatedBy"]),
-                    UpdatedDate = Convert.ToDateTime(row["UpdatedDate"]),
-                    CompletedBy = Convert.ToInt32(row["CompletedBy"]),
-                    CompletedDate = Convert.ToDateTime(row["CompletedDate"]),
-                    ShiftId = Convert.ToInt32(row["ShiftId"]),
-                    StoreId = Convert.ToInt32(row["StoreId"]),
-                    IsReturn = Convert.ToBoolean(row["IsReturn"]),
-                    FiscalYearId = Convert.ToInt32(row["FiscalYearId"]),
-                    VehicleId = Convert.ToInt32(row["VehicleId"]),
-                    CurrentReading = Convert.ToInt32(row["CurrentReading"]),
-                    NextServiceAfterKm = Convert.ToInt32(row["NextServiceAfterKm"]),
-                    ExpectReadingOnNext = Convert.ToInt32(row["ExpectReadingOnNext"]),
-                    ReadingPerDay = Convert.ToInt32(row["ReadingPerDay"]),
-                    NextServiceDate = Convert.ToDateTime(row["NextServiceDate"]),
-                    IsSentToFbr = Convert.ToInt32(row["IsSentToFbr"]),
-                    FbrInvoiceNumber = row["FbrInvoiceNumber"].ToString(),
-                    FbrResponseCode = row["FbrResponseCode"].ToString(),
-                    FbrResponse = row["FbrResponse"].ToString(),
-                    FbrPosid = Convert.ToInt32(row["FbrPOSID"]),
-                    FbrUsin = row["FbrUSIN"].ToString(),
-                    BuyerNtn = row["BuyerNTN"].ToString(),
-                    BuyerCnic = row["BuyerCNIC"].ToString(),
-                    BuyerPhoneNumber = row["BuyerPhoneNumber"].ToString(),
-                    FbrPaymentModeCode = Convert.ToInt32(row["FbrPaymentModeCode"]),
-                    DiscountCalculated = Convert.ToDecimal(row["DiscountCalculated"]),
-                    TotalQuantity = Convert.ToDecimal(row["TotalQuantity"]),
-                    FurtherTax = Convert.ToDecimal(row["FurtherTax"]),
-                    FbrInvoiceTypeCode = Convert.ToInt32(row["FbrInvoiceTypeCode"]),
-                    PaymentType = row["PaymentType"].ToString()
+                    Id = row.Field<int>("Id"),
+                    OrderDate = row.Field<DateTime?>("OrderDate"),
+                    CustomerId = row.Field<int?>("CustomerId"),
+                    CustomerTypeId = row.Field<int?>("CustomerTypeId"),
+                    InvoiceTotal = row.Field<decimal?>("InvoiceTotal"),
+                    DiscountPercent = row.Field<decimal?>("DiscountPercent"),
+                    TaxCalculated = row.Field<decimal?>("TaxCalculated"),
+                    ServiceChargesCalculated = row.Field<decimal?>("ServiceChargesCalculated"),
+                    GrandTotal = row.Field<decimal?>("GrandTotal"),
+                    PaymentReceived = row.Field<decimal?>("PaymentReceived"),
+                    Change = row.Field<decimal>("Change"),
+                    IsCanceled = row.Field<bool>("IsCanceled"),
+                    OrderStatus = row.Field<string>("OrderStatus"),
+                    DiscountRemarks = row.Field<string?>("DiscountRemarks"),
+                    BranchId = row.Field<int>("BranchId"),
+                    SessionId = row.Field<int>("SessionId"),
+                    IsDeleted = row.Field<bool>("IsDeleted"),
+                    ThirdPartyId = row.Field<int?>("ThirdPartyId"),
+                    CustomerName = row.Field<string?>("CustomerName"),
+                    CustomerContact = row.Field<string?>("CustomerContact"),
+                    EmployeeId = row.Field<int?>("EmployeeId"),
+                    Remarks = row.Field<string?>("Remarks"),
+                    CreatedBy = row.Field<int>("CreatedBy"),
+                    CreatedDate = row.Field<DateTime?>("CreatedDate"),
+                    UpdatedBy = row.Field<int?>("UpdatedBy"),
+                    UpdatedDate = row.Field<DateTime?>("UpdatedDate"),
+                    CompletedBy = row.Field<int?>("CompletedBy"),
+                    CompletedDate = row.Field<DateTime?>("CompletedDate"),
+                    ShiftId = row.Field<int>("ShiftId"),
+                    StoreId = row.Field<int>("StoreId"),
+                    IsReturn = row.Field<bool>("IsReturn"),
+                    FiscalYearId = row.Field<int>("FiscalYearId"),
+                    VehicleId = row.Field<int>("VehicleId"),
+                    CurrentReading = row.Field<int>("CurrentReading"),
+                    NextServiceAfterKm = row.Field<int>("NextServiceAfterKm"),
+                    ExpectReadingOnNext = row.Field<int>("ExpectReadingOnNext"),
+                    ReadingPerDay = row.Field<int>("ReadingPerDay"),
+                    NextServiceDate = row.Field<DateTime?>("NextServiceDate"),
+                    IsSentToFbr = row.Field<int>("IsSentToFbr"),
+                    FbrInvoiceNumber = row.Field<string?>("FbrInvoiceNumber"),
+                    FbrResponseCode = row.Field<string?>("FbrResponseCode"),
+                    FbrResponse = row.Field<string?>("FbrResponse"),
+                    FbrPosid = row.Field<int>("FbrPOSID"),
+                    FbrUsin = row.Field<string?>("FbrUSIN"),
+                    BuyerNtn = row.Field<string?>("BuyerNTN"),
+                    BuyerCnic = row.Field<string?>("BuyerCNIC"),
+                    BuyerPhoneNumber = row.Field<string?>("BuyerPhoneNumber"),
+                    FbrPaymentModeCode = row.Field<int>("FbrPaymentModeCode"),
+                    DiscountCalculated = row.Field<decimal?>("DiscountCalculated"),
+                    TotalQuantity = row.Field<decimal?>("TotalQuantity"),
+                    FurtherTax = row.Field<decimal?>("FurtherTax"),
+                    FbrInvoiceTypeCode = row.Field<int>("FbrInvoiceTypeCode"),
+                    PaymentType = row.Field<string?>("PaymentType")
 
                 };
-            
+
                 invSaleMasterList.Add(invSaleMaster);
             }
             return invSaleMasterList;
         }
+       
         internal static List<SynchSetting> GetSynchSetting(DataTable table)
         {
             var synchSettingList = new List<SynchSetting>(table.Rows.Count);
