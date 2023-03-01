@@ -91,9 +91,13 @@ namespace AutoSynchService
                         {
                             _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
                         }
-                        if(!BusinessLogic.GetProductsOnlySqlServer(recordsToFetch))
+                        if(BusinessLogic.GetProductsOnlySqlServer(recordsToFetch))
                         {
 
+                            _logger.LogInformation("Some products downlaoded successfully only at: {time}", DateTimeOffset.Now);
+                        }
+                        else
+                        {
                             _logger.LogInformation("Failed to download products only at: {time}", DateTimeOffset.Now);
                         }
                     }
