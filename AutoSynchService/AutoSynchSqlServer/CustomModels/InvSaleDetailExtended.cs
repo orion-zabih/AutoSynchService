@@ -1,7 +1,13 @@
-﻿
-namespace AutoSynchSqlServer.Models
+﻿using AutoSynchSqlServer.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AutoSynchSqlServer.CustomModels
 {
-    public class InvSaleDetailExtended: InvSaleDetail
+    public class InvSaleDetailExtended : InvSaleDetail
     {
         public int InvoiceType { get; set; }
 

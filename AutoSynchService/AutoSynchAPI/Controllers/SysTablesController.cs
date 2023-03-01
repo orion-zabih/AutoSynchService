@@ -187,7 +187,9 @@ namespace AutoSynchAPI.Controllers
                         using (Entities dbContext = new Entities())
                         {
                             int prodId = 0;
-                            if (int.TryParse(max_prod_id, out prodId))
+                            if(string.IsNullOrEmpty(max_prod_id))
+                                prodId = -1;
+                            if (prodId==-1 || int.TryParse(max_prod_id, out prodId))
                             {
                                 int recordsToFetch = 1000;
                                 int.TryParse(records_to_fetch, out recordsToFetch);
@@ -202,15 +204,22 @@ namespace AutoSynchAPI.Controllers
                                 //}
                                 //else
                                 {
-                                    if(prodId <= 0)                                    
+                                    if(prodId == 0)                                    
                                     {
                                         prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch==true).Min(m => m.Id);
 
                                     }
-                                    responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
-                                    if(responseObj.invProducts==null || responseObj.invProducts.Count == 0)
+                                    else if (prodId < 0)
                                     {
-                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).ToList();
+                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Take(1000).ToList();
+                                    }
+                                    else
+                                    {
+                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
+                                        if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                        {
+                                            responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).Take(1000).ToList();
+                                        }
                                     }
                                     responseObj.invProducts.ForEach(p => p.IsSynch = false);
                                     dbContext.SaveChanges();

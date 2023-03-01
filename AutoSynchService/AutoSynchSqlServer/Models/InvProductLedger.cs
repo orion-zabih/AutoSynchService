@@ -17,7 +17,6 @@ namespace AutoSynchSqlServer.Models
         public bool IsCancel { get; set; }
         public int CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public int SessionId { get; set; }
         public int UnitId { get; set; }
         public int WarehouseId { get; set; }
         public string? BatchNo { get; set; }

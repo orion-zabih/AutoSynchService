@@ -49,8 +49,10 @@ namespace AutoSynchService
                                 _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
                             }
                         }
+                        int recordsToFetch = 1000;
+                        int.TryParse(settings.RecordsToFetch, out recordsToFetch);
                         //BusinessLogic.GetAndReplaceSysTables();
-                        if(settings.LocalDb.Equals(Constants.Sqlite))
+                        if (settings.LocalDb.Equals(Constants.Sqlite))
                         {
                             if (BusinessLogic.GetAndReplaceSysTablesSqlite())
                             {
@@ -63,8 +65,7 @@ namespace AutoSynchService
                         }
                         else if (settings.LocalDb.Equals(Constants.SqlServer))
                         {
-                            int recordsToFetch = 1000;
-                            int.TryParse(settings.RecordsToFetch, out recordsToFetch);
+                            
                             if (BusinessLogic.GetAndReplaceTablesSqlServer())
                             {
                                 _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
@@ -80,6 +81,7 @@ namespace AutoSynchService
                             }
                         }
                         //if(!BusinessLogic.isFreshdb)
+                        
                         Console.WriteLine("Preparing to upload data from server");
                         if (BusinessLogic.UploadInvSaleToServer(settings.LocalDb))
                         {
@@ -88,6 +90,11 @@ namespace AutoSynchService
                         else
                         {
                             _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
+                        }
+                        if(!BusinessLogic.GetProductsOnlySqlServer(recordsToFetch))
+                        {
+
+                            _logger.LogInformation("Failed to download products only at: {time}", DateTimeOffset.Now);
                         }
                     }
                 }

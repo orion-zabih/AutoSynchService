@@ -195,10 +195,10 @@ namespace AutoSynchService.Classes
                                 List<string> quries = multiQueries.Where(q=>q.TableName==t).Select(s=>s.Qry).ToList();
                                 if(quries.Count > 0)
                                 {
-                                    if(t.Equals("InvCategory"))
-                                    {
+                                    //if(t.Equals("InvCategory"))
+                                    //{
 
-                                    }
+                                    //}
                                     msSqlDbManager = new MsSqlDbManager();
                                     try
                                     {

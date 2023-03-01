@@ -16,7 +16,18 @@ namespace AutoSynchSqlServer.Models
             : base(options)
         {
         }
-
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+              .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+              .AddJsonFile("appsettings.json")
+              .Build();
+                optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                //optionsBuilder.UseSqlServer("Data Source=ONE;User ID=sa;Password=Nadra@123;Database=cmsnet_inventory_db;Persist Security Info=True;");
+            }
+        }
         public virtual DbSet<AccAccount> AccAccount { get; set; } = null!;
         public virtual DbSet<AccAccountHead> AccAccountHead { get; set; } = null!;
         public virtual DbSet<AccAccountsMapping> AccAccountsMapping { get; set; } = null!;
@@ -213,18 +224,7 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<UsrUserBranchesMapping> UsrUserBranchesMapping { get; set; } = null!;
         public virtual DbSet<UsrUserFormsMapping> UsrUserFormsMapping { get; set; } = null!;
         public virtual DbSet<UsrUserParmsMapping> UsrUserParmsMapping { get; set; } = null!;
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                IConfigurationRoot configuration = new ConfigurationBuilder()
-              .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-              .AddJsonFile("appsettings.json")
-              .Build();
-                optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-                //optionsBuilder.UseSqlServer("Data Source=ONE;User ID=sa;Password=Nadra@123;Database=cmsnet_inventory_db;Persist Security Info=True;");
-            }
-        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasDefaultSchema("cmsnet_bakeman_usr");

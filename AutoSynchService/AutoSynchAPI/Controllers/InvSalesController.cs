@@ -1,5 +1,6 @@
 ﻿using AutoSynchAPI.Classes;
 using AutoSynchAPI.Models;
+using AutoSynchSqlServer.CustomModels;
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -267,18 +268,20 @@ namespace AutoSynchAPI.Controllers
                                         accVoucherMaster.Description = CustomerName + m.PaymentType;
                                     }
                                     accVoucherMaster.ReferenceId = m.Id;
-                                    accVoucherMaster.Id = (int)dbContext.GetSequence("Id", "AccVoucherMaster");
-                                    dbContext.AccVoucherMaster.Add(accVoucherMaster);
-                                    if (accVoucherMaster.Id != 0)
+                                    //accVoucherMaster.Id = (int)dbContext.GetSequence("Id", "AccVoucherMaster");
+                                    
+                                    //if (accVoucherMaster.Id != 0)
                                     {
-                                        JvVoucherMasterId = accVoucherMaster.Id;
+                                        //JvVoucherMasterId = accVoucherMaster.Id;
                                         foreach (var detail in accVoucherDetails)
                                         {
-                                            detail.VoucherMasterId = JvVoucherMasterId;
-                                            detail.Type = "Detail";
-                                            dbContext.AccVoucherDetail.Add(detail);
+                                            //detail.VoucherMasterId = JvVoucherMasterId;
+                                            //detail.Type = "Detail";
+                                            //dbContext.AccVoucherDetail.Add(new AccVoucherDetail { Type="Detail"});
+                                            dbContext.Add(new AccVoucherDetail { Type = "Detail", VoucherMasterId=accVoucherMaster.Id });
                                         }
                                     }
+                                    dbContext.AccVoucherMaster.Add(accVoucherMaster);
                                 }
                             }
 
@@ -305,7 +308,7 @@ namespace AutoSynchAPI.Controllers
             catch (Exception ex)
             {
                 apiResponse.Code = ApplicationResponse.GENERIC_ERROR_CODE;
-                apiResponse.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                apiResponse.Message = ex.Message;
                 return BadRequest(apiResponse);
             }
             

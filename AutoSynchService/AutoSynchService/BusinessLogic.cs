@@ -42,6 +42,7 @@ namespace AutoSynchService
                         }
                         else
                         {
+                            Console.WriteLine(apiResponse.Message);
                             Console.WriteLine("sales data did not uploaded successfully. please contact support");
                         }
                     }
@@ -469,6 +470,34 @@ namespace AutoSynchService
                 return false;
             }
 
+        }
+        public static bool GetProductsOnlySqlServer(int recordsToFetch)
+        {
+            try
+            {
+                SysTablesClient sysTablesClient = new SysTablesClient();
+                ProductsDao productsDao = new ProductsDao();
+                InvProductsResponse invProductsResponse = null;
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+                Console.WriteLine("Getting some products");
+                invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch);
+                if (invProductsResponse != null)
+                {
+                    Console.WriteLine("Saving products.");
+                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
+                    {
+                        return true;
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message.ToString());
+                return false;
+            }
+            return false;
         }
         public static bool GetAndReplaceSysTablesSqlite()
         {

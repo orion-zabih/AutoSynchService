@@ -106,7 +106,7 @@ namespace AutoSynchSqlServerLocal
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine("Local Database does not exist");
                 result = false;
             }
 
