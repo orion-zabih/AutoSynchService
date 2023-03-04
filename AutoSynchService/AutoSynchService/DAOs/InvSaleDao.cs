@@ -29,7 +29,7 @@ namespace AutoSynchService.DAOs
             {
 
                 MsSqlDbManager msSqlDb = new MsSqlDbManager();
-                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(@"select top(1000)Id,
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(@"select top(1000) Id,
 ISNULL(ApprovedBy,0) ApprovedBy,
 ISNULL(BedId,0) BedId,
 BranchId,
