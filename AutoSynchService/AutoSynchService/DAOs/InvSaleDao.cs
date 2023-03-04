@@ -131,7 +131,7 @@ Qty,
 SaleValue,
 TaxCharged,
 TaxRate,
-Total, from InvSaleDetail where BillId = '" + BillId + "'");
+Total from InvSaleDetail where BillId = '" + BillId + "'");
                 Converter converter = new Converter();
                 List<InvSaleDetail> saleDetails = Converter.GetInvSaleDetails(PendingOrdersSQlite);
                 return saleDetails;
