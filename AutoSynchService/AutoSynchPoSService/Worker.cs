@@ -15,7 +15,7 @@ namespace AutoSynchPoSService
     //    {
     //        while (!stoppingToken.IsCancellationRequested)
     //        {
-    //            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+    //            Logger.write("Worker running at: {time}", DateTimeOffset.Now);
     //            await Task.Delay(1000, stoppingToken);
     //        }
     //    }
@@ -58,11 +58,11 @@ namespace AutoSynchPoSService
                             {
                                 if (BusinessLogic.DownloadPublish(ftpCredentials))
                                 {
-                                    _logger.LogInformation("Publish files downloaded successfully at: {time}", DateTimeOffset.Now);
+                                    Logger.write("Publish files downloaded successfully at: {time}");
                                 }
                                 else
                                 {
-                                    _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
+                                    Logger.write("Publish files downloading failed at: {time}");
                                 }
                             }
                             int recordsToFetch = 1000;
@@ -72,11 +72,11 @@ namespace AutoSynchPoSService
                             {
                                 if (_businessLogic.GetAndReplaceSysTablesSqlite())
                                 {
-                                    _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
+                                    Logger.write("System Tables downloaded and replaced successfully at: {time}");
                                 }
                                 else
                                 {
-                                    _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
+                                    Logger.write("System Tables downloading/replacing failed at: {time}");
                                 }
                             }
                             else if (settings.LocalDb.Equals(Constants.SqlServer))
@@ -84,37 +84,45 @@ namespace AutoSynchPoSService
 
                                 if (_businessLogic.GetAndReplaceTablesSqlServer())
                                 {
-                                    _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
+                                    Logger.write("System Tables downloaded and replaced successfully at: {time}");
                                     if (_businessLogic.GetAndReplaceDataSqlServer(recordsToFetch))
                                     {
-                                        _logger.LogInformation("Data Downloaded successfully successfully at: {time}", DateTimeOffset.Now);
+                                        Logger.write("Data Downloaded successfully successfully at: {time}");
                                     }
 
                                 }
                                 else
                                 {
-                                    _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
+                                    Logger.write("System Tables downloading/replacing failed at: {time}");
                                 }
                             }
                             //if(!BusinessLogic.isFreshdb)
-                            _logger.LogInformation("Preparing to upload data from server");
+                            Logger.write("Preparing to upload data from server");
                             //Console.WriteLine("Preparing to upload data from server");
-                            if (_businessLogic.UploadInvSaleToServer(settings.LocalDb))
+                            try
                             {
-                                _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
+                                if (_businessLogic.UploadInvSaleToServer(settings.LocalDb))
+                                {
+                                    Logger.write("Data uploaded to server successfully at: {time}");
+                                }
+                                else
+                                {
+                                    Logger.write("Data upload to server failed at: {time}");
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
+                                Logger.write(ex.Message, true);
                             }
+                            
                             if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch))
                             {
 
-                                _logger.LogInformation("Some products downlaoded successfully only at: {time}", DateTimeOffset.Now);
+                                Logger.write("Some products downlaoded successfully only at: {time}");
                             }
                             else
                             {
-                                _logger.LogInformation("Failed to download products only at: {time}", DateTimeOffset.Now);
+                                Logger.write("Failed to download products only at: {time}");
                             }
                         }
                     }

@@ -64,9 +64,9 @@ namespace AutoSynchPosService.Classes
                     try
                     {
 
-                        objResponse.dropQueries.ForEach(q => {
-                            msSqlDbManager.ExecuteTransQuery(q);
-                        });
+                        //objResponse.dropQueries.ForEach(q => {
+                        //    msSqlDbManager.ExecuteTransQuery(q);
+                        //});
                        // objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
                             try
@@ -97,8 +97,8 @@ namespace AutoSynchPosService.Classes
             }
             catch (Exception ex)
             {
-                // Logger.write("CreateDB", ex.ToString());
-                Console.WriteLine(ex.Message);
+                 Logger.write("CreateDB", ex.ToString());
+                //Console.WriteLine(ex.Message);
 
                 return false;
             }
@@ -254,7 +254,7 @@ namespace AutoSynchPosService.Classes
                         catch (Exception ex)
                         {
                             msSqlDbManager.RollBack();
-                            Console.WriteLine(ex.Message);
+                            Logger.write("Insert record", ex.ToString());
                             isStructureComplete = false;
                         }
                         
@@ -278,6 +278,7 @@ namespace AutoSynchPosService.Classes
             {
                 //Logger.write("CreateDB", ex.ToString());
 
+                Logger.write("InsertData", ex.ToString());
                 return false;
             }
         }

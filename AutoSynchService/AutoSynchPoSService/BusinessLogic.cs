@@ -40,56 +40,89 @@ namespace AutoSynchPoSService
                 dbSize = int.Parse(configuration.GetConnectionString("SqlDbSize"));
                 dbMaxSize = int.Parse(configuration.GetConnectionString("SqlDbMaxSize"));
                 dbGrowth = int.Parse(configuration.GetConnectionString("SqlDbGrowth"));
-                _logger.LogWarning("{POS Sale Service BL}", "read configs");
+                
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
 
                 List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
                 SynchSetting lastSynchSetting = null;
                 SynchTypes synchType = SynchTypes.full;
                 MsSqlDbManager dbManager = new MsSqlDbManager();
-                if (!dbManager.CheckDatabaseExists(dbName))
+                if (!dbManager.CheckDatabaseExists(dbName) && !File.Exists(dbPath))
                 {
-                    _logger.LogWarning("{POS Sale Service BL}", "db does not exist");
+                    Logger.write("{POS Sale Service BL}", "db does not exist");
                     isFreshdb = true;
                     synchType = SynchTypes.full;
                     TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
                     if (tableStructureResponse != null)
                     {
+                        if (!Directory.Exists(dbPath))
+                        {
+                            Directory.CreateDirectory(dbPath);
+                        }
                         //Console.WriteLine("successfully got database structure from server. now creating database.");
-                        _logger.LogWarning("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
+                        Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
                         if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
                         {
                             //Console.WriteLine("successfully created database file. now creating tables.");
-                            _logger.LogWarning("{POS Sale Service BL}", "successfully created database file. now creating tables.");
+                            Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
                             if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
                             {
-                                _logger.LogWarning("{POS Sale Service BL}", "successfully created tables in database");
+                                Logger.write("{POS Sale Service BL}", "successfully created tables in database");
                                //Console.WriteLine("successfully created tables in database");
                                 return true;
                             }
                             else
                             {
-                                _logger.LogWarning("{POS Sale Service BL}", "unable to create tables in database");
+                                Logger.write("{POS Sale Service BL}", "unable to create tables in database");
                                //Console.WriteLine("unable to create tables in database");
                                 return false;
                             }
                         }
                         else
                         {
-                            _logger.LogWarning("{POS Sale Service BL}", "unable to create database");
+                            Logger.write("{POS Sale Service BL}", "unable to create database");
                                //Console.WriteLine("unable to create database");
                             return false;
                         }
                     }
                     else
                     {
-                        _logger.LogWarning("{POS Sale Service BL}", "unable to receive database tables structure from service");
+                        Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
                                //Console.WriteLine("unable to receive database tables structure from service");
                         return false;
                     }
                 }
                 else
                 {
+                    if (!synchSettingsDao.CheckSynchTable(Constants.SqlServer))
+                    {
+                        Logger.write("{POS Sale Service BL}", "db structure does not exist");
+                        isFreshdb = true;
+                        synchType = SynchTypes.full;
+                        TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
+                        if (tableStructureResponse != null)
+                        {
+                            Logger.write("{POS Sale Service BL}", "successfully got database structure. now creating tables.");
+                            if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
+                            {
+                                Logger.write("{POS Sale Service BL}", "successfully created tables in database");
+                                //Console.WriteLine("successfully created tables in database");
+                                return true;
+                            }
+                            else
+                            {
+                                Logger.write("{POS Sale Service BL}", "unable to create tables in database");
+                                //Console.WriteLine("unable to create tables in database");
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
+                            //Console.WriteLine("unable to receive database tables structure from service");
+                            return false;
+                        }
+                    }
                     pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database", Constants.SqlServer, "ready");
                     if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
                     {
@@ -103,35 +136,35 @@ namespace AutoSynchPoSService
                                     TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
                                     if (tableStructureResponse != null)
                                     {
-                                        _logger.LogWarning("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
+                                        Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
                                //Console.WriteLine("successfully got database structure from server. now creating database.");
-                                        if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
+                                        //if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
                                         {
-                                            _logger.LogWarning("{POS Sale Service BL}", "successfully created database file. now creating tables.");
+                                            Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
                                //Console.WriteLine("successfully created database file. now creating tables.");
                                             if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
                                             {
-                                                _logger.LogWarning("{POS Sale Service BL}", "successfully created tables in database");
+                                                Logger.write("{POS Sale Service BL}", "successfully created tables in database");
                                //Console.WriteLine("successfully created tables in database");
                                                 return true;
                                             }
                                             else
                                             {
-                                                _logger.LogWarning("{POS Sale Service BL}", "unable to create tables in database");
+                                                Logger.write("{POS Sale Service BL}", "unable to create tables in database");
                                //Console.WriteLine("unable to create tables in database");
                                                 return false;
                                             }
                                         }
-                                        else
-                                        {
-                                            _logger.LogWarning("{POS Sale Service BL}", "unable to create database");
-                               //Console.WriteLine("unable to create database");
-                                            return false;
-                                        }
+                               //         else
+                               //         {
+                               //             Logger.write("{POS Sale Service BL}", "unable to create database");
+                               ////Console.WriteLine("unable to create database");
+                               //             return false;
+                               //         }
                                     }
                                     else
                                     {
-                                        _logger.LogWarning("{POS Sale Service BL}", "unable to receive database tables structure from service");
+                                        Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
                                //Console.WriteLine("
                                         return false;
                                     }
@@ -145,7 +178,7 @@ namespace AutoSynchPoSService
             }
             catch (Exception ex)
             {
-                //_logger.LogWarning("{POS Sale Service}", ex.Message);
+                //Logger.write("{POS Sale Service}", ex.Message);
                 //Console.WriteLine(ex.Message);
                 throw ex;
                 //return false;
@@ -168,40 +201,40 @@ namespace AutoSynchPoSService
                     if (dataResponse.invSaleDetails != null && dataResponse.invSaleDetails.Count > 0)
                     {
                         InvSaleClient invSaleClient = new InvSaleClient();
-                        _logger.LogWarning("{POS Sale Service BL}", "uploading sales data");
+                        Logger.write("{POS Sale Service BL}", "uploading sales data");
                                //Console.WriteLine("uploading sales data");
                         ApiResponse apiResponse = invSaleClient.PostInvSaleDetails(dataResponse);
                         if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
                         {
-                            _logger.LogWarning("{POS Sale Service BL}", "sales data uploaded successfully");
+                            Logger.write("{POS Sale Service BL}", "sales data uploaded successfully");
                                //Console.WriteLine("sales data uploaded successfully");
                             invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m => m.Id).ToList(), dbtype);
 
                         }
                         else
                         {
-                            _logger.LogWarning("{POS Sale Service BL}", apiResponse.Message);
+                            Logger.write("{POS Sale Service BL}", apiResponse.Message);
                                //Console.WriteLine(apiResponse.Message);
-                            _logger.LogWarning("{POS Sale Service BL}", "sales data did not uploaded successfully. please contact support");
+                            Logger.write("{POS Sale Service BL}", "sales data did not uploaded successfully. please contact support");
                                //Console.WriteLine("sales data did not uploaded successfully. please contact support");
                         }
                     }
                     else
                     {
-                        _logger.LogWarning("{POS Sale Service BL}", "no pending sales data");
+                        Logger.write("{POS Sale Service BL}", "no pending sales data");
                                //Console.WriteLine("no pending sales data");
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("{POS Sale Service BL}", "no pending sales data");
+                    Logger.write("{POS Sale Service BL}", "no pending sales data");
                                //Console.WriteLine("no pending sales data");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("{POS Sale Service BL}", ex.Message);
+                Logger.write("{POS Sale Service BL}", ex.Message);
                 //Console.WriteLine(ex.Message);
                 return false;
             }
@@ -323,18 +356,33 @@ namespace AutoSynchPoSService
                                 else
                                 {
                                     bool downlaodedAll = false;
+                                    bool firsthit = true;string prodid = "0";
                                     while (!downlaodedAll)
                                     {
                                         ProductsDao productsDao = new ProductsDao();
                                         InvProductsResponse invProductsResponse = null;
                                         if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                         {
-                                            _logger.LogWarning("{POS Sale Service BL}", "Getting some products");
+                                            Logger.write("{POS Sale Service BL}", "Getting some products");
                                             //Console.WriteLine("Getting some products");
-                                            string prodid = synchSettingsDao.GetMaxId("InvProduct", "Id").ToString();
-                                            _logger.LogWarning("{POS Sale Service BL}", prodid);
+                                            
+                                            //if (firsthit)
+                                            //{                                                
+                                            //    firsthit = false;
+                                            //}
+                                            //else
+                                            //{
+                                            //    prodid = synchSettingsDao.GetMaxId("InvProduct", "Id").ToString();
+                                            //}
+                                             
+                                            Logger.write("{POS Sale Service BL}", prodid);
                                             invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch);
-                                        }
+                                            if (invProductsResponse != null && invProductsResponse.invProducts!=null) 
+                                            {
+                                                prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
+                                            }
+
+                                            }
                                         //else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_ledger_quick.ToString())){
 
                                         //    invProductsResponse = sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProductLedger", "Id").ToString(), "true");
@@ -342,13 +390,13 @@ namespace AutoSynchPoSService
 
                                         if (invProductsResponse != null)
                                         {
-                                            _logger.LogWarning("{POS Sale Service BL}", "Saving products.");
+                                            Logger.write("{POS Sale Service BL}", "Saving products.");
                                //Console.WriteLine("Saving products.");
                                             if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
                                             {
                                                 if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
                                                 {
-                                                    _logger.LogWarning("{POS Sale Service BL}", "All products downloaded.");
+                                                    Logger.write("{POS Sale Service BL}", "All products downloaded.");
                                //Console.WriteLine("All products downloaded.");
                                                     downlaodedAll = true;
                                                 }
@@ -374,7 +422,7 @@ namespace AutoSynchPoSService
             catch (Exception ex)
             {
 
-                _logger.LogWarning("{POS Sale Service BL}", ex.Message);
+                Logger.write("{POS Sale Service BL}", ex.Message);
                 //Console.WriteLine(ex.Message);
                 return false;
             }
@@ -388,12 +436,12 @@ namespace AutoSynchPoSService
                 ProductsDao productsDao = new ProductsDao();
                 InvProductsResponse invProductsResponse = null;
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
-                _logger.LogWarning("{POS Sale Service BL}", "Getting some products only");
+                Logger.write("{POS Sale Service BL}", "Getting some products only");
                                //Console.WriteLine("Getting some products");
                 invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch);
                 if (invProductsResponse != null)
                 {
-                    _logger.LogWarning("{POS Sale Service BL}", "Saving products.");
+                    Logger.write("{POS Sale Service BL}", "Saving products.");
                                //Console.WriteLine("Saving products.");
                     if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
                     {
@@ -405,7 +453,7 @@ namespace AutoSynchPoSService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning("{POS Sale Service BL}", ex.Message.ToString());
+                Logger.write("{POS Sale Service BL}", ex.Message.ToString());
                 //Console.WriteLine(ex.Message.ToString());
                 return false;
             }
@@ -509,7 +557,7 @@ namespace AutoSynchPoSService
             }
             catch (Exception ex)
             {
-                _logger.LogInformation(ex.Message);
+                Logger.write(ex.Message);
                // Console.WriteLine(ex.Message);
                 return false;
             }

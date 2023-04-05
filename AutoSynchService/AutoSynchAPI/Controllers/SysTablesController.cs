@@ -1,4 +1,5 @@
 ﻿using AutoSynchAPI.Classes;
+using AutoSynchAPI.Models;
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -204,23 +205,27 @@ namespace AutoSynchAPI.Controllers
                                 //}
                                 //else
                                 {
-                                    if(prodId == 0)                                    
+                                    if (prodId < 0)
                                     {
-                                        prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch==true).Min(m => m.Id);
-
-                                    }
-                                    else if (prodId < 0)
-                                    {
-                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Take(1000).ToList();
+                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Take(recordsToFetch).ToList();
                                     }
                                     else
                                     {
-                                        responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
-                                        if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                        if (prodId == 0)
                                         {
-                                            responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).Take(1000).ToList();
+                                            prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Min(m => m.Id);
+
+                                        }
+                                        //if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                        {
+                                            //responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
+                                            //if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                            {
+                                                responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).Take(recordsToFetch).ToList();
+                                            }
                                         }
                                     }
+                                   
                                     responseObj.invProducts.ForEach(p => p.IsSynch = false);
                                     dbContext.SaveChanges();
 
@@ -285,6 +290,68 @@ namespace AutoSynchAPI.Controllers
                 //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
                 //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
                 return BadRequest(responseObj);
+            }
+        }
+        [Route("PostUpdatedProducts")]
+        [HttpPost]
+        public IActionResult PostUpdatedProducts([FromBody] UpdateProductFlag updateResponse)
+        {
+            ApiResponse apiResponse = new ApiResponse();
+            if (!string.IsNullOrEmpty(updateResponse.BranchId))
+            {
+                int _branchId = 0;
+                if (int.TryParse(updateResponse.BranchId, out _branchId) && updateResponse.updatedProducts!=null && updateResponse.updatedProducts.Count>0)
+                {
+                    try
+                    {
+                        using (Entities dbContext = new Entities())
+                        {
+                            using (var transaction = dbContext.Database.BeginTransaction())
+                            {
+                                List<int> prodIds = updateResponse.updatedProducts.Select(s => s.ProductId).ToList();
+                                var ProductsToUpdate = dbContext.InvProduct.Where(p => p.BranchId == _branchId && p.IsSynch==true && prodIds.Contains(p.Id));
+                                foreach (var item in ProductsToUpdate)
+                                {
+                                    item.IsSynch = false;
+                                }
+                                try
+                                {
+                                    dbContext.SaveChanges();
+                                    transaction.Commit();
+                                }
+                                catch (Exception ex)
+                                {
+                                    transaction.Rollback();
+
+                                    throw ex;
+                                }
+                            }
+                            // dbContext.InvSaleMaster.AddRan
+                        }
+
+                        apiResponse.Code = ApplicationResponse.SUCCESS_CODE;
+                        apiResponse.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                        return Ok(apiResponse);
+                    }
+                    catch (Exception ex)
+                    {
+                        apiResponse.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                        apiResponse.Message = ex.Message;
+                        return BadRequest(apiResponse);
+                    }
+                }
+                else
+                {
+                    //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                    return BadRequest(apiResponse);
+                }
+            }
+            else
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(apiResponse);
             }
         }
 
@@ -496,10 +563,10 @@ namespace AutoSynchAPI.Controllers
 
                     var lstTables = dbContext.Model.GetEntityTypes().Where(et => SynchTbls.Contains(et.GetTableName())).ToList();
 
-                    lstTables.ForEach(table =>
-                    {
-                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
-                    });
+                    //lstTables.ForEach(table =>
+                    //{
+                    //    responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
+                    //});
 
                     string qry = string.Empty;
                     switch (local_db)
@@ -559,7 +626,7 @@ namespace AutoSynchAPI.Controllers
                     //int=dbContext.AccAccountHead.FirstOrDefault().HeadName.ma
                 }
 
-                if (responseObj.dropQueries != null && responseObj.dropQueries.Count() > 0)
+                if (responseObj.createQueries != null && responseObj.createQueries.Count() > 0)
                 {
                     //responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
                     //responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;

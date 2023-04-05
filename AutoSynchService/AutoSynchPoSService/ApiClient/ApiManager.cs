@@ -25,6 +25,7 @@ namespace AutoSynchPoSService.ApiClient
                 // Add an Accept header for JSON format.
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
+                client.Timeout = TimeSpan.FromMinutes(20);
                 //var response = await client.PostAsync(Utility.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json"));
                 //var response = client.PostAsync(Global.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
                 //var response = client.PostAsync(apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
@@ -47,6 +48,7 @@ namespace AutoSynchPoSService.ApiClient
             }
             catch (Exception ex)
             {
+                AutoSynchPosService.Classes.Logger.write("Post Async", ex.ToString());
                 throw ex;
             }
             finally
@@ -87,7 +89,7 @@ namespace AutoSynchPoSService.ApiClient
                         return requestResult;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                 }
@@ -98,6 +100,7 @@ namespace AutoSynchPoSService.ApiClient
             }
             catch (Exception ex)
             {
+                AutoSynchPosService.Classes.Logger.write("Get Async", ex.ToString());
                 return null;
             }
         }
