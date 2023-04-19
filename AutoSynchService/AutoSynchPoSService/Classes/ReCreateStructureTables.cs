@@ -75,6 +75,7 @@ namespace AutoSynchPosService.Classes
                             }
                             catch (Exception ex)
                             {
+                                Logger.write("Create Table Sql Server:"+ex.Message,true);
                             }
                         });
                         msSqlDbManager.Commit();    
@@ -202,6 +203,7 @@ namespace AutoSynchPosService.Classes
                                     msSqlDbManager = new MsSqlDbManager();
                                     try
                                     {
+                                       
                                         msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " ON");
                                     }
                                     catch (Exception)
@@ -229,7 +231,7 @@ namespace AutoSynchPosService.Classes
                                         catch (Exception)
                                         {
                                         }
-                                        msSqlDbManager.Commit();
+                                        //msSqlDbManager.Commit();
                                     }
                                     
                                     

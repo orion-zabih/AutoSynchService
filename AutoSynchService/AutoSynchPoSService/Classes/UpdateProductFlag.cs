@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AutoSynchPoSService.Classes
 {
-    internal class UpdateProductFlag
+    public class UpdateProductFlag
     {
         public string BranchId { get; set; }
         public List<UpdatedProduct> updatedProducts { get; set; }
@@ -16,7 +16,7 @@ namespace AutoSynchPoSService.Classes
             updatedProducts = new List<UpdatedProduct>();
         }
     }
-    internal class UpdatedProduct
+    public class UpdatedProduct
     {
         public int ProductId { get; set; }
         public decimal RetailPrice { get; set; }

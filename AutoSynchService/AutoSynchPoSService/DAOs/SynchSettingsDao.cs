@@ -57,6 +57,32 @@ namespace AutoSynchPosService.DAOs
                 throw;
             }
         }
+        public bool ExecuteQry(List<string> queries)
+        {
+            MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+            try
+            {
+                queries.ForEach(q =>
+                {
+                    try
+                    {
+                        msSqlDbManager.ExecuteTransQuery(q);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.write("Add Synch setting Sql Server:" + ex.Message, true);
+                        
+                    }
+                });
+                msSqlDbManager.Commit();
+                return true;
+            }
+            catch (Exception)
+            {
+                msSqlDbManager.RollBack();
+                throw;
+            }
+        }
         private static void BackupDB(string filePath, string srcFilename, string destFileName)
         {
             var srcfile = Path.Combine(filePath, srcFilename);
@@ -107,6 +133,38 @@ namespace AutoSynchPosService.DAOs
                 return true;
             }
             
+        }
+        internal bool CheckSynchSetting(string dbtype)
+        {
+            string qry = "select * from synch_setting";
+            try
+            {
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager sqlite = new SqliteManager();
+                    DataTable PendingOrdersSQlite = sqlite.GetDataTable(qry);
+                    if (PendingOrdersSQlite.Rows.Count == 0)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                    DataTable PendingOrdersSQlite = sqlDbManager.GetDataTable(qry);
+                    if (PendingOrdersSQlite.Rows.Count == 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+            
+            return true;
         }
 
         internal List<SynchSetting> GetPendingSynchSetting(string synch_method,string dbtype,string status="ready")
