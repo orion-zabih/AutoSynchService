@@ -2,6 +2,7 @@
 using AutoSynchPosService.Classes;
 using AutoSynchPosService.DAOs;
 using AutoSynchPoSService.ApiClient;
+using AutoSynchPoSService.Classes;
 using AutoSynchService.DAOs;
 using AutoSynchSqlServerLocal;
 using System;
@@ -123,7 +124,7 @@ namespace AutoSynchPoSService
                             return false;
                         }
                     }
-                    pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting("database", Constants.SqlServer, "ready");
+                    pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting(SynchMethods.database_structure.ToString(), Constants.SqlServer, "ready");
                     if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
                     {
                         lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
@@ -376,7 +377,7 @@ namespace AutoSynchPoSService
                                             //}
                                              
                                             Logger.write("{POS Sale Service BL}", prodid);
-                                            invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch);
+                                            invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch,"t");
                                             if (invProductsResponse != null && invProductsResponse.invProducts!=null) 
                                             {
                                                 prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
@@ -387,19 +388,27 @@ namespace AutoSynchPoSService
 
                                         //    invProductsResponse = sysTablesClient.GetProducts(synchSettingsDao.GetMaxId("InvProductLedger", "Id").ToString(), "true");
                                         //}
-
+                                        
                                         if (invProductsResponse != null)
                                         {
+                                            if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
+                                            {
+                                                Logger.write("{POS Sale Service BL}", "All products downloaded.");
+                                                //Console.WriteLine("All products downloaded.");
+                                                downlaodedAll = true;
+                                            }
                                             Logger.write("{POS Sale Service BL}", "Saving products.");
                                //Console.WriteLine("Saving products.");
                                             if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
                                             {
-                                                if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
-                                                {
-                                                    Logger.write("{POS Sale Service BL}", "All products downloaded.");
-                               //Console.WriteLine("All products downloaded.");
-                                                    downlaodedAll = true;
-                                                }
+                                                UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                                                updateProductFlag.BranchId = Global.BranchId.ToString();
+                                                invProductsResponse.invProducts.ForEach(p => {
+                                                    updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                                                });
+                                                sysTablesClient.PostUpdatedProducts(updateProductFlag);
+
+                                                
 
                                             }
 
@@ -422,7 +431,7 @@ namespace AutoSynchPoSService
             catch (Exception ex)
             {
 
-                Logger.write("{POS Sale Service BL}", ex.Message);
+                Logger.write("{GetAndReplaceDataSqlServer}", ex.Message);
                 //Console.WriteLine(ex.Message);
                 return false;
             }
@@ -438,13 +447,19 @@ namespace AutoSynchPoSService
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
                 Logger.write("{POS Sale Service BL}", "Getting some products only");
                                //Console.WriteLine("Getting some products");
-                invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch);
+                invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch,"f");
                 if (invProductsResponse != null)
                 {
                     Logger.write("{POS Sale Service BL}", "Saving products.");
                                //Console.WriteLine("Saving products.");
                     if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
                     {
+                        UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                        updateProductFlag.BranchId = Global.BranchId.ToString();
+                        invProductsResponse.invProducts.ForEach(p => {
+                            updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId=p.Id,RetailPrice=p.RetailPrice,UpdateStatus="t" });
+                        });
+                        sysTablesClient.PostUpdatedProducts(updateProductFlag);
                         return true;
 
                     }
@@ -453,7 +468,7 @@ namespace AutoSynchPoSService
             }
             catch (Exception ex)
             {
-                Logger.write("{POS Sale Service BL}", ex.Message.ToString());
+                Logger.write("{GetProductsOnlySqlServer}", ex.Message.ToString());
                 //Console.WriteLine(ex.Message.ToString());
                 return false;
             }

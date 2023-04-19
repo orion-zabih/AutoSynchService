@@ -18,7 +18,7 @@ namespace AutoSynchPoSService.ApiClient
                 try
                 {
 
-                    invSaleApiUrl += "/GetSaleDetails";
+                    invSaleApiUrl = "/api/InvSales/GetSaleDetails";
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 
@@ -60,7 +60,7 @@ namespace AutoSynchPoSService.ApiClient
             ApiResponse responseDTO = new ApiResponse();
             try
             {
-                invSaleApiUrl += "/PostSaleDetails";
+                invSaleApiUrl = "/api/InvSales/PostSaleDetails";
                 var json = JsonConvert.SerializeObject(dataResponse);
                 var response = ApiManager.PostAsync(json, invSaleApiUrl);
 

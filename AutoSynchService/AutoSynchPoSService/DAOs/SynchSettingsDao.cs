@@ -115,6 +115,10 @@ namespace AutoSynchPosService.DAOs
             if (status == null){
                 qry = "select * from synch_setting where synch_method='" + synch_method + "'+";
             }
+            else if (status.Equals("ready"))
+            {
+                qry = "select * from synch_setting where synch_method='" + synch_method + "' and status <> 'done'";
+            }
             if (dbtype.Equals(Constants.Sqlite))
             {
                 SqliteManager sqlite = new SqliteManager();

@@ -174,7 +174,7 @@ namespace AutoSynchAPI.Controllers
         }
         [Route("GetProducts")]
         [HttpGet]
-        public IActionResult GetProducts(string branch_id, string max_prod_id,string records_to_fetch)//,string product_ledger
+        public IActionResult GetProducts(string branch_id, string max_prod_id,string records_to_fetch,string is_quick)//,string product_ledger
         {
            
             Models.InvProductsResponse responseObj = new Models.InvProductsResponse();
@@ -208,26 +208,33 @@ namespace AutoSynchAPI.Controllers
                                     if (prodId < 0)
                                     {
                                         responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Take(recordsToFetch).ToList();
+
                                     }
                                     else
                                     {
-                                        if (prodId == 0)
+                                        if (is_quick == "t")
                                         {
-                                            prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Min(m => m.Id);
+                                            if (prodId == 0)
+                                            {
+                                                prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                            }
+                                            responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.Id > prodId).Take(recordsToFetch).ToList();
 
                                         }
-                                        //if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                        else
                                         {
-                                            //responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId && g.Id <= (prodId + recordsToFetch)).ToList();
-                                            //if (responseObj.invProducts == null || responseObj.invProducts.Count == 0)
+                                            if (prodId == 0)
                                             {
-                                                responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).Take(recordsToFetch).ToList();
+                                                prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true).Min(m => m.Id);
                                             }
+                                            responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.IsSynch == true && g.Id > prodId).Take(recordsToFetch).ToList();
+
                                         }
+
                                     }
                                    
-                                    responseObj.invProducts.ForEach(p => p.IsSynch = false);
-                                    dbContext.SaveChanges();
+                                    //responseObj.invProducts.ForEach(p => p.IsSynch = false);
+                                    //dbContext.SaveChanges();
 
 
                                 }
@@ -309,7 +316,7 @@ namespace AutoSynchAPI.Controllers
                             using (var transaction = dbContext.Database.BeginTransaction())
                             {
                                 List<int> prodIds = updateResponse.updatedProducts.Select(s => s.ProductId).ToList();
-                                var ProductsToUpdate = dbContext.InvProduct.Where(p => p.BranchId == _branchId && p.IsSynch==true && prodIds.Contains(p.Id));
+                                var ProductsToUpdate = dbContext.InvProduct.Where(p => p.BranchId == _branchId && p.IsSynch==false && prodIds.Contains(p.Id));
                                 foreach (var item in ProductsToUpdate)
                                 {
                                     item.IsSynch = false;

@@ -1,4 +1,5 @@
 ﻿using AutoSynchPosService.Classes;
+using AutoSynchPoSService.Classes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,6 @@ namespace AutoSynchPoSService.ApiClient
     internal class StructureNDataClient
     {
         string invSaleApiUrl = "/api/SysTables";
-
         public SysTablesResponse? GetTableData(SynchTypes synchType)
         {
             try
@@ -55,14 +55,14 @@ namespace AutoSynchPoSService.ApiClient
                 return null;
             }
         }
-        public InvProductsResponse? GetProducts(string maxProdId, int recordsToFetch)//,string prodLedger="false"
+        public InvProductsResponse? GetProducts(string maxProdId, int recordsToFetch,string isQuick="f")//,string prodLedger="false"
         {
             try
             {
                 try
                 {
 
-                    invSaleApiUrl = "/api/SysTables" + "/GetProducts?branch_id=" + Global.BranchId + "&max_prod_id=" + maxProdId + "&records_to_fetch=" + recordsToFetch;
+                    invSaleApiUrl = "/api/SysTables" + "/GetProducts?branch_id=" + Global.BranchId + "&max_prod_id=" + maxProdId + "&records_to_fetch=" + recordsToFetch + "&is_quick=" + isQuick;
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 
@@ -140,6 +140,29 @@ namespace AutoSynchPoSService.ApiClient
             catch (Exception ex)
             {
                 return null;
+            }
+        }
+        public ApiResponse PostUpdatedProducts(UpdateProductFlag dataResponse)
+        {
+            ApiResponse responseDTO = new ApiResponse();
+            try
+            {
+                invSaleApiUrl = "/api/SysTables/PostUpdatedProducts";
+                var json = JsonConvert.SerializeObject(dataResponse);
+                var response = ApiManager.PostAsync(json, invSaleApiUrl);
+
+                if (response != null)
+                {
+                    var result = JsonConvert.DeserializeObject<ApiResponse>(response);
+                    if (result != null)
+                        responseDTO = result;
+                }
+
+                return responseDTO;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
