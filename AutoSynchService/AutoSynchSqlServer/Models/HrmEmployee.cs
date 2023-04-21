@@ -70,5 +70,7 @@ namespace AutoSynchSqlServer.Models
         public bool IsCreatedLogin { get; set; }
         public string? Ntn { get; set; }
         public string? TaxType { get; set; }
+        public string? DisabilityDesc { get; set; }
+        public string? IsDisabled { get; set; }
     }
 }

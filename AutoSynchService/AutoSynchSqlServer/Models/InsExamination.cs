@@ -23,5 +23,6 @@ namespace AutoSynchSqlServer.Models
         public DateTime? ResultDeclarationDate { get; set; }
         public int AdditionalCriteriaId { get; set; }
         public string? DistributionType { get; set; }
+        public string? ResultType { get; set; }
     }
 }

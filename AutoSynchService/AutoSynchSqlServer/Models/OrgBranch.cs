@@ -106,5 +106,8 @@ namespace AutoSynchSqlServer.Models
         public string? InvPurCheckRetailWcost { get; set; }
         public string? InvSaleQtyPriceSeq { get; set; }
         public string? IsShowSohinOpening { get; set; }
+        public string? PrivateKey { get; set; }
+        public bool IsAffiliated { get; set; }
+        public string? ShortName { get; set; }
     }
 }

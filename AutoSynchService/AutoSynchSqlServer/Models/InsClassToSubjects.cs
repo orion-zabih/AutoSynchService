@@ -16,5 +16,6 @@ namespace AutoSynchSqlServer.Models
         public int SessionId { get; set; }
         public decimal TotalInternalMarks { get; set; }
         public decimal PassingInternalMarks { get; set; }
+        public bool? IsUseWeightage { get; set; }
     }
 }

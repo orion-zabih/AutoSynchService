@@ -7,11 +7,10 @@ namespace AutoSynchSqlServer.Models
     {
         public int Id { get; set; }
         public int OrderNo { get; set; }
-        public int? InvoiceNo { get; set; }
+        public int InvoiceNo { get; set; }
         public DateTime? OrderDate { get; set; }
         public int? CustomerId { get; set; }
         public int? CustomerTypeId { get; set; }
-        public int? PaymentTypeId { get; set; }
         public decimal? InvoiceTotal { get; set; }
         public decimal? DiscountPercent { get; set; }
         public decimal? TaxCalculated { get; set; }
@@ -31,10 +30,10 @@ namespace AutoSynchSqlServer.Models
         public string? CustomerContact { get; set; }
         public int? EmployeeId { get; set; }
         public int WardId { get; set; }
-        public int? BedId { get; set; }
+        public int BedId { get; set; }
         public string? EmpCreditType { get; set; }
         public bool IsApproved { get; set; }
-        public int? ApprovedBy { get; set; }
+        public int ApprovedBy { get; set; }
         public bool IsCashierClosed { get; set; }
         public string? Remarks { get; set; }
         public bool IsStar { get; set; }

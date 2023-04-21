@@ -12,13 +12,17 @@ namespace AutoSynchPoSService.ApiClient
     internal class StructureNDataClient
     {
         string invSaleApiUrl = "/api/SysTables";
-        public SysTablesResponse? GetTableData(SynchTypes synchType)
+        public SysTablesResponse? GetTableData(SynchTypes synchType,string IsBranchFilter)
         {
             try
             {
                 try
                 {
-
+                    string table_list = "notable";
+                    if (IsBranchFilter!=null & IsBranchFilter.Equals("true"))
+                    {
+                        table_list = "IsBranchFilterY";
+                    }
                     invSaleApiUrl = "/api/SysTables" + "/GetTableData?branch_id=" + Global.BranchId + "&synch_type=" + synchType + "&table_list=notable";
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);

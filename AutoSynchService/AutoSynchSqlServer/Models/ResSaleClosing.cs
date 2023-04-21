@@ -17,5 +17,6 @@ namespace AutoSynchSqlServer.Models
         public decimal TellAmount { get; set; }
         public int FiscalYearId { get; set; }
         public string? ClosingBillsIds { get; set; }
+        public decimal CashierAmount { get; set; }
     }
 }

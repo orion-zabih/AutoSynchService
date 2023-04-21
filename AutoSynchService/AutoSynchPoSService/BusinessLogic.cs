@@ -303,7 +303,7 @@ namespace AutoSynchPoSService
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
             }
         }
-        public  bool GetAndReplaceDataSqlServer(int recordsToFetch)
+        public  bool GetAndReplaceDataSqlServer(int recordsToFetch, string IsBranchFilter)
         {
             try
             {
@@ -353,7 +353,7 @@ namespace AutoSynchPoSService
                             {
                                 if (!lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                 {
-                                    SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
+                                    SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType, IsBranchFilter);
                                     if (sysTablesResponse != null)
                                     {
                                         if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer))
@@ -497,7 +497,7 @@ namespace AutoSynchPoSService
             }
             return false;
         }
-        public bool GetAndReplaceSysTablesSqlite()
+        public bool GetAndReplaceSysTablesSqlite(string IsBranchFilter)
         {
             try
             {
@@ -559,7 +559,7 @@ namespace AutoSynchPoSService
                     if (ReCreateStructureTables._CreateDBTables(new DateTime(), tableStructureResponse, Constants.Sqlite))
                     {
 
-                        SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType);
+                        SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType, IsBranchFilter);
                         if (sysTablesResponse != null)
                         {
                             if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.Sqlite))

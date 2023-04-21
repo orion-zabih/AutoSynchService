@@ -17,5 +17,6 @@ namespace AutoSynchSqlServer.Models
         public DateTime? UpdatedDate { get; set; }
         public bool IsDeleted { get; set; }
         public string? IsAdmissionOpen { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

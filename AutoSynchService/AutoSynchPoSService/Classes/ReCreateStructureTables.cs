@@ -120,14 +120,24 @@ namespace AutoSynchPosService.Classes
 
                     listofClasses.ForEach(t =>
                     {
-                        var listProperties = t.PropertyType.GetProperties().ToList();
-                        if (listProperties.Count > 2)
+                    var listProperties = t.PropertyType.GetProperties().ToList();
+                    if (listProperties.Count > 2)
 
+                    {
+                        var clas = listProperties[2].PropertyType;
+                        tableNames.Add(getTableName(clas.Name, dbtype));
+                        //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
+                        List<string> fieldsold = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                            List<string> fields = new List<string>();
+                            fieldsold.ForEach (f =>
                         {
-                            var clas = listProperties[2].PropertyType;
-                            tableNames.Add(getTableName(clas.Name, dbtype));
-                            //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
-                        var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                            fields.Add( getColName(clas.Name, f));
+                            
+                        }) ;
+                            //foreach (string colNm in fields)
+                            //{
+                            //     getColName(clas.Name, colNm);
+                            //}
                         string columns = string.Join(",", fields.ToArray());
 
                         PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
@@ -139,6 +149,7 @@ namespace AutoSynchPosService.Classes
                                     string values = string.Empty;
                                     fields.ForEach(fiel =>
                                     {
+                                        fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
                                         object vlu = GetPropValue(item, fiel);
 
                                         if (vlu != null && vlu.ToString().Contains("'"))
@@ -209,7 +220,7 @@ namespace AutoSynchPosService.Classes
                                     catch (Exception)
                                     {
                                     }
-                                    //msSqlDbManager.Commit();
+                                    ////msSqlDbManager.Commit();
                                     try
                                     {
                                       //  msSqlDbManager = new MsSqlDbManager();
@@ -218,8 +229,9 @@ namespace AutoSynchPosService.Classes
                                             msSqlDbManager.ExecuteTransQuery(quries[i]);
                                         }
                                     }
-                                    catch (Exception)
+                                    catch (Exception ex)
                                     {
+                                        Logger.write(ex.Message);
                                         msSqlDbManager.RollBack();
                                         throw;
                                     }
@@ -231,7 +243,7 @@ namespace AutoSynchPosService.Classes
                                         catch (Exception)
                                         {
                                         }
-                                        //msSqlDbManager.Commit();
+                                        msSqlDbManager.Commit();
                                     }
                                     
                                     
@@ -246,7 +258,7 @@ namespace AutoSynchPosService.Classes
                                 //        msSqlDbManager.ExecuteTransQuery(q);
 
                                 //    });
-                                //    msSqlDbManager.Commit();
+                                ////    msSqlDbManager.Commit();
                                 //}
                             });
                             
@@ -304,6 +316,24 @@ namespace AutoSynchPosService.Classes
                     break;
             }
             return className;
+
+        }
+        private static string getColName(string className, string colName)
+        {
+           
+            switch (className.ToLower())
+            {
+               
+                case "orgbranch":
+                    {
+                        if(colName.ToLower() == "privatekey")
+                        colName= colName.ToLower() == "privatekey"? "[privatekey]": colName;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return colName;
 
         }
         private static object GetPropValue(object src, string propName)

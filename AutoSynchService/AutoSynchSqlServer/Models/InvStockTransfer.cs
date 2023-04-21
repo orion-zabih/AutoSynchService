@@ -21,5 +21,7 @@ namespace AutoSynchSqlServer.Models
         public int DemandNoteId { get; set; }
         public bool IsReturn { get; set; }
         public int FiscalYearId { get; set; }
+        public string? TransferType { get; set; }
+        public int EmployeeId { get; set; }
     }
 }

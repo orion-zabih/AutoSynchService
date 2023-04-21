@@ -70,7 +70,7 @@ namespace AutoSynchPoSService
                             //BusinessLogic.GetAndReplaceSysTables();
                             if (settings.LocalDb.Equals(Constants.Sqlite))
                             {
-                                if (_businessLogic.GetAndReplaceSysTablesSqlite())
+                                if (_businessLogic.GetAndReplaceSysTablesSqlite(settings.IsBranchFilter))
                                 {
                                     Logger.write("System Tables downloaded and replaced successfully at: {time}");
                                 }
@@ -85,7 +85,7 @@ namespace AutoSynchPoSService
                                 if (_businessLogic.GetAndReplaceTablesSqlServer())
                                 {
                                     Logger.write("System Tables downloaded and replaced successfully at: {time}");
-                                    if (_businessLogic.GetAndReplaceDataSqlServer(recordsToFetch))
+                                    if (_businessLogic.GetAndReplaceDataSqlServer(recordsToFetch, settings.IsBranchFilter))
                                     {
                                         Logger.write("Data Downloaded successfully successfully at: {time}");
                                     }

@@ -27,6 +27,7 @@ namespace AutoSynchPosService.Classes
         public string BackoffTimerUnit { get; set; }
         public int BackoffTimer { get; set; }
         public string LocalDb { get; set; }
+        public string IsBranchFilter { get; set; }
         public string RecordsToFetch { get; set; }
         public MySettings()
         {
@@ -35,6 +36,7 @@ namespace AutoSynchPosService.Classes
             BackoffTimer = 24;
             LocalDb = "";
             RecordsToFetch = "1000";
+            IsBranchFilter = "false";
         }
     }
    
