@@ -19,3 +19,5 @@ AutoSynchService/AutoSynchSqlServerLocal/.vs/
 AutoSynchService/PrintingService/
 AutoSynchService/packages/
 AutoSynchService/.vs
+/AutoSynchService/AutoSynchPoSService/bin
+/AutoSynchService/AutoSynchPoSService/obj
