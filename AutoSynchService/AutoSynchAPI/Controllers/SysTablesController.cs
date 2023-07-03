@@ -251,8 +251,33 @@ namespace AutoSynchAPI.Controllers
                                             if (prodId == 0)
                                             {
                                                 prodId = dbContext.InvProduct.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                                prodId = prodId - 1;
                                             }
                                             responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && g.Id > prodId).Take(recordsToFetch).ToList();
+
+                                        }
+                                        else if (is_quick == "r")
+                                        {
+                                            DateTime now = DateTime.Now;
+                                           DateTime dateTimePrevious = now.AddDays(-2);
+                                            //DateTime dateTimeToday =new DateTime(now.Year,now.Month,now.Day,0,0,1);
+                                            if (prodId == 0)
+                                            {
+                                              //  var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && ((g.UpdatedDate>= dateTimePrevious && g.UpdatedDate <= dateTimeToday)|| (g.CreatedDate >= dateTimePrevious && g.CreatedDate <= dateTimeToday)));
+                                                var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious));
+                                                if (invProducts != null && invProducts.Count()!=0)
+                                                {
+                                                    prodId = invProducts.Min(m => m.Id);
+                                                    prodId = prodId - 1;
+                                                }
+                                                else
+                                                {
+                                                    responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                                    responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                                    return Ok(responseObj);
+                                                }
+                                            }
+                                            responseObj.invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious) && g.Id > prodId).Take(recordsToFetch).ToList();
 
                                         }
                                         else
@@ -293,12 +318,12 @@ namespace AutoSynchAPI.Controllers
                                         responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
                                         return Ok(responseObj);
                                     }
-                                    //else if (product_ledger.Equals("true") && dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= prodId)
-                                    //{
-                                    //    responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
-                                    //    responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
-                                    //    return Ok(responseObj);
-                                    //}
+                                    else if (is_quick== "r")
+                                    {
+                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                        return Ok(responseObj);
+                                    }
                                     else
                                     return Ok(responseObj);
                                 }

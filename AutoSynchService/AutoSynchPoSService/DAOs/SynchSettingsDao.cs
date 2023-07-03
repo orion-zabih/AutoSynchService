@@ -247,7 +247,7 @@ namespace AutoSynchPosService.DAOs
 
             List<string> queries = new List<string>();
             string format = "yyyy-MM-dd HH:mm:ss";
-            string qry2 = $"insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,sync_timestamp,insertion_timestamp,update_timestamp) values({GetMaxId("synch_setting", "setting_id")+1}, '" + synchMethod + "','" + synchType + "','','ready','" + synchTime.ToString(format) + "','" + DateTime.Now.ToString(format) + "','" + DateTime.Now.ToString(format) + "')";
+            string qry2 = $"insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,sync_timestamp,insertion_timestamp,update_timestamp) values({GetMaxId("synch_setting", "setting_id")+1}, '" + synchMethod + "','" + synchType + "','','" + status + "','" + synchTime.ToString(format) + "','" + DateTime.Now.ToString(format) + "','" + DateTime.Now.ToString(format) + "')";
             if (dbtype.Equals(Constants.Sqlite))
             {
                 SqliteManager sqlite = new SqliteManager();

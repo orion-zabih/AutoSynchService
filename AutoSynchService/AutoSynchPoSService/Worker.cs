@@ -30,7 +30,74 @@ namespace AutoSynchPoSService
             BusinessLogic businessLogic,
             ILogger<WindowsBackgroundService> logger) =>
             (_businessLogic, _logger) = (businessLogic, logger);
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //{
+        //    try
+        //    {
+        //        while (!stoppingToken.IsCancellationRequested)
+        //        {
 
+        //            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+        //            var builder = new ConfigurationBuilder()
+        //         .SetBasePath(Directory.GetCurrentDirectory())
+        //         .AddJsonFile("appsettings.json", optional: false);
+        //            IConfiguration config = builder.Build();
+        //            MySettings settings = config.GetSection("MySettings").Get<MySettings>();
+        //            string branchId = settings.BranchId;
+        //            int _branchId = 0;
+        //            if (!string.IsNullOrEmpty(branchId))
+        //            {
+        //                if (int.TryParse(branchId, out _branchId))
+        //                {
+        //                    Global.BranchId = _branchId;
+
+        //                     if (settings.LocalDb.Equals(Constants.SqlServer))
+        //                    {
+
+        //                        if (_businessLogic.GetFixProblematicAccVouchers())
+        //                        {
+
+        //                        }
+        //                        else
+        //                        {
+        //                            Logger.write("Fixing  Accvouchers failed at: {time}");
+        //                        }
+        //                    }
+
+        //                }
+        //            }
+
+
+
+        //            await Task.Delay(Utility.CalculateBackoffTime(settings.BackoffTimerUnit, settings.BackoffTimer), stoppingToken);
+        //        }
+        //        //{
+        //        //    bool isSuccess = _businessLogic.GetAndReplaceTablesSqlServer();
+        //        //    _logger.LogWarning("{POS Sale Service}", isSuccess);
+
+        //        //    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+        //        //}
+        //    }
+        //    catch (TaskCanceledException)
+        //    {
+        //        // When the stopping token is canceled, for example, a call made from services.msc,
+        //        // we shouldn't exit with a non-zero exit code. In other words, this is expected...
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "{Message}", ex.Message);
+
+        //        // Terminates this process and returns an exit code to the operating system.
+        //        // This is required to avoid the 'BackgroundServiceExceptionBehavior', which
+        //        // performs one of two scenarios:
+        //        // 1. When set to "Ignore": will do nothing at all, errors cause zombie services.
+        //        // 2. When set to "StopHost": will cleanly stop the host, and log errors.
+        //        //
+        //        // In order for the Windows Service Management system to leverage configured
+        //        // recovery options, we need to terminate the process with a non-zero exit code.
+        //        Environment.Exit(1);
+        //    }
+        //}
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -114,7 +181,7 @@ namespace AutoSynchPoSService
                             {
                                 Logger.write(ex.Message, true);
                             }
-                            
+
                             if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch))
                             {
 

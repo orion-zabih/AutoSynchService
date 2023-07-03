@@ -8,8 +8,22 @@ namespace AutoSynchPosService.Classes
 {
     public class Utility
     {
-        public static Int32 CalculateBackoffTime(string unit,int timeLength)
+        public static DateTime GetNextDayMorningDateTime()
         {
+            DateTime now = DateTime.Now;
+            now = now.AddDays(1);
+            now=new DateTime(now.Year, now.Month, now.Day,0,0,1);
+            return now;
+        }
+        public static DateTime GetNextWeekMorningDateTime()
+        {
+            DateTime now = DateTime.Now;
+            now = now.AddDays(7);
+            now = new DateTime(now.Year, now.Month, now.Day, 0, 0, 1);
+            return now;
+        }
+        public static Int32 CalculateBackoffTime(string unit,int timeLength)
+        {            
             Int32 calculatedTime = 10000;
             switch (unit)
             {
