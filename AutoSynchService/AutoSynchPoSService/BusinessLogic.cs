@@ -458,6 +458,8 @@ namespace AutoSynchPoSService
                                             if(pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString())==null)
                                              synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
                                              synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), lastSynchSetting.synch_type, new DateTime(DateTime.Now.Year+1,1,1), "ready", Constants.SqlServer);
+                                            if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_recent.ToString()) == null)
+                                                synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
                                             return true;
                                         }
 

@@ -95,7 +95,23 @@ namespace AutoSynchAPI.Controllers
                                 int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
                                 if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
                                 {
-                                    IsJournalEqual = false;
+                                    accVoucherDetails = new List<AccVoucherDetail>();
+                                    accVoucherDetails = GetSaleJournal(dbContext, m, invSaleDetails);
+                                    debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
+                                    creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
+                                    if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
+                                    {
+                                        IsJournalEqual = false;
+                                    }
+                                    else
+                                    {
+                                        IsJournalEqual = true;
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    IsJournalEqual = true;
                                 }
                             }
 

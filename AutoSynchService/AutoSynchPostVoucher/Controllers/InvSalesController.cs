@@ -27,11 +27,11 @@ namespace AutoSynchPostVoucher.Controllers
             {
                 using (Entities dbContext = new Entities())
                 {
-                    DateTime dt = new DateTime(2023, 6, 1);
+                    DateTime dt = new DateTime(2023, 6, 30);
                     IEnumerable<int> accOverallMasterIds = from a in dbContext.InvSaleMaster
                                                            where a.BranchId == branch_id
                                                            && a.OrderStatus == "Invoice"
-                                                           && a.CreatedDate < dt
+                                                           && a.CreatedDate > dt
                                                            select a.Id;
 
                     IEnumerable<int> accMasterWithVoucherIds = from a in dbContext.InvSaleMaster
@@ -39,7 +39,7 @@ namespace AutoSynchPostVoucher.Controllers
                                                      on a.Id equals b.ReferenceId
                                                                where a.BranchId == branch_id
                                                                && a.OrderStatus == "Invoice"
-                                                                && a.CreatedDate < dt
+                                                                && a.CreatedDate > dt
                                                                select a.Id;
 
                     List<int> missingVouchers = accOverallMasterIds.Except(accMasterWithVoucherIds).Take(500).ToList();
@@ -304,7 +304,7 @@ namespace AutoSynchPostVoucher.Controllers
                             //decimal oldCost = productLedger.Cost;
                             //decimal oldRetailPrice = productLedger.RetailPrice; 
                             //decimal oldAverageCost = productLedger.AverageCost;
-                            item.ItemCostValue = productLedger != null ? productLedger.AverageCost : Product.AverageCost;
+                            item.ItemCostValue = productLedger != null && productLedger.AverageCost>0 ? productLedger.AverageCost : Product.AverageCost;
                             item.ProductName = Product.Name;
                             if (item.ItemCostValue <= 0)
                             {
