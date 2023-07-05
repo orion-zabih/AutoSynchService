@@ -17,5 +17,6 @@ namespace AutoSynchSqlServer.Models
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public int BranchId { get; set; }
+        public int DisciplineId { get; set; }
     }
 }

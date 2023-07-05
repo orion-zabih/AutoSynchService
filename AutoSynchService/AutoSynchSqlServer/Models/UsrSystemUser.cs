@@ -40,5 +40,6 @@ namespace AutoSynchSqlServer.Models
         public string? LoginType { get; set; }
         public string? ProfileType { get; set; }
         public int ProfileId { get; set; }
+        public int BranchId { get; set; }
     }
 }

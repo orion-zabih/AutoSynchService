@@ -24,5 +24,7 @@ namespace AutoSynchSqlServer.Models
         public int AdditionalCriteriaId { get; set; }
         public string? DistributionType { get; set; }
         public string? ResultType { get; set; }
+        public string? CancelledRemarks { get; set; }
+        public bool IsCancelled { get; set; }
     }
 }

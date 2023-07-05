@@ -25,5 +25,7 @@ namespace AutoSynchSqlServer.Models
         public string? SheetStatus { get; set; }
         public string? Remarks { get; set; }
         public string? ClassActivity { get; set; }
+        public int ApprovedById { get; set; }
+        public bool IsApproved { get; set; }
     }
 }

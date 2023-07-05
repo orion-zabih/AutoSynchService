@@ -34,5 +34,6 @@ namespace AutoSynchSqlServer.Models
         public int StatusChangedById { get; set; }
         public DateTime? StatusChangedDate { get; set; }
         public DateTime? ChequeDate { get; set; }
+        public int ProjectId { get; set; }
     }
 }

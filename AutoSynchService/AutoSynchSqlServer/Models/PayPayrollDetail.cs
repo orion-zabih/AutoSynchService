@@ -14,5 +14,8 @@ namespace AutoSynchSqlServer.Models
         public decimal Amount { get; set; }
         public string WageType { get; set; } = null!;
         public string Operation { get; set; } = null!;
+        public decimal RebatedAmount { get; set; }
+        public decimal CalculatedAmount { get; set; }
+        public int ChangeRequestId { get; set; }
     }
 }

@@ -109,5 +109,11 @@ namespace AutoSynchSqlServer.Models
         public string? PrivateKey { get; set; }
         public bool IsAffiliated { get; set; }
         public string? ShortName { get; set; }
+        public bool EnablePrivateKey { get; set; }
+        public bool ResIsShowCounterSaleCashPos { get; set; }
+        public string? InvDefaultOrderStatus { get; set; }
+        public string? InvShowOrderStatus { get; set; }
+        public string? InvSaveOrderZeroItems { get; set; }
+        public string? InvCreateJvInCaseOfKotsale { get; set; }
     }
 }

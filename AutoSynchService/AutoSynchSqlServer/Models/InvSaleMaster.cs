@@ -73,5 +73,17 @@ namespace AutoSynchSqlServer.Models
         public string? VehicleNo { get; set; }
         public string? ScaleNumber { get; set; }
         public int QuatationId { get; set; }
+        public decimal AdvancePayment { get; set; }
+        public DateTime? EventDateTime { get; set; }
+        public string? SpecialInstructions { get; set; }
+        public string? HostedByName { get; set; }
+        public int TotalLadies { get; set; }
+        public int TotalGents { get; set; }
+        public int TotalGuests { get; set; }
+        public int FunctionHallId { get; set; }
+        public int FunctionTypeId { get; set; }
+        public int BookingTypeId { get; set; }
+        public string? VoucherStatus { get; set; }
+        public string? Source { get; set; }
     }
 }

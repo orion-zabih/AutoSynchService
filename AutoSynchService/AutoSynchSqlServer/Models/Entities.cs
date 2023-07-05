@@ -40,7 +40,7 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<AccVoucherDetail> AccVoucherDetail { get; set; } = null!;
         public virtual DbSet<AccVoucherMaster> AccVoucherMaster { get; set; } = null!;
         public virtual DbSet<AccVoucherNumbringSeries> AccVoucherNumbringSeries { get; set; } = null!;
-        public virtual DbSet<AccVouchersLedger> AccVouchersLedger { get; set; } = null!;
+        public virtual DbSet<GenProject> GenProject { get; set; } = null!;
         public virtual DbSet<GenTermsAndConditions> GenTermsAndConditions { get; set; } = null!;
         public virtual DbSet<HrmCategory> HrmCategory { get; set; } = null!;
         public virtual DbSet<HrmDepartment> HrmDepartment { get; set; } = null!;
@@ -72,6 +72,8 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<InsFeePost> InsFeePost { get; set; } = null!;
         public virtual DbSet<InsFeePostMaster> InsFeePostMaster { get; set; } = null!;
         public virtual DbSet<InsFeeTerm> InsFeeTerm { get; set; } = null!;
+        public virtual DbSet<InsGradingCpolicyOld> InsGradingCpolicyOld { get; set; } = null!;
+        public virtual DbSet<InsGradingPolicyOld> InsGradingPolicyOld { get; set; } = null!;
         public virtual DbSet<InsInstitute> InsInstitute { get; set; } = null!;
         public virtual DbSet<InsMarksEvaluation> InsMarksEvaluation { get; set; } = null!;
         public virtual DbSet<InsMeritFormula> InsMeritFormula { get; set; } = null!;
@@ -103,12 +105,15 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<InsTeacherToSubjectsAndClass> InsTeacherToSubjectsAndClass { get; set; } = null!;
         public virtual DbSet<InsTermAppliedItemsMapping> InsTermAppliedItemsMapping { get; set; } = null!;
         public virtual DbSet<InsTimeSlot> InsTimeSlot { get; set; } = null!;
+        public virtual DbSet<InvBookingType> InvBookingType { get; set; } = null!;
         public virtual DbSet<InvCategory> InvCategory { get; set; } = null!;
         public virtual DbSet<InvCompany> InvCompany { get; set; } = null!;
         public virtual DbSet<InvCustomer> InvCustomer { get; set; } = null!;
         public virtual DbSet<InvCustomerType> InvCustomerType { get; set; } = null!;
         public virtual DbSet<InvDemandNote> InvDemandNote { get; set; } = null!;
         public virtual DbSet<InvDemandNoteDetail> InvDemandNoteDetail { get; set; } = null!;
+        public virtual DbSet<InvFunctionHall> InvFunctionHall { get; set; } = null!;
+        public virtual DbSet<InvFunctionType> InvFunctionType { get; set; } = null!;
         public virtual DbSet<InvGatePassInDetail> InvGatePassInDetail { get; set; } = null!;
         public virtual DbSet<InvGatePassInMaster> InvGatePassInMaster { get; set; } = null!;
         public virtual DbSet<InvInspectionDetail> InvInspectionDetail { get; set; } = null!;
@@ -154,6 +159,7 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<PayPayrollDetail> PayPayrollDetail { get; set; } = null!;
         public virtual DbSet<PayPayrollMaster> PayPayrollMaster { get; set; } = null!;
         public virtual DbSet<PayStagesScale> PayStagesScale { get; set; } = null!;
+        public virtual DbSet<PayTaxDeductionPattern> PayTaxDeductionPattern { get; set; } = null!;
         public virtual DbSet<PayWage> PayWage { get; set; } = null!;
         public virtual DbSet<PayWageDetail> PayWageDetail { get; set; } = null!;
         public virtual DbSet<PyAdvanceLoanInfo> PyAdvanceLoanInfo { get; set; } = null!;
@@ -230,12 +236,10 @@ namespace AutoSynchSqlServer.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasDefaultSchema("cmsnet_bakeman_usr");
+            modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
             modelBuilder.Entity<AccAccount>(entity =>
             {
-                entity.ToTable("AccAccount", "dbo");
-
                 entity.Property(e => e.AccountCode).HasMaxLength(50);
 
                 entity.Property(e => e.AccountName).HasMaxLength(200);
@@ -255,8 +259,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccAccountHead>(entity =>
             {
-                entity.ToTable("AccAccountHead", "dbo");
-
                 entity.Property(e => e.DisplayOrder).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.HeadCode).HasMaxLength(10);
@@ -270,8 +272,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccAccountsMapping>(entity =>
             {
-                entity.ToTable("AccAccountsMapping", "dbo");
-
                 entity.Property(e => e.DebitOrCredit).HasMaxLength(50);
 
                 entity.Property(e => e.Description).HasMaxLength(500);
@@ -293,8 +293,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccBudgetDetail>(entity =>
             {
-                entity.ToTable("AccBudgetDetail", "dbo");
-
                 entity.Property(e => e.ActualAmount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.ApprovedAmount).HasColumnType("decimal(18, 2)");
@@ -304,8 +302,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccBudgetMaster>(entity =>
             {
-                entity.ToTable("AccBudgetMaster", "dbo");
-
                 entity.Property(e => e.BroughtForward).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.GovernmentFund).HasColumnType("decimal(18, 2)");
@@ -325,8 +321,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccFiscalYear>(entity =>
             {
-                entity.ToTable("AccFiscalYear", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(200);
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
@@ -336,8 +330,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccGroupAccount>(entity =>
             {
-                entity.ToTable("AccGroupAccount", "dbo");
-
                 entity.Property(e => e.DisplayOrder).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.GroupCode).HasMaxLength(10);
@@ -351,8 +343,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccReconciliation>(entity =>
             {
-                entity.ToTable("AccReconciliation", "dbo");
-
                 entity.Property(e => e.BeginingBalance).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.BeginingDate).HasColumnType("date");
@@ -372,8 +362,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccType>(entity =>
             {
-                entity.ToTable("AccType", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -385,8 +373,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccVoucherDetail>(entity =>
             {
-                entity.ToTable("AccVoucherDetail", "dbo");
-
                 entity.Property(e => e.AmountCredit).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.AmountDebit).HasColumnType("decimal(18, 2)");
@@ -408,8 +394,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccVoucherMaster>(entity =>
             {
-                entity.ToTable("AccVoucherMaster", "dbo");
-
                 entity.Property(e => e.BankAccountNo).HasMaxLength(200);
 
                 entity.Property(e => e.BankName).HasMaxLength(300);
@@ -435,34 +419,22 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<AccVoucherNumbringSeries>(entity =>
             {
-                entity.ToTable("AccVoucherNumbringSeries", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(100);
 
                 entity.Property(e => e.VoucherType).HasMaxLength(3);
             });
 
-            modelBuilder.Entity<AccVouchersLedger>(entity =>
+            modelBuilder.Entity<GenProject>(entity =>
             {
-                entity.ToTable("AccVouchersLedger", "dbo");
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
 
-                entity.Property(e => e.AccountName).HasMaxLength(300);
-
-                entity.Property(e => e.Credit).HasColumnType("decimal(18, 2)");
-
-                entity.Property(e => e.Debit).HasColumnType("decimal(18, 2)");
-
-                entity.Property(e => e.Description).HasMaxLength(500);
-
-                entity.Property(e => e.PartnerType).HasMaxLength(20);
-
-                entity.Property(e => e.VoucherType).HasMaxLength(3);
+                entity.Property(e => e.ProjectName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<GenTermsAndConditions>(entity =>
             {
-                entity.ToTable("GenTermsAndConditions", "dbo");
-
                 entity.Property(e => e.TextLine).HasMaxLength(500);
 
                 entity.Property(e => e.Type).HasMaxLength(50);
@@ -470,8 +442,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<HrmCategory>(entity =>
             {
-                entity.ToTable("HrmCategory", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Remarks).IsUnicode(false);
@@ -479,8 +449,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<HrmDepartment>(entity =>
             {
-                entity.ToTable("HrmDepartment", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -492,8 +460,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<HrmDesignation>(entity =>
             {
-                entity.ToTable("HrmDesignation", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -501,12 +467,12 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.ResFnsdAllowanceLimit).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.TaxRebateInPercent).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<HrmEmployee>(entity =>
             {
-                entity.ToTable("HrmEmployee", "dbo");
-
                 entity.Property(e => e.Address).HasMaxLength(200);
 
                 entity.Property(e => e.BasicPayScale).HasDefaultValueSql("((-1))");
@@ -606,8 +572,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("HrmEmployeeEmployments", "dbo");
-
                 entity.Property(e => e.Department).HasMaxLength(500);
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -624,8 +588,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<HrmEmployeeQualifications>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("HrmEmployeeQualifications", "dbo");
 
                 entity.Property(e => e.BoardUniversity).HasMaxLength(500);
 
@@ -646,8 +608,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("HrmEmplyeeTestScore", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.ObtainedScore).HasColumnType("decimal(18, 2)");
@@ -659,8 +619,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsAttendanceDetail>(entity =>
             {
-                entity.ToTable("InsAttendanceDetail", "dbo");
-
                 entity.Property(e => e.CheckinTime).HasMaxLength(50);
 
                 entity.Property(e => e.CheckoutTime).HasMaxLength(50);
@@ -670,8 +628,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsAttendanceMaster>(entity =>
             {
-                entity.ToTable("InsAttendanceMaster", "dbo");
-
                 entity.Property(e => e.Remarks).HasMaxLength(500);
 
                 entity.Property(e => e.SheetStatus).HasMaxLength(50);
@@ -679,8 +635,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsBatch>(entity =>
             {
-                entity.ToTable("InsBatch", "dbo");
-
                 entity.Property(e => e.BatchName).HasMaxLength(200);
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
@@ -696,8 +650,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InsCenter", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -707,8 +659,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsClass>(entity =>
             {
-                entity.ToTable("InsClass", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -720,15 +670,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.TotalCreditHours).HasColumnType("decimal(18, 2)");
             });
 
-            modelBuilder.Entity<InsClassFeeGroupsMapping>(entity =>
-            {
-                entity.ToTable("InsClassFeeGroupsMapping", "dbo");
-            });
-
             modelBuilder.Entity<InsClassToSubjects>(entity =>
             {
-                entity.ToTable("InsClassToSubjects", "dbo");
-
                 entity.Property(e => e.IsUseWeightage)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -750,8 +693,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsDiscipline>(entity =>
             {
-                entity.ToTable("InsDiscipline", "dbo");
-
                 entity.Property(e => e.AdmissionExpiryDate).HasColumnType("date");
 
                 entity.Property(e => e.AdmissionFee).HasColumnType("decimal(18, 2)");
@@ -791,8 +732,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsDivision>(entity =>
             {
-                entity.ToTable("InsDivision", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(500);
 
                 entity.Property(e => e.IsActive)
@@ -806,8 +745,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamAdditionalCreteria>(entity =>
             {
-                entity.ToTable("InsExamAdditionalCreteria", "dbo");
-
                 entity.Property(e => e.CreatedById).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DistributionType).HasMaxLength(50);
@@ -821,8 +758,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamGradingA>(entity =>
             {
-                entity.ToTable("InsExamGradingA", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(200);
 
                 entity.Property(e => e.Grade).HasMaxLength(2);
@@ -838,8 +773,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamGradingB>(entity =>
             {
-                entity.ToTable("InsExamGradingB", "dbo");
-
                 entity.Property(e => e.Grade).HasMaxLength(2);
 
                 entity.Property(e => e.GradePoint).HasColumnType("decimal(18, 2)");
@@ -849,8 +782,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamGradingC>(entity =>
             {
-                entity.ToTable("InsExamGradingC", "dbo");
-
                 entity.Property(e => e.Gpa)
                     .HasColumnType("decimal(18, 2)")
                     .HasColumnName("GPA");
@@ -862,8 +793,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamaminationMarks>(entity =>
             {
-                entity.ToTable("InsExamaminationMarks", "dbo");
-
                 entity.Property(e => e.IsSubjectTheoretical)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -889,8 +818,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExamination>(entity =>
             {
-                entity.ToTable("InsExamination", "dbo");
-
                 entity.Property(e => e.DistributionType).HasMaxLength(20);
 
                 entity.Property(e => e.ExamStartDate).HasColumnType("date");
@@ -908,15 +835,11 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExaminationDateSheet>(entity =>
             {
-                entity.ToTable("InsExaminationDateSheet", "dbo");
-
                 entity.Property(e => e.Date).HasColumnType("date");
             });
 
             modelBuilder.Entity<InsExaminationStudents>(entity =>
             {
-                entity.ToTable("InsExaminationStudents", "dbo");
-
                 entity.Property(e => e.Division).HasMaxLength(50);
 
                 entity.Property(e => e.IsAppear)
@@ -934,8 +857,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsFeeGroup>(entity =>
             {
-                entity.ToTable("InsFeeGroup", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(500);
 
                 entity.Property(e => e.GroupName).HasMaxLength(200);
@@ -951,15 +872,11 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsFeeGroupFeeItemsMapping>(entity =>
             {
-                entity.ToTable("InsFeeGroupFeeItemsMapping", "dbo");
-
                 entity.Property(e => e.FeeRate).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<InsFeeItem>(entity =>
             {
-                entity.ToTable("InsFeeItem", "dbo");
-
                 entity.Property(e => e.DefaultValue).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.FeeName).HasMaxLength(50);
@@ -973,8 +890,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsFeePost>(entity =>
             {
-                entity.ToTable("InsFeePost", "dbo");
-
                 entity.Property(e => e.AdditionalValue).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.ApprovalStatus)
@@ -992,8 +907,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsFeePostMaster>(entity =>
             {
-                entity.ToTable("InsFeePostMaster", "dbo");
-
                 entity.Property(e => e.LastModifyBy).HasDefaultValueSql("((-1))");
 
                 entity.Property(e => e.PostingMethod).HasMaxLength(20);
@@ -1003,8 +916,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsFeeTerm>(entity =>
             {
-                entity.ToTable("InsFeeTerm", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -1014,10 +925,34 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.TermName).HasMaxLength(200);
             });
 
+            modelBuilder.Entity<InsGradingCpolicyOld>(entity =>
+            {
+                entity.ToTable("InsGradingCPolicyOld");
+
+                entity.Property(e => e.Gpa)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("GPA");
+
+                entity.Property(e => e.Grade).HasMaxLength(2);
+
+                entity.Property(e => e.Percentage).HasColumnType("decimal(18, 2)");
+            });
+
+            modelBuilder.Entity<InsGradingPolicyOld>(entity =>
+            {
+                entity.Property(e => e.Gpa)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("GPA");
+
+                entity.Property(e => e.Grade).HasMaxLength(2);
+
+                entity.Property(e => e.MarksFrom).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.MarksTo).HasColumnType("decimal(18, 2)");
+            });
+
             modelBuilder.Entity<InsInstitute>(entity =>
             {
-                entity.ToTable("InsInstitute", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -1029,29 +964,21 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsMarksEvaluation>(entity =>
             {
-                entity.ToTable("InsMarksEvaluation", "dbo");
-
                 entity.Property(e => e.MarksInPercent).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<InsMeritFormula>(entity =>
             {
-                entity.ToTable("InsMeritFormula", "dbo");
-
                 entity.Property(e => e.Perentage).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<InsMeritList>(entity =>
             {
-                entity.ToTable("InsMeritList", "dbo");
-
                 entity.Property(e => e.MeritListName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<InsNotification>(entity =>
             {
-                entity.ToTable("InsNotification", "dbo");
-
                 entity.Property(e => e.Remarks).HasMaxLength(500);
 
                 entity.Property(e => e.Title).HasMaxLength(200);
@@ -1061,8 +988,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InsNotificationType", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name).HasMaxLength(200);
@@ -1070,8 +995,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsPayChallan>(entity =>
             {
-                entity.ToTable("InsPayChallan", "dbo");
-
                 entity.Property(e => e.AmountAfterDueDate)
                     .HasMaxLength(14)
                     .HasColumnName("Amount_After_DueDate");
@@ -1124,9 +1047,13 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.NetAmount).HasColumnType("decimal(18, 2)");
 
+                entity.Property(e => e.PaidRemarks).HasMaxLength(500);
+
                 entity.Property(e => e.PaidSource)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('System')");
+
+                entity.Property(e => e.PostingRemarks).HasMaxLength(500);
 
                 entity.Property(e => e.Reserved).HasMaxLength(200);
 
@@ -1147,8 +1074,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsPayChallanDetail>(entity =>
             {
-                entity.ToTable("InsPayChallanDetail", "dbo");
-
                 entity.Property(e => e.ItemFeeDescription).HasMaxLength(100);
 
                 entity.Property(e => e.ItemSource).HasMaxLength(100);
@@ -1164,8 +1089,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsProgram>(entity =>
             {
-                entity.ToTable("InsProgram", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.EnrNoPrefix).HasMaxLength(20);
@@ -1189,8 +1112,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsQualification>(entity =>
             {
-                entity.ToTable("InsQualification", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -1200,15 +1121,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Name).HasMaxLength(100);
             });
 
-            modelBuilder.Entity<InsQuotaSettings>(entity =>
-            {
-                entity.ToTable("InsQuotaSettings", "dbo");
-            });
-
             modelBuilder.Entity<InsRegistrationNumbringSeries>(entity =>
             {
-                entity.ToTable("InsRegistrationNumbringSeries", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(100);
 
                 entity.Property(e => e.IsActive)
@@ -1220,8 +1134,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InsReligion", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -1231,8 +1143,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsSection>(entity =>
             {
-                entity.ToTable("InsSection", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -1242,8 +1152,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsSession>(entity =>
             {
-                entity.ToTable("InsSession", "dbo");
-
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
                 entity.Property(e => e.IsActive)
@@ -1259,8 +1167,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudent>(entity =>
             {
-                entity.ToTable("InsStudent", "dbo");
-
                 entity.Property(e => e.BloodGroup).HasMaxLength(300);
 
                 entity.Property(e => e.CategoryIds).HasMaxLength(500);
@@ -1338,8 +1244,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentAdmission>(entity =>
             {
-                entity.ToTable("InsStudentAdmission", "dbo");
-
                 entity.Property(e => e.ExaminationCenterId).HasColumnName("ExaminationCenterID");
 
                 entity.Property(e => e.Status).HasMaxLength(50);
@@ -1347,8 +1251,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentCateogry>(entity =>
             {
-                entity.ToTable("InsStudentCateogry", "dbo");
-
                 entity.Property(e => e.Gender)
                     .HasMaxLength(20)
                     .HasDefaultValueSql("('all')");
@@ -1362,8 +1264,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentEmployments>(entity =>
             {
-                entity.ToTable("InsStudentEmployments", "dbo");
-
                 entity.Property(e => e.Department).HasMaxLength(500);
 
                 entity.Property(e => e.PeriodFrom).HasColumnType("date");
@@ -1378,8 +1278,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<InsStudentFeeMapping>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("InsStudentFeeMapping", "dbo");
 
                 entity.Property(e => e.AdditionalValue).HasColumnType("decimal(18, 2)");
 
@@ -1398,8 +1296,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentGroup>(entity =>
             {
-                entity.ToTable("InsStudentGroup", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(500);
 
                 entity.Property(e => e.GroupName).HasMaxLength(100);
@@ -1411,8 +1307,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentMeritListing>(entity =>
             {
-                entity.ToTable("InsStudentMeritListing", "dbo");
-
                 entity.Property(e => e.InterviewStatus).HasMaxLength(20);
 
                 entity.Property(e => e.MarksCaculated).HasColumnType("decimal(18, 2)");
@@ -1424,8 +1318,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsStudentQualifications>(entity =>
             {
-                entity.ToTable("InsStudentQualifications", "dbo");
-
                 entity.Property(e => e.BoardUniversity).HasMaxLength(500);
 
                 entity.Property(e => e.Division).HasMaxLength(50);
@@ -1445,15 +1337,8 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("((0))");
             });
 
-            modelBuilder.Entity<InsStudentSubjectMapping>(entity =>
-            {
-                entity.ToTable("InsStudentSubjectMapping", "dbo");
-            });
-
             modelBuilder.Entity<InsStudentTestScore>(entity =>
             {
-                entity.ToTable("InsStudentTestScore", "dbo");
-
                 entity.Property(e => e.ObtainedScore).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.RollNo).HasMaxLength(50);
@@ -1461,15 +1346,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.TotalScore).HasColumnType("decimal(18, 2)");
             });
 
-            modelBuilder.Entity<InsStudentToSubjects>(entity =>
-            {
-                entity.ToTable("InsStudentToSubjects", "dbo");
-            });
-
             modelBuilder.Entity<InsSubject>(entity =>
             {
-                entity.ToTable("InsSubject", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.CreditHours).HasColumnType("decimal(18, 2)");
@@ -1483,25 +1361,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.ShortName).HasMaxLength(50);
             });
 
-            modelBuilder.Entity<InsTeacherToSubjects>(entity =>
-            {
-                entity.ToTable("InsTeacherToSubjects", "dbo");
-            });
-
-            modelBuilder.Entity<InsTeacherToSubjectsAndClass>(entity =>
-            {
-                entity.ToTable("InsTeacherToSubjectsAndClass", "dbo");
-            });
-
-            modelBuilder.Entity<InsTermAppliedItemsMapping>(entity =>
-            {
-                entity.ToTable("InsTermAppliedItemsMapping", "dbo");
-            });
-
             modelBuilder.Entity<InsTimeSlot>(entity =>
             {
-                entity.ToTable("InsTimeSlot", "dbo");
-
                 entity.Property(e => e.EndTime).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -1517,10 +1378,19 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.StartTime).HasMaxLength(50);
             });
 
+            modelBuilder.Entity<InvBookingType>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.Property(e => e.Code).HasMaxLength(50);
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Remarks).IsUnicode(false);
+            });
+
             modelBuilder.Entity<InvCategory>(entity =>
             {
-                entity.ToTable("InvCategory", "dbo");
-
                 entity.Property(e => e.CategoryGroup)
                     .HasMaxLength(50)
                     .HasDefaultValueSql("('Store')");
@@ -1540,15 +1410,11 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvCompany>(entity =>
             {
-                entity.ToTable("InvCompany", "dbo");
-
                 entity.Property(e => e.Name).HasMaxLength(200);
             });
 
             modelBuilder.Entity<InvCustomer>(entity =>
             {
-                entity.ToTable("InvCustomer", "dbo");
-
                 entity.Property(e => e.AcctBalance).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.AcctMaxBalance).HasColumnType("decimal(18, 2)");
@@ -1598,8 +1464,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvCustomerType>(entity =>
             {
-                entity.ToTable("InvCustomerType", "dbo");
-
                 entity.Property(e => e.DefaultPaymentType).HasMaxLength(20);
 
                 entity.Property(e => e.IsActive)
@@ -1617,8 +1481,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvDemandNote>(entity =>
             {
-                entity.ToTable("InvDemandNote", "dbo");
-
                 entity.Property(e => e.Remarks).HasMaxLength(500);
 
                 entity.Property(e => e.Status).HasMaxLength(20);
@@ -1628,8 +1490,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InvDemandNoteDetail", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -1637,10 +1497,30 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
             });
 
+            modelBuilder.Entity<InvFunctionHall>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.Property(e => e.Code).HasMaxLength(50);
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Remarks).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<InvFunctionType>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.Property(e => e.Code).HasMaxLength(50);
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Remarks).IsUnicode(false);
+            });
+
             modelBuilder.Entity<InvGatePassInDetail>(entity =>
             {
-                entity.ToTable("InvGatePassInDetail", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
@@ -1648,8 +1528,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvGatePassInMaster>(entity =>
             {
-                entity.ToTable("InvGatePassInMaster", "dbo");
-
                 entity.Property(e => e.DriverContact).HasMaxLength(50);
 
                 entity.Property(e => e.DriverName).HasMaxLength(200);
@@ -1663,8 +1541,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvInspectionDetail>(entity =>
             {
-                entity.ToTable("InvInspectionDetail", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
@@ -1672,8 +1548,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvInspectionMaster>(entity =>
             {
-                entity.ToTable("InvInspectionMaster", "dbo");
-
                 entity.Property(e => e.InspectedByIds).HasMaxLength(500);
 
                 entity.Property(e => e.Remarks).HasMaxLength(500);
@@ -1681,8 +1555,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvJcMonthSetting>(entity =>
             {
-                entity.ToTable("InvJcMonthSetting", "dbo");
-
                 entity.Property(e => e.FromDate).HasColumnType("date");
 
                 entity.Property(e => e.ToDate).HasColumnType("date");
@@ -1692,22 +1564,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvLocation>(entity =>
             {
-                entity.ToTable("InvLocation", "dbo");
-
                 entity.Property(e => e.Name).HasMaxLength(200);
             });
 
             modelBuilder.Entity<InvPackageProductsMapping>(entity =>
             {
-                entity.ToTable("InvPackageProductsMapping", "dbo");
-
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 6)");
             });
 
             modelBuilder.Entity<InvPaymentType>(entity =>
             {
-                entity.ToTable("InvPaymentType", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.PaymentType).HasMaxLength(100);
@@ -1719,8 +1585,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvProduct>(entity =>
             {
-                entity.ToTable("InvProduct", "dbo");
-
                 entity.Property(e => e.AverageCost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.Barcode).HasMaxLength(50);
@@ -1810,8 +1674,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvProductBatch>(entity =>
             {
-                entity.ToTable("InvProductBatch", "dbo");
-
                 entity.Property(e => e.BatchBarcode).HasMaxLength(200);
 
                 entity.Property(e => e.BatchNo).HasMaxLength(100);
@@ -1821,8 +1683,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvProductLedger>(entity =>
             {
-                entity.ToTable("InvProductLedger", "dbo");
-
                 entity.Property(e => e.AverageCost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.BatchBarcode).HasMaxLength(200);
@@ -1850,8 +1710,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvProductionDetail>(entity =>
             {
-                entity.ToTable("InvProductionDetail", "dbo");
-
                 entity.Property(e => e.AverageCost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.CunsumptionQty).HasColumnType("decimal(18, 2)");
@@ -1867,8 +1725,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvProductionMaster>(entity =>
             {
-                entity.ToTable("InvProductionMaster", "dbo");
-
                 entity.Property(e => e.ElectricityUnitConsume).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.EndTime).HasMaxLength(50);
@@ -1886,8 +1742,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvPurchaseDetail>(entity =>
             {
-                entity.ToTable("InvPurchaseDetail", "dbo");
-
                 entity.Property(e => e.AdditionalTaxAmount).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.AverageCost).HasColumnType("decimal(18, 6)");
@@ -1915,8 +1769,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvPurchaseMaster>(entity =>
             {
-                entity.ToTable("InvPurchaseMaster", "dbo");
-
                 entity.Property(e => e.AdvanceTaxAmount).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.BiltyDate).HasColumnType("date");
@@ -1966,8 +1818,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvPurchaseOrderDetail>(entity =>
             {
-                entity.ToTable("InvPurchaseOrderDetail", "dbo");
-
                 entity.Property(e => e.QtyDamaged).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.QtyOrdered).HasColumnType("decimal(18, 6)");
@@ -1981,8 +1831,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvPurchaseOrderMaster>(entity =>
             {
-                entity.ToTable("InvPurchaseOrderMaster", "dbo");
-
                 entity.Property(e => e.Instructions).HasMaxLength(200);
 
                 entity.Property(e => e.OrderingMode).HasMaxLength(50);
@@ -2016,8 +1864,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvQuatationDetail>(entity =>
             {
-                entity.ToTable("InvQuatationDetail", "dbo");
-
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
@@ -2025,8 +1871,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvQuatationMaster>(entity =>
             {
-                entity.ToTable("InvQuatationMaster", "dbo");
-
                 entity.Property(e => e.ContactNo).HasMaxLength(50);
 
                 entity.Property(e => e.CustomerName).HasMaxLength(200);
@@ -2042,8 +1886,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InvSaleClosing", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Remarks).HasMaxLength(500);
@@ -2055,8 +1897,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("InvSaleClosingDetail", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -2064,8 +1904,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvSaleDetail>(entity =>
             {
-                entity.ToTable("InvSaleDetail", "dbo");
-
                 entity.Property(e => e.Discount).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.FurtherTax).HasColumnType("decimal(18, 6)");
@@ -2091,7 +1929,7 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvSaleMaster>(entity =>
             {
-                entity.ToTable("InvSaleMaster", "dbo");
+                entity.Property(e => e.AdvancePayment).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.BuyerCnic)
                     .HasMaxLength(50)
@@ -2119,6 +1957,8 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.EmpCreditType).HasMaxLength(50);
 
+                entity.Property(e => e.EventDateTime).HasDefaultValueSql("('0001-01-01')");
+
                 entity.Property(e => e.FbrInvoiceNumber).HasMaxLength(50);
 
                 entity.Property(e => e.FbrPosid).HasColumnName("FbrPOSID");
@@ -2134,6 +1974,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.FurtherTax).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.GrandTotal).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.HostedByName).HasMaxLength(500);
 
                 entity.Property(e => e.InvoiceTotal).HasColumnType("decimal(18, 2)");
 
@@ -2153,29 +1995,24 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.ServiceChargesCalculated).HasColumnType("decimal(18, 2)");
 
+                entity.Property(e => e.Source).HasMaxLength(10);
+
                 entity.Property(e => e.TaxCalculated).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.TotalQuantity).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.VehicleNo).HasMaxLength(100);
-            });
 
-            modelBuilder.Entity<InvSalemanToRoutsMapping>(entity =>
-            {
-                entity.ToTable("InvSalemanToRoutsMapping", "dbo");
+                entity.Property(e => e.VoucherStatus).HasMaxLength(10);
             });
 
             modelBuilder.Entity<InvSchemeDetail>(entity =>
             {
-                entity.ToTable("InvSchemeDetail", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<InvSchemeMaster>(entity =>
             {
-                entity.ToTable("InvSchemeMaster", "dbo");
-
                 entity.Property(e => e.Date).HasColumnType("date");
 
                 entity.Property(e => e.Description).HasMaxLength(100);
@@ -2195,22 +2032,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvShift>(entity =>
             {
-                entity.ToTable("InvShift", "dbo");
-
                 entity.Property(e => e.Shift).HasMaxLength(100);
             });
 
             modelBuilder.Entity<InvStockAdjustment>(entity =>
             {
-                entity.ToTable("InvStockAdjustment", "dbo");
-
                 entity.Property(e => e.Remarks).HasMaxLength(500);
             });
 
             modelBuilder.Entity<InvStockAdjustmentDetail>(entity =>
             {
-                entity.ToTable("InvStockAdjustmentDetail", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.PhysicalQty).HasColumnType("decimal(18, 6)");
@@ -2222,8 +2053,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvStockTransfer>(entity =>
             {
-                entity.ToTable("InvStockTransfer", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Remarks).HasMaxLength(500);
@@ -2233,8 +2062,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvStockTransferDetail>(entity =>
             {
-                entity.ToTable("InvStockTransferDetail", "dbo");
-
                 entity.Property(e => e.Cost).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.DemandedQty).HasColumnType("decimal(18, 6)");
@@ -2246,8 +2073,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvThirdPartyCustomer>(entity =>
             {
-                entity.ToTable("InvThirdPartyCustomer", "dbo");
-
                 entity.Property(e => e.Address).HasMaxLength(500);
 
                 entity.Property(e => e.Commission).HasColumnType("decimal(18, 2)");
@@ -2261,8 +2086,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvUnit>(entity =>
             {
-                entity.ToTable("InvUnit", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -2276,8 +2099,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvVehicle>(entity =>
             {
-                entity.ToTable("InvVehicle", "dbo");
-
                 entity.Property(e => e.FrameNo).HasMaxLength(100);
 
                 entity.Property(e => e.IsActive)
@@ -2301,8 +2122,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvVendor>(entity =>
             {
-                entity.ToTable("InvVendor", "dbo");
-
                 entity.Property(e => e.Address1).HasMaxLength(500);
 
                 entity.Property(e => e.Address2).HasMaxLength(500);
@@ -2356,8 +2175,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InvWarehouse>(entity =>
             {
-                entity.ToTable("InvWarehouse", "dbo");
-
                 entity.Property(e => e.Name).HasMaxLength(200);
 
                 entity.Property(e => e.StoreType).HasMaxLength(20);
@@ -2365,8 +2182,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<OrgBranch>(entity =>
             {
-                entity.ToTable("OrgBranch", "dbo");
-
                 entity.Property(e => e.AccAccountMethod).HasMaxLength(20);
 
                 entity.Property(e => e.AccAccountPeriod).HasMaxLength(20);
@@ -2395,9 +2210,15 @@ namespace AutoSynchSqlServer.Models
                     .HasColumnType("decimal(18, 2)")
                     .HasColumnName("InvBillAmountLimitForSCharges");
 
+                entity.Property(e => e.InvCreateJvInCaseOfKotsale)
+                    .HasMaxLength(10)
+                    .HasColumnName("InvCreateJvInCaseOfKOTSale");
+
                 entity.Property(e => e.InvCreateJvInCaseOfQtsale)
                     .HasMaxLength(3)
                     .HasColumnName("InvCreateJvInCaseOfQTSale");
+
+                entity.Property(e => e.InvDefaultOrderStatus).HasMaxLength(10);
 
                 entity.Property(e => e.InvDefaultPaymentType).HasMaxLength(50);
 
@@ -2435,9 +2256,13 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.InvSaleQtyPriceSeq).HasMaxLength(10);
 
+                entity.Property(e => e.InvSaveOrderZeroItems).HasMaxLength(10);
+
                 entity.Property(e => e.InvSchargesInPercent)
                     .HasColumnType("decimal(18, 2)")
                     .HasColumnName("InvSChargesInPercent");
+
+                entity.Property(e => e.InvShowOrderStatus).HasMaxLength(10);
 
                 entity.Property(e => e.InvSkipSchargesIfBillIsQt)
                     .HasMaxLength(10)
@@ -2520,22 +2345,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<OrgFeaturesMapping>(entity =>
             {
-                entity.ToTable("OrgFeaturesMapping", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<OrgOrgSystemsMapping>(entity =>
             {
-                entity.ToTable("OrgOrgSystemsMapping", "dbo");
-
                 entity.Property(e => e.SystemLabelDesc).HasMaxLength(300);
             });
 
             modelBuilder.Entity<OrgOrganization>(entity =>
             {
-                entity.ToTable("OrgOrganization", "dbo");
-
                 entity.Property(e => e.AccountIntegration)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('No')");
@@ -2576,6 +2395,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.DmBatch)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('Separate')");
+
+                entity.Property(e => e.DmBookingType).HasMaxLength(10);
 
                 entity.Property(e => e.DmCenter)
                     .HasMaxLength(10)
@@ -2632,6 +2453,10 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("('Separate')");
 
                 entity.Property(e => e.DmFnsdFoodAvailablity).HasMaxLength(10);
+
+                entity.Property(e => e.DmFunctionHall).HasMaxLength(10);
+
+                entity.Property(e => e.DmFunctionType).HasMaxLength(10);
 
                 entity.Property(e => e.DmGenCity)
                     .HasMaxLength(10)
@@ -2765,6 +2590,8 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.FbrApiSandBox).HasMaxLength(100);
 
+                entity.Property(e => e.GradingPolicy).HasMaxLength(10);
+
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -2811,6 +2638,8 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.PhoneNumber).HasMaxLength(50);
 
+                entity.Property(e => e.PrivateKey).HasMaxLength(100);
+
                 entity.Property(e => e.ReportsTitle).HasMaxLength(200);
 
                 entity.Property(e => e.ShortAddress).HasMaxLength(100);
@@ -2832,8 +2661,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PayChangeRequest>(entity =>
             {
-                entity.ToTable("PayChangeRequest", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Bps).HasColumnName("BPS");
@@ -2859,8 +2686,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PayPayrollChild>(entity =>
             {
-                entity.ToTable("PayPayrollChild", "dbo");
-
                 entity.Property(e => e.SalaryTransferType).HasMaxLength(10);
 
                 entity.Property(e => e.Status)
@@ -2870,21 +2695,21 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PayPayrollDetail>(entity =>
             {
-                entity.ToTable("PayPayrollDetail", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.CalculatedAmount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Operation)
                     .HasMaxLength(1)
                     .HasDefaultValueSql("('+')");
+
+                entity.Property(e => e.RebatedAmount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.WageType).HasMaxLength(50);
             });
 
             modelBuilder.Entity<PayPayrollMaster>(entity =>
             {
-                entity.ToTable("PayPayrollMaster", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -2898,8 +2723,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PayStagesScale>(entity =>
             {
-                entity.ToTable("PayStagesScale", "dbo");
-
                 entity.Property(e => e.Increment).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Initial).HasColumnType("decimal(18, 2)");
@@ -2907,10 +2730,27 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Maximum).HasColumnType("decimal(18, 2)");
             });
 
+            modelBuilder.Entity<PayTaxDeductionPattern>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.Property(e => e.FixedTaxAmount).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.IncomeTaxRatePer).HasColumnType("decimal(16, 2)");
+
+                entity.Property(e => e.IsActive)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
+
+                entity.Property(e => e.LowerLimit).HasColumnType("decimal(16, 2)");
+
+                entity.Property(e => e.UpperLimit).HasColumnType("decimal(16, 2)");
+            });
+
             modelBuilder.Entity<PayWage>(entity =>
             {
-                entity.ToTable("PayWage", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.FreezDate).HasColumnType("date");
@@ -2948,8 +2788,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PayWageDetail>(entity =>
             {
-                entity.ToTable("PayWageDetail", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Increment).HasColumnType("decimal(18, 2)");
@@ -2975,8 +2813,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyAdvanceLoanInfo>(entity =>
             {
-                entity.ToTable("PyAdvanceLoanInfo", "dbo");
-
                 entity.Property(e => e.AdvanceMonthYearDay).HasColumnType("date");
 
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
@@ -2994,8 +2830,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyAllowanceMaster>(entity =>
             {
-                entity.ToTable("PyAllowanceMaster", "dbo");
-
                 entity.Property(e => e.Name).HasMaxLength(50);
 
                 entity.Property(e => e.Value).HasColumnType("decimal(16, 2)");
@@ -3003,8 +2837,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyBasicPayDetail>(entity =>
             {
-                entity.ToTable("PyBasicPayDetail", "dbo");
-
                 entity.Property(e => e.Increment).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Max).HasColumnType("decimal(18, 2)");
@@ -3014,15 +2846,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Pbs).HasColumnName("PBS");
             });
 
-            modelBuilder.Entity<PyBasicPayMaster>(entity =>
-            {
-                entity.ToTable("PyBasicPayMaster", "dbo");
-            });
-
             modelBuilder.Entity<PyConveyanceAllowance>(entity =>
             {
-                entity.ToTable("PyConveyanceAllowance", "dbo");
-
                 entity.Property(e => e.FromBps).HasColumnName("FromBPS");
 
                 entity.Property(e => e.IsFlat)
@@ -3038,16 +2863,12 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("PyCorporateAllowanceMapping", "dbo");
-
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
             });
 
             modelBuilder.Entity<PyCorporateSalaryMaster>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("PyCorporateSalaryMaster", "dbo");
 
                 entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
@@ -3058,8 +2879,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyCpFundCalculation>(entity =>
             {
-                entity.ToTable("PyCpFundCalculation", "dbo");
-
                 entity.Property(e => e.Bps).HasColumnName("BPS");
 
                 entity.Property(e => e.CalculatedRate).HasColumnType("decimal(18, 2)");
@@ -3073,8 +2892,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyDeductionMaster>(entity =>
             {
-                entity.ToTable("PyDeductionMaster", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(16, 2)");
 
                 entity.Property(e => e.Name).HasMaxLength(50);
@@ -3083,8 +2900,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<PyEmployeeDeductionMapping>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("PyEmployeeDeductionMapping", "dbo");
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
@@ -3095,8 +2910,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("PyEmployeeDeductionMaster", "dbo");
-
                 entity.Property(e => e.CreatedOn).HasColumnType("datetime");
 
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -3104,8 +2917,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyEmployeeSalaryAllowanceMapping>(entity =>
             {
-                entity.ToTable("PyEmployeeSalaryAllowanceMapping", "dbo");
-
                 entity.Property(e => e.GrossAmount)
                     .HasColumnType("decimal(18, 2)")
                     .HasDefaultValueSql("((0))");
@@ -3117,8 +2928,6 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("PyEmployeeSalaryMaster", "dbo");
-
                 entity.Property(e => e.BasicSalary).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.CreatedOn).HasColumnType("datetime");
@@ -3129,8 +2938,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<PyEmployeeTransaction>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("PyEmployeeTransaction", "dbo");
 
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
@@ -3157,8 +2964,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyFormula>(entity =>
             {
-                entity.ToTable("PyFormula", "dbo");
-
                 entity.Property(e => e.Description).HasMaxLength(200);
 
                 entity.Property(e => e.FormulaCode).HasMaxLength(3);
@@ -3168,8 +2973,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyHouseRentAllowanceSetting>(entity =>
             {
-                entity.ToTable("PyHouseRentAllowanceSetting", "dbo");
-
                 entity.Property(e => e.Bps).HasColumnName("BPS");
 
                 entity.Property(e => e.Min).HasColumnType("decimal(18, 2)");
@@ -3177,8 +2980,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyPaymentSlip>(entity =>
             {
-                entity.ToTable("PyPaymentSlip", "dbo");
-
                 entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.NetAmount).HasColumnType("decimal(18, 2)");
@@ -3200,22 +3001,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyPayrollGeneration>(entity =>
             {
-                entity.ToTable("PyPayrollGeneration", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<PyPayrollGenerationDetail>(entity =>
             {
-                entity.ToTable("PyPayrollGenerationDetail", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<PyPayrollGenerationMaster>(entity =>
             {
-                entity.ToTable("PyPayrollGenerationMaster", "dbo");
-
                 entity.Property(e => e.FromDate).HasColumnType("date");
 
                 entity.Property(e => e.PayrollTotalValue).HasColumnType("decimal(18, 2)");
@@ -3234,8 +3029,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PySalaryHead>(entity =>
             {
-                entity.ToTable("PySalaryHead", "dbo");
-
                 entity.Property(e => e.Operation)
                     .HasMaxLength(2)
                     .IsUnicode(false);
@@ -3243,8 +3036,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyStaffAttendance>(entity =>
             {
-                entity.ToTable("PyStaffAttendance", "dbo");
-
                 entity.Property(e => e.CreatedDate).HasColumnType("datetime");
 
                 entity.Property(e => e.Date).HasColumnType("date");
@@ -3257,8 +3048,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<PyTaxDeductionPattern>(entity =>
             {
-                entity.ToTable("PyTaxDeductionPattern", "dbo");
-
                 entity.Property(e => e.FixedTaxAmount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.IncomeTaxRatePer).HasColumnType("decimal(16, 2)");
@@ -3270,8 +3059,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResBed>(entity =>
             {
-                entity.ToTable("ResBed", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -3279,20 +3066,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Name).HasMaxLength(200);
             });
 
-            modelBuilder.Entity<ResCurrencyNote>(entity =>
-            {
-                entity.ToTable("ResCurrencyNote", "dbo");
-            });
-
-            modelBuilder.Entity<ResCustomerTypeItemsMapping>(entity =>
-            {
-                entity.ToTable("ResCustomerTypeItemsMapping", "dbo");
-            });
-
             modelBuilder.Entity<ResFnsdCreditResetingHostory>(entity =>
             {
-                entity.ToTable("ResFnsdCreditResetingHostory", "dbo");
-
                 entity.Property(e => e.CreditType).HasMaxLength(50);
 
                 entity.Property(e => e.ResetingUpToDate).HasColumnType("date");
@@ -3300,8 +3075,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResFood>(entity =>
             {
-                entity.ToTable("ResFood", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.CookingTimeHours).HasMaxLength(10);
@@ -3335,8 +3108,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResFoodAddons>(entity =>
             {
-                entity.ToTable("ResFoodAddons", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Name).HasMaxLength(200);
@@ -3346,8 +3117,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResFoodAvailability>(entity =>
             {
-                entity.ToTable("ResFoodAvailability", "dbo");
-
                 entity.Property(e => e.AvailableDays).HasMaxLength(500);
 
                 entity.Property(e => e.FoodIds).HasMaxLength(500);
@@ -3359,8 +3128,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResFoodCategory>(entity =>
             {
-                entity.ToTable("ResFoodCategory", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.ImageName).HasMaxLength(300);
@@ -3376,15 +3143,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.ParentCategoryId).HasDefaultValueSql("((0))");
             });
 
-            modelBuilder.Entity<ResFoodToAddonsMapping>(entity =>
-            {
-                entity.ToTable("ResFoodToAddonsMapping", "dbo");
-            });
-
             modelBuilder.Entity<ResFoodVariant>(entity =>
             {
-                entity.ToTable("ResFoodVariant", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.IsActive)
@@ -3404,15 +3164,11 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResFoodVariantRecipe>(entity =>
             {
-                entity.ToTable("ResFoodVariantRecipe", "dbo");
-
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 6)");
             });
 
             modelBuilder.Entity<ResKipraHistory>(entity =>
             {
-                entity.ToTable("ResKipraHistory", "dbo");
-
                 entity.Property(e => e.InvoiceNo).HasMaxLength(50);
 
                 entity.Property(e => e.KipraKey).HasMaxLength(50);
@@ -3426,8 +3182,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResKitchen>(entity =>
             {
-                entity.ToTable("ResKitchen", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.Name).HasMaxLength(200);
@@ -3436,8 +3190,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<ResOrderType>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("ResOrderType", "dbo");
 
                 entity.Property(e => e.CreditType)
                     .HasMaxLength(50)
@@ -3456,15 +3208,11 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResPackageVarientsMapping>(entity =>
             {
-                entity.ToTable("ResPackageVarientsMapping", "dbo");
-
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<ResPatient>(entity =>
             {
-                entity.ToTable("ResPatient", "dbo");
-
                 entity.Property(e => e.BedId).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PatientMrNo).HasMaxLength(50);
@@ -3474,8 +3222,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResSaleClosing>(entity =>
             {
-                entity.ToTable("ResSaleClosing", "dbo");
-
                 entity.Property(e => e.CashierAmount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Remarks).HasMaxLength(500);
@@ -3485,8 +3231,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResSaleClosingDetail>(entity =>
             {
-                entity.ToTable("ResSaleClosingDetail", "dbo");
-
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.PaymentType).HasMaxLength(20);
@@ -3494,8 +3238,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResSaleDetail>(entity =>
             {
-                entity.ToTable("ResSaleDetail", "dbo");
-
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
@@ -3505,8 +3247,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResSaleDetailTemp>(entity =>
             {
-                entity.ToTable("ResSaleDetailTemp", "dbo");
-
                 entity.Property(e => e.Flage).HasMaxLength(50);
 
                 entity.Property(e => e.Qty).HasColumnType("decimal(18, 2)");
@@ -3514,8 +3254,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResSaleMaster>(entity =>
             {
-                entity.ToTable("ResSaleMaster", "dbo");
-
                 entity.Property(e => e.ApprovedBy).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BedId).HasDefaultValueSql("((0))");
@@ -3569,8 +3307,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResShift>(entity =>
             {
-                entity.ToTable("ResShift", "dbo");
-
                 entity.Property(e => e.IsActive)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -3580,8 +3316,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResTable>(entity =>
             {
-                entity.ToTable("ResTable", "dbo");
-
                 entity.Property(e => e.Code).HasMaxLength(50);
 
                 entity.Property(e => e.ImagePath).HasMaxLength(200);
@@ -3591,22 +3325,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<ResVarientPricingByCustType>(entity =>
             {
-                entity.ToTable("ResVarientPricingByCustType", "dbo");
-
                 entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             });
 
             modelBuilder.Entity<ResWard>(entity =>
             {
-                entity.ToTable("ResWard", "dbo");
-
                 entity.Property(e => e.Name).HasMaxLength(200);
             });
 
             modelBuilder.Entity<SysControllesGroup>(entity =>
             {
-                entity.ToTable("SysControllesGroup", "dbo");
-
                 entity.Property(e => e.ActionLink).HasMaxLength(100);
 
                 entity.Property(e => e.ControllGroupName).HasMaxLength(50);
@@ -3618,8 +3346,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysErpDefaultSetting>(entity =>
             {
-                entity.ToTable("SysErpDefaultSetting", "dbo");
-
                 entity.Property(e => e.IsUseMemoryCashe)
                     .HasMaxLength(5)
                     .HasDefaultValueSql("(N'N')");
@@ -3629,8 +3355,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysExecptionLogging>(entity =>
             {
-                entity.ToTable("SysExecptionLogging", "dbo");
-
                 entity.Property(e => e.Action).HasMaxLength(100);
 
                 entity.Property(e => e.Controller).HasMaxLength(100);
@@ -3640,8 +3364,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysFeature>(entity =>
             {
-                entity.ToTable("SysFeature", "dbo");
-
                 entity.Property(e => e.Details).HasMaxLength(500);
 
                 entity.Property(e => e.DisplayName).HasMaxLength(100);
@@ -3651,8 +3373,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysForm>(entity =>
             {
-                entity.ToTable("SysForm", "dbo");
-
                 entity.Property(e => e.FormName).HasMaxLength(100);
 
                 entity.Property(e => e.FrmAction).HasMaxLength(100);
@@ -3666,22 +3386,16 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysHtml>(entity =>
             {
-                entity.ToTable("SysHtml", "dbo");
-
                 entity.Property(e => e.Section).HasMaxLength(100);
             });
 
             modelBuilder.Entity<SysInvTypeWiseControll>(entity =>
             {
-                entity.ToTable("SysInvTypeWiseControll", "dbo");
-
                 entity.Property(e => e.InventoryType).HasMaxLength(50);
             });
 
             modelBuilder.Entity<SysLableContent>(entity =>
             {
-                entity.ToTable("SysLableContent", "dbo");
-
                 entity.Property(e => e.LableContentStr).HasMaxLength(100);
 
                 entity.Property(e => e.LableName).HasMaxLength(50);
@@ -3691,8 +3405,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysLayout>(entity =>
             {
-                entity.ToTable("SysLayout", "dbo");
-
                 entity.Property(e => e.LayoutName).HasMaxLength(100);
 
                 entity.Property(e => e.LayoutPath).HasMaxLength(500);
@@ -3700,8 +3412,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysModule>(entity =>
             {
-                entity.ToTable("SysModule", "dbo");
-
                 entity.Property(e => e.DisplayName).HasMaxLength(100);
 
                 entity.Property(e => e.Icon).HasMaxLength(100);
@@ -3713,22 +3423,13 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Module).HasMaxLength(100);
             });
 
-            modelBuilder.Entity<SysModuleFormsMapping>(entity =>
-            {
-                entity.ToTable("SysModuleFormsMapping", "dbo");
-            });
-
             modelBuilder.Entity<SysMonthName>(entity =>
             {
-                entity.ToTable("SysMonthName", "dbo");
-
                 entity.Property(e => e.MonthName).HasMaxLength(50);
             });
 
             modelBuilder.Entity<SysOrgFormsMapping>(entity =>
             {
-                entity.ToTable("SysOrgFormsMapping", "dbo");
-
                 entity.Property(e => e.FormLabelDesc).HasMaxLength(200);
 
                 entity.Property(e => e.IsEnable)
@@ -3738,8 +3439,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysOrgModulesMapping>(entity =>
             {
-                entity.ToTable("SysOrgModulesMapping", "dbo");
-
                 entity.Property(e => e.IsEnable)
                     .IsRequired()
                     .HasDefaultValueSql("((1))");
@@ -3749,8 +3448,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysSystem>(entity =>
             {
-                entity.ToTable("SysSystem", "dbo");
-
                 entity.Property(e => e.DisplayName).HasMaxLength(100);
 
                 entity.Property(e => e.Icon).HasMaxLength(100);
@@ -3768,21 +3465,14 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<SysWeekDay>(entity =>
             {
-                entity.ToTable("SysWeekDay", "dbo");
-
                 entity.Property(e => e.Day).HasMaxLength(50);
-            });
-
-            modelBuilder.Entity<SysYear>(entity =>
-            {
-                entity.ToTable("SysYear", "dbo");
             });
 
             modelBuilder.Entity<Table1>(entity =>
             {
                 entity.HasNoKey();
 
-                entity.ToTable("Table_1", "dbo");
+                entity.ToTable("Table_1");
 
                 entity.Property(e => e.CategoryId).HasColumnName("categoryId");
 
@@ -3883,7 +3573,7 @@ namespace AutoSynchSqlServer.Models
             {
                 entity.HasNoKey();
 
-                entity.ToTable("Table_2", "dbo");
+                entity.ToTable("Table_2");
 
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(500)
@@ -3893,8 +3583,6 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<UsrSystemUser>(entity =>
             {
                 entity.HasNoKey();
-
-                entity.ToTable("UsrSystemUser", "dbo");
 
                 entity.Property(e => e.AuthorizationType)
                     .HasMaxLength(10)
@@ -3952,15 +3640,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.UserType).HasMaxLength(20);
             });
 
-            modelBuilder.Entity<UsrUserBranchesMapping>(entity =>
-            {
-                entity.ToTable("UsrUserBranchesMapping", "dbo");
-            });
-
             modelBuilder.Entity<UsrUserFormsMapping>(entity =>
             {
-                entity.ToTable("UsrUserFormsMapping", "dbo");
-
                 entity.Property(e => e.CanApprove).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CanCreate).HasDefaultValueSql("((0))");
@@ -3974,8 +3655,6 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<UsrUserParmsMapping>(entity =>
             {
-                entity.ToTable("UsrUserParmsMapping", "dbo");
-
                 entity.Property(e => e.ParmType).HasMaxLength(50);
             });
 

@@ -6,9 +6,7 @@ namespace AutoSynchSqlServer.Models
     public partial class PayPayrollMaster
     {
         public int Id { get; set; }
-        public int Year { get; set; }
         public int Month { get; set; }
-        public int SessionId { get; set; }
         public int FiscalYearId { get; set; }
         public string? Remarks { get; set; }
         public decimal TotalValue { get; set; }

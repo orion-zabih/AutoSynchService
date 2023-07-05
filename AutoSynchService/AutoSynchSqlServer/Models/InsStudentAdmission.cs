@@ -27,5 +27,6 @@ namespace AutoSynchSqlServer.Models
         public int BranchId { get; set; }
         public int? FeeGroupId { get; set; }
         public int? FeeTermId { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

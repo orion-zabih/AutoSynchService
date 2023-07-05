@@ -47,5 +47,7 @@ namespace AutoSynchSqlServer.Models
         public int CustomerId { get; set; }
         public bool IsDeleted { get; set; }
         public int ClassId { get; set; }
+        public string? PostingRemarks { get; set; }
+        public string? PaidRemarks { get; set; }
     }
 }

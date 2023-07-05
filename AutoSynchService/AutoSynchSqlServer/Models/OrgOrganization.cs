@@ -104,5 +104,11 @@ namespace AutoSynchSqlServer.Models
         public string? DmProject { get; set; }
         public string? DmBankBranch { get; set; }
         public string? DmExamAdtCreteria { get; set; }
+        public bool EnablePrivateKey { get; set; }
+        public string? PrivateKey { get; set; }
+        public string? GradingPolicy { get; set; }
+        public string? DmBookingType { get; set; }
+        public string? DmFunctionType { get; set; }
+        public string? DmFunctionHall { get; set; }
     }
 }
