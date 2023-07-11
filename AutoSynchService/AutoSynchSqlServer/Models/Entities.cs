@@ -229,6 +229,7 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<SysYear> SysYear { get; set; } = null!;
         public virtual DbSet<Table1> Table1 { get; set; } = null!;
         public virtual DbSet<Table2> Table2 { get; set; } = null!;
+        public virtual DbSet<Table3> Table3 { get; set; } = null!;
         public virtual DbSet<UsrSystemUser> UsrSystemUser { get; set; } = null!;
         public virtual DbSet<UsrUserBranchesMapping> UsrUserBranchesMapping { get; set; } = null!;
         public virtual DbSet<UsrUserFormsMapping> UsrUserFormsMapping { get; set; } = null!;
@@ -1971,6 +1972,8 @@ namespace AutoSynchSqlServer.Models
                     .HasMaxLength(50)
                     .HasColumnName("FbrUSIN");
 
+                entity.Property(e => e.FunctionHallIds).HasMaxLength(100);
+
                 entity.Property(e => e.FurtherTax).HasColumnType("decimal(18, 6)");
 
                 entity.Property(e => e.GrandTotal).HasColumnType("decimal(18, 2)");
@@ -1990,6 +1993,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.PaymentType).HasMaxLength(50);
 
                 entity.Property(e => e.Remarks).HasMaxLength(200);
+
+                entity.Property(e => e.SaleSource).HasMaxLength(10);
 
                 entity.Property(e => e.ScaleNumber).HasMaxLength(100);
 
@@ -3578,6 +3583,25 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.CategoryName)
                     .HasMaxLength(500)
                     .HasColumnName("categoryName");
+            });
+
+            modelBuilder.Entity<Table3>(entity =>
+            {
+                entity.ToTable("Table_3");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.AverageCost).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.BranchId).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Name).HasMaxLength(500);
+
+                entity.Property(e => e.Stock).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.Total).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.WarehouseId).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<UsrSystemUser>(entity =>

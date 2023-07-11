@@ -85,5 +85,8 @@ namespace AutoSynchSqlServer.Models
         public int BookingTypeId { get; set; }
         public string? VoucherStatus { get; set; }
         public string? Source { get; set; }
+        public TimeSpan? MealServingTime { get; set; }
+        public string? FunctionHallIds { get; set; }
+        public string? SaleSource { get; set; }
     }
 }

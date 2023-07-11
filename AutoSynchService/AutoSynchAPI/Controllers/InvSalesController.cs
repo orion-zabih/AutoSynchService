@@ -83,6 +83,7 @@ namespace AutoSynchAPI.Controllers
                            // InvSaleMaster dbSaleMaster = new InvSaleMaster();
                             m.Id = 0;
                             m.Source = "local";
+                            m.MealServingTime = new TimeSpan( 0, 0, 0, 0, 0);
                             dbContext.InvSaleMaster.Add(m);
                             dbContext.SaveChanges();
                             List<InvSaleDetail> invSaleDetails = dataResponse.invSaleDetails.Where(d => d.BillId == oldId).ToList();
