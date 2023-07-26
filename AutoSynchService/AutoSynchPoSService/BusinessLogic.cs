@@ -579,8 +579,8 @@ namespace AutoSynchPoSService
                                         if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer))
                                         {
                                             synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Where(w=>w.synch_type== lastSynchSetting.synch_type).Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
-                                            //if(pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString())==null)
-                                             //synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
+                                            if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString()) == null)
+                                                synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
                                             // synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), lastSynchSetting.synch_type, new DateTime(DateTime.Now.Year+1,1,1), "ready", Constants.SqlServer);
                                             //if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_recent.ToString()) == null)
                                             //    synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
