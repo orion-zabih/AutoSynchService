@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.Data.Common;
 
 namespace AutoSynchAPI.Controllers
 {
@@ -574,7 +575,7 @@ namespace AutoSynchAPI.Controllers
                     SynchTbls.Add("InvLocation");
                     SynchTbls.Add("InvPackageProductsMapping");
                     SynchTbls.Add("InvPaymentType");
-                    SynchTbls.Add("InvProduct");
+                    //.SynchTbls.Add("InvProduct");
                     SynchTbls.Add("InvProductBatch");
                     SynchTbls.Add("InvProductionDetail");
                     SynchTbls.Add("InvProductionMaster");
@@ -629,10 +630,10 @@ namespace AutoSynchAPI.Controllers
 
                     var lstTables = dbContext.Model.GetEntityTypes().Where(et => SynchTbls.Contains(et.GetTableName())).ToList();
 
-                    //lstTables.ForEach(table =>
-                    //{
-                    //    responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
-                    //});
+                    lstTables.ForEach(table =>
+                    {
+                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
+                    });
 
                     string qry = string.Empty;
                     switch (local_db)
@@ -641,14 +642,15 @@ namespace AutoSynchAPI.Controllers
                             {
                                 lstTables.ForEach(table =>
                                 {
-                                    qry = "create table " + getTableName(table.GetTableName(),local_db) + "(";
+                                    string tblName = getTableName(table.GetTableName(), local_db);
+                                    qry = "create table " + tblName + "(";
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
-                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + ",";
+                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + (column.ValueGenerated == ValueGenerated.OnAdd ? "" : getDefaultValue(ReturnColumnType(column.GetColumnType()),column.GetDefaultValue())) + ",";
                                     }
-                                    if (getTableName(table.GetTableName(), local_db).ToLower().Equals("invsalemastertmp"))
+                                    if (tblName.ToLower().Equals("invsalemastertmp") || tblName.ToLower().Equals("invpurchasemaster"))
                                     {
                                         qry += cols + " IsUploaded bit default 0 " + ")";
                                     }
@@ -662,15 +664,16 @@ namespace AutoSynchAPI.Controllers
                             {
                                 lstTables.ForEach(table =>
                                 {
-                                    qry = "create table " + getTableName(table.GetTableName(),local_db) + "(";
+                                    string tblName = getTableName(table.GetTableName(), local_db);
+                                    qry = "create table " + tblName + "(";
                                     
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
-                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
+                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL")+ (column.ValueGenerated == ValueGenerated.OnAdd ? "":getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()),column.GetDefaultValue())) + ",";
                                     }
-                                    if (getTableName(table.GetTableName(), local_db).ToLower().Equals("invsalemaster"))
+                                    if (tblName.ToLower().Equals("invsalemaster") || tblName.ToLower().Equals("invpurchasemaster"))
                                     {
                                         qry += cols+ " IsUploaded bit default 0 " + ")";
                                     }
@@ -713,6 +716,325 @@ namespace AutoSynchAPI.Controllers
                 return BadRequest(responseObj);
             }
         }
+        [Route("GetTableColumns")]
+        [HttpGet]
+        public IActionResult GetTableColumns(string branch_id, string synch_type, string table_list, string local_db)
+        {
+            SynchTypes synchType = SynchTypes.full;
+            Enum.TryParse(synch_type, out synchType);
+
+            Models.TableStructureResponse responseObj = new Models.TableStructureResponse();
+            try
+            {
+                List<string> SynchTbls = new List<string>();
+                if (synchType == SynchTypes.full)
+                {
+                    using (Entities dbContext = new Entities())
+                    {
+                        //dbContext.InvSaleMaster
+                        //List<string> lstTables = new List<string>();
+                        //lstTables.Add()
+
+                        SynchTbls = dbContext.Model.GetEntityTypes().Where(et => et.GetTableName() != "Timestamp" && et.GetTableName() != "Sequence").Select(et => et.GetTableName()).ToList();
+
+                        //lstTables.ForEach(table =>
+                        //{
+                        //    SynchTbls.Add(getTableName(table));
+                        //});
+                    }
+                    //SynchTbls.Add("SysControllesGroup");
+                    //SynchTbls.Add("SysExecptionLogging");
+                    //SynchTbls.Add("SysFeature");
+                    //SynchTbls.Add("SysOrgFormsMapping");
+                    //SynchTbls.Add("SysForm");
+                    //SynchTbls.Add("SysOrgModulesMapping");
+                    //SynchTbls.Add("SysLayout");
+                    //SynchTbls.Add("SysModule");
+                    //SynchTbls.Add("SysModuleFormsMapping");
+                    //SynchTbls.Add("SysSystem");
+                    //SynchTbls.Add("SysWeekDay");
+                    //SynchTbls.Add("SysMonthName");
+                    //SynchTbls.Add("SysYear");
+                    //SynchTbls.Add("SysLableContent");
+                    //SynchTbls.Add("SysHtml");
+                    //SynchTbls.Add("SysInvTypeWiseControll");
+                    //SynchTbls.Add("InvCategory");
+                    //SynchTbls.Add("InvCompany");
+                    //SynchTbls.Add("InvCustomer");
+                    //SynchTbls.Add("InvCustomerType");
+                    //SynchTbls.Add("InvDeliveryChallanDetail");
+                    //SynchTbls.Add("InvDeliveryChallanMaster");
+                    //SynchTbls.Add("InvDemandNote");
+                    //SynchTbls.Add("InvDemandNoteDetail");
+                    //SynchTbls.Add("InvGatePassInDetail");
+                    //SynchTbls.Add("InvGatePassInMaster");
+                    //SynchTbls.Add("InvJcMonthSetting");
+                    //SynchTbls.Add("InvLocation");
+                    //SynchTbls.Add("InvPackageProductsMapping");
+                    //SynchTbls.Add("InvPaymentType");
+                    //SynchTbls.Add("InvProduct");
+                    //SynchTbls.Add("InvProductBatch");
+                    //SynchTbls.Add("InvProductionDetail");
+                    //SynchTbls.Add("InvProductionMaster");
+                    //SynchTbls.Add("InvProductLedger");
+                    //SynchTbls.Add("InvPurchaseDetail");
+                    //SynchTbls.Add("InvPurchaseMaster");
+                    //SynchTbls.Add("InvPurchaseOrderDetail");
+                    //SynchTbls.Add("InvPurchaseOrderMaster");
+                    //SynchTbls.Add("InvQuatationDetail");
+                    //SynchTbls.Add("InvQuatationMaster");
+                    //SynchTbls.Add("InvSaleClosing");
+                    //SynchTbls.Add("InvSaleClosingDetail");
+                    //SynchTbls.Add("InvSaleDetail");
+                    //SynchTbls.Add("InvSalemanToRoutsMapping");
+                    //SynchTbls.Add("InvSaleMaster");
+                    //SynchTbls.Add("InvSchemeDetail");
+                    //SynchTbls.Add("InvSchemeMaster");
+                    //SynchTbls.Add("InvShift");
+                    //SynchTbls.Add("InvStockAdjustment");
+                    //SynchTbls.Add("InvStockAdjustmentDetail");
+                    //SynchTbls.Add("InvStockTransfer");
+                    //SynchTbls.Add("InvStockTransferDetail");
+                    //SynchTbls.Add("InvThirdPartyCustomer");
+                    //SynchTbls.Add("InvUnit");
+                    //SynchTbls.Add("InvVehicle");
+                    //SynchTbls.Add("InvVendor");
+                    //SynchTbls.Add("InvWarehouse");
+                    //SynchTbls.Add("UsrSystemUser");
+                    //SynchTbls.Add("UsrUserBranchesMapping");
+                    //SynchTbls.Add("UsrUserFormsMapping");
+                    //SynchTbls.Add("UsrUserParmsMapping");
+                    //SynchTbls.Add("OrgBranch");
+                    //SynchTbls.Add("OrgFeaturesMapping");
+                    //SynchTbls.Add("OrgOrganization");
+                    //SynchTbls.Add("OrgOrgSystemsMapping");
+                    //SynchTbls.Add("AccFiscalYear");
+
+                }
+                else if (synchType == SynchTypes.only_sys_tables)
+                {
+                    SynchTbls.Add("SysControllesGroup");
+                    SynchTbls.Add("SysExecptionLogging");
+                    SynchTbls.Add("SysFeature");
+                    SynchTbls.Add("SysOrgFormsMapping");
+                    SynchTbls.Add("SysForm");
+                    SynchTbls.Add("SysOrgModulesMapping");
+                    SynchTbls.Add("SysLayout");
+                    SynchTbls.Add("SysModule");
+                    SynchTbls.Add("SysModuleFormsMapping");
+                    SynchTbls.Add("SysSystem");
+                    SynchTbls.Add("SysWeekDay");
+                    SynchTbls.Add("SysMonthName");
+                    SynchTbls.Add("SysYear");
+                    SynchTbls.Add("SysLableContent");
+                    SynchTbls.Add("SysHtml");
+                    SynchTbls.Add("SysInvTypeWiseControll");
+                }
+
+                else if (synchType == SynchTypes.only_sale_master_detail_tables)
+                {
+                    SynchTbls.Add("InvSaleDetail");
+                    SynchTbls.Add("InvSaleMaster");
+                }
+                else if (synchType == SynchTypes.except_sale_master_detail_tables)
+                {
+
+                    SynchTbls.Add("SysControllesGroup");
+                    SynchTbls.Add("SysExecptionLogging");
+                    SynchTbls.Add("SysFeature");
+                    SynchTbls.Add("SysOrgFormsMapping");
+                    SynchTbls.Add("SysForm");
+                    SynchTbls.Add("SysOrgModulesMapping");
+                    SynchTbls.Add("SysLayout");
+                    SynchTbls.Add("SysModule");
+                    SynchTbls.Add("SysModuleFormsMapping");
+                    SynchTbls.Add("SysSystem");
+                    SynchTbls.Add("SysWeekDay");
+                    SynchTbls.Add("SysMonthName");
+                    SynchTbls.Add("SysYear");
+                    SynchTbls.Add("SysLableContent");
+                    SynchTbls.Add("SysHtml");
+                    SynchTbls.Add("SysInvTypeWiseControll");
+                    SynchTbls.Add("InvCategory");
+                    SynchTbls.Add("InvCompany");
+                    SynchTbls.Add("InvCustomer");
+                    SynchTbls.Add("InvCustomerType");
+                    SynchTbls.Add("InvDeliveryChallanDetail");
+                    SynchTbls.Add("InvDeliveryChallanMaster");
+                    SynchTbls.Add("InvDemandNote");
+                    SynchTbls.Add("InvDemandNoteDetail");
+                    SynchTbls.Add("InvGatePassInDetail");
+                    SynchTbls.Add("InvGatePassInMaster");
+                    SynchTbls.Add("InvJcMonthSetting");
+                    SynchTbls.Add("InvLocation");
+                    SynchTbls.Add("InvPackageProductsMapping");
+                    SynchTbls.Add("InvPaymentType");
+                    //.SynchTbls.Add("InvProduct");
+                    SynchTbls.Add("InvProductBatch");
+                    SynchTbls.Add("InvProductionDetail");
+                    SynchTbls.Add("InvProductionMaster");
+                    SynchTbls.Add("InvProductLedger");
+                    SynchTbls.Add("InvPurchaseDetail");
+                    SynchTbls.Add("InvPurchaseMaster");
+                    SynchTbls.Add("InvPurchaseOrderDetail");
+                    SynchTbls.Add("InvPurchaseOrderMaster");
+                    SynchTbls.Add("InvQuatationDetail");
+                    SynchTbls.Add("InvQuatationMaster");
+                    SynchTbls.Add("InvSaleClosing");
+                    SynchTbls.Add("InvSaleClosingDetail");
+                    //SynchTbls.Add("InvSaleDetail");
+                    SynchTbls.Add("InvSalemanToRoutsMapping");
+                    //SynchTbls.Add("InvSaleMaster");
+                    SynchTbls.Add("InvSchemeDetail");
+                    SynchTbls.Add("InvSchemeMaster");
+                    SynchTbls.Add("InvShift");
+                    SynchTbls.Add("InvStockAdjustment");
+                    SynchTbls.Add("InvStockAdjustmentDetail");
+                    SynchTbls.Add("InvStockTransfer");
+                    SynchTbls.Add("InvStockTransferDetail");
+                    SynchTbls.Add("InvThirdPartyCustomer");
+                    SynchTbls.Add("InvUnit");
+                    SynchTbls.Add("InvVehicle");
+                    SynchTbls.Add("InvVendor");
+                    SynchTbls.Add("InvWarehouse");
+                    SynchTbls.Add("UsrSystemUser");
+                    SynchTbls.Add("UsrUserBranchesMapping");
+                    SynchTbls.Add("UsrUserFormsMapping");
+                    SynchTbls.Add("UsrUserParmsMapping");
+                    SynchTbls.Add("OrgBranch");
+                    SynchTbls.Add("OrgFeaturesMapping");
+                    SynchTbls.Add("OrgOrganization");
+                    SynchTbls.Add("OrgOrgSystemsMapping");
+                    SynchTbls.Add("AccFiscalYear");
+                }
+                else if (synchType == SynchTypes.custom)
+                {
+                    if (!string.IsNullOrEmpty(table_list))
+                        SynchTbls = table_list.Split(',').ToList();
+                    else
+                    {
+                        return BadRequest(responseObj);
+                    }
+                }
+                using (Entities dbContext = new Entities())
+                {
+                    //dbContext.InvSaleMaster
+                    //List<string> lstTables = new List<string>();
+                    //lstTables.Add()
+
+                    var lstTables = dbContext.Model.GetEntityTypes().Where(et => SynchTbls.Contains(et.GetTableName())).ToList();
+
+                    
+
+                    
+                    switch (local_db)
+                    {
+                        case Constants.Sqlite:
+                            {
+                                lstTables.ForEach(table =>
+                                {
+                                    string tblName = getTableName(table.GetTableName(), local_db);
+                                    
+                                    var columns = table.GetProperties().ToList();
+                                    
+                                    foreach (var column in columns)
+                                    {
+                                        AutoSynchSqlServer.CustomModels.TableStructure tableStructure = new AutoSynchSqlServer.CustomModels.TableStructure();
+                                        tableStructure.TableName = tblName;
+                                        tableStructure.ColumnName = column.Name;
+                                        tableStructure.IsPrimaryKey = column.IsPrimaryKey() ? "YES" : "NO";
+                                        tableStructure.DataType = ReturnColumnType(column.GetColumnType());
+                                        responseObj.tableStructures.Add(tableStructure);
+//                                        cols += column.Name + " " + ReturnColumnType(column.GetColumnType()) + (column.IsPrimaryKey() ? " primary key" : "") + ",";
+
+                                    }
+                                    if (tblName.ToLower().Equals("invsalemastertmp") || tblName.ToLower().Equals("invpurchasemaster"))
+                                    {
+                                        AutoSynchSqlServer.CustomModels.TableStructure tableStructure = new AutoSynchSqlServer.CustomModels.TableStructure();
+                                        tableStructure.TableName = tblName;
+                                        tableStructure.ColumnName = "IsUploaded";
+                                        tableStructure.DataType = "bit";
+                                        tableStructure.IsNullable = "NO";
+                                        tableStructure.ColumnDefault = "0";
+                                        responseObj.tableStructures.Add(tableStructure);
+
+                                        //qry += cols + " IsUploaded bit default 0 " + ")";
+                                    }
+
+
+                                });
+                            }
+                            break;
+                        case Constants.SqlServer:
+                            {
+                                lstTables.ForEach(table =>
+                                {
+                                    string tblName = getTableName(table.GetTableName(), local_db);
+                                    
+
+                                    var columns = table.GetProperties().ToList();
+                                    //string cols = string.Empty;
+                                    foreach (var column in columns)
+                                    {//column.IsNullable
+                                        AutoSynchSqlServer.CustomModels.TableStructure tableStructure = new AutoSynchSqlServer.CustomModels.TableStructure();
+                                        tableStructure.TableName = tblName;
+                                        tableStructure.ColumnName = getColumnName(column.Name);
+                                        tableStructure.DataType = ReturnColumnTypeSqlserver(column.GetColumnType());
+                                        tableStructure.IsNullable = column.IsColumnNullable() ? "YES" : "NO";
+                                        tableStructure.IsPrimaryKey = column.IsPrimaryKey() ? "YES" : "NO";
+                                        tableStructure.ColumnDefault = column.GetDefaultValue() != null ? column.GetDefaultValue().ToString() : "";
+                                        responseObj.tableStructures.Add(tableStructure);
+                                        //cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd ? isIdentityColumn(column, table) : "") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
+                                    }
+                                    if (tblName.ToLower().Equals("invsalemaster") || tblName.ToLower().Equals("invpurchasemaster"))
+                                    {
+                                        AutoSynchSqlServer.CustomModels.TableStructure tableStructure = new AutoSynchSqlServer.CustomModels.TableStructure();
+                                        tableStructure.TableName = tblName;
+                                        tableStructure.ColumnName = "IsUploaded";
+                                        tableStructure.DataType = "bit";
+                                        tableStructure.IsNullable =  "NO";
+                                        tableStructure.IsPrimaryKey = "NO";
+                                        tableStructure.ColumnDefault = "0";
+                                        responseObj.tableStructures.Add(tableStructure);
+                                        //qry += cols + " IsUploaded bit default 0 " + ")";
+                                    }
+                                    
+
+                                    
+                                });
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+
+
+                    //int=dbContext.AccAccountHead.FirstOrDefault().HeadName.ma
+                }
+
+                if (responseObj.tableStructures != null && responseObj.tableStructures.Count() > 0)
+                {
+                    //responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                    return Ok(responseObj);
+                }
+                else
+                {
+                    //responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+                    return NotFound(responseObj);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(responseObj);
+            }
+        }
+
         private string getColumnName(string columnName)
         {
             switch (columnName.ToLower())
@@ -852,6 +1174,64 @@ namespace AutoSynchAPI.Controllers
             //    colType = colType/* + " (" + maxLength + ")"*/;
             //}
             return colType;
+        }
+        private string getDefaultValue(string columnType,object DefaultValue)
+        {
+            string defaultVal = string.Empty;
+            if (DefaultValue != null)
+            {
+                switch (columnType.ToLower())
+                {
+                    case "bit":
+                        {
+                            if(DefaultValue.ToString()=="False")
+                            {
+                                defaultVal = " DEFAULT 0";
+                            }
+                            else
+                            {
+                                defaultVal = " DEFAULT 1";
+                            }
+                        }
+                        break;
+                    case "datetime2":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString()+ "'";
+                        }
+                        break;
+                    case "date":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                        }
+                        break;
+                    case "string":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                        }
+                        break;
+                    case "nvarchar":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                        }
+                        break;
+                    case "varchar":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                        }
+                        break;
+                    case "datetime":
+                        {
+                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                        }
+                        break;
+                    default:
+                        {
+                            defaultVal = " DEFAULT "+DefaultValue.ToString();
+                        }
+                        break;
+                }
+            }
+            return defaultVal;
         }
     }
 }

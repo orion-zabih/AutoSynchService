@@ -32,6 +32,6 @@ namespace AutoSynchSqlServer.Models
         public int BranchId { get; set; }
         public int WarehouseId { get; set; }
         public int FiscalYearId { get; set; }
-        public bool IsNew { get; set; }
+        public int Pono { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoSynchPosService.Classes;
+using AutoSynchPoSService.Classes;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
 using FluentFTP.Helpers;
@@ -175,7 +176,7 @@ namespace AutoSynchPosService.DAOs
             }
             else if (status.Equals("ready"))
             {
-                qry = "select * from synch_setting where synch_method='" + synch_method + "' and status <> 'done'";
+                qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = '"+status+"'";
             }
             if (dbtype.Equals(Constants.Sqlite))
             {
@@ -269,6 +270,24 @@ namespace AutoSynchPosService.DAOs
                     return false;
                 }
 
+            }
+        }
+        internal List<AutoSynchSqlServer.CustomModels.TableStructure> GetTableColumnsInfo(string tblName)
+        {
+            MsSqlDbManager sqlDbManager= new MsSqlDbManager();
+            try
+            {
+                DataTable dataTable = sqlDbManager.GetDataTable(@"SELECT TABLE_NAME,COLUMN_NAME,COLUMN_DEFAULT,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = N'"+tblName+"'");
+                Converter converter = new Converter();
+                List<AutoSynchSqlServer.CustomModels.TableStructure> tblStructures = Converter.GetTableStructure(dataTable);
+                return tblStructures;
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
     }

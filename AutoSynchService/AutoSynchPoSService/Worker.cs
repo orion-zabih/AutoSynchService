@@ -151,6 +151,10 @@ namespace AutoSynchPoSService
 
                                 if (_businessLogic.GetAndReplaceTablesSqlServer())
                                 {
+                                    if(_businessLogic.AlterTablesSqlServer())
+                                    {
+
+                                    }
                                     Logger.write("System Tables downloaded and replaced successfully at: {time}");
                                     if (_businessLogic.GetAndReplaceDataSqlServer(recordsToFetch, settings.IsBranchFilter))
                                     {
@@ -176,20 +180,35 @@ namespace AutoSynchPoSService
                                 {
                                     Logger.write("Data upload to server failed at: {time}");
                                 }
+                                
+                                    
                             }
                             catch (Exception ex)
                             {
                                 Logger.write(ex.Message, true);
                             }
 
-                            if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch))
-                            {
+                            //if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch))
+                            //{
 
-                                Logger.write("Some products downlaoded successfully only at: {time}");
-                            }
-                            else
+                            //    Logger.write("Some products downlaoded successfully only at: {time}");
+                            //}
+                            //else
+                            //{
+                            //    Logger.write("Failed to download products only at: {time}");
+                            //}
+                            try
                             {
-                                Logger.write("Failed to download products only at: {time}");
+                                int daysToDeleteQT = 0;
+                                if (int.TryParse(settings.DaysToDeleteQT, out daysToDeleteQT))
+                                {
+                                    if (daysToDeleteQT > 0)
+                                        _businessLogic.DeleteQt(settings.LocalDb, daysToDeleteQT);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.write(ex.Message, true);
                             }
                         }
                     }

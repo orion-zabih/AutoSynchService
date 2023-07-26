@@ -23,5 +23,8 @@ namespace AutoSynchSqlServer.Models
         public int HallRowNo { get; set; }
         public bool? IsAppear { get; set; }
         public string? Remarks { get; set; }
+        public string? ReSubjects { get; set; }
+        public decimal Cgpa { get; set; }
+        public decimal Sgpa { get; set; }
     }
 }

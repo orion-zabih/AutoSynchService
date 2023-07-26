@@ -35,5 +35,6 @@ namespace AutoSynchSqlServer.Models
         public decimal InternalPercentage { get; set; }
         public decimal FinalTermPercentage { get; set; }
         public decimal MidTermPercentage { get; set; }
+        public string? DisciplineType { get; set; }
     }
 }

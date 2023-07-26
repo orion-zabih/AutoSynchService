@@ -4,6 +4,7 @@ using AutoSynchPosService.DAOs;
 using AutoSynchPoSService.ApiClient;
 using AutoSynchPoSService.Classes;
 using AutoSynchService.DAOs;
+using AutoSynchSqlServer.CustomModels;
 using AutoSynchSqlServerLocal;
 using FluentFTP.Helpers;
 using System;
@@ -131,43 +132,33 @@ namespace AutoSynchPoSService
                         lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
                         if (lastSynchSetting != null)
                         {
-                            if (lastSynchSetting.synch_method == SynchMethods.database_structure.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) > 0))
+                            if (lastSynchSetting.synch_method == SynchMethods.database_structure.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0))
                             {
                                 if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
                                 {
+                                    
                                     TableStructureResponse tableStructureResponse = sysTablesClient.GetTableStructure(synchType, Constants.SqlServer);
                                     if (tableStructureResponse != null)
                                     {
                                         Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
-                               //Console.WriteLine("successfully got database structure from server. now creating database.");
-                                        //if (dbManager.CreateDb(dbName, dbPath, dbSize, dbMaxSize, dbGrowth))
                                         {
                                             Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
-                               //Console.WriteLine("successfully created database file. now creating tables.");
                                             if (ReCreateStructureTables._CreateDBTables(DateTime.Now, tableStructureResponse, Constants.SqlServer))
                                             {
+                                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
                                                 Logger.write("{POS Sale Service BL}", "successfully created tables in database");
-                               //Console.WriteLine("successfully created tables in database");
                                                 return true;
                                             }
                                             else
                                             {
                                                 Logger.write("{POS Sale Service BL}", "unable to create tables in database");
-                               //Console.WriteLine("unable to create tables in database");
                                                 return false;
                                             }
                                         }
-                               //         else
-                               //         {
-                               //             Logger.write("{POS Sale Service BL}", "unable to create database");
-                               ////Console.WriteLine("unable to create database");
-                               //             return false;
-                               //         }
                                     }
                                     else
                                     {
                                         Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
-                               //Console.WriteLine("
                                         return false;
                                     }
                                 }
@@ -177,6 +168,110 @@ namespace AutoSynchPoSService
                     }
                     return true;
                 }
+            }
+            catch (Exception ex)
+            {
+                //Logger.write("{POS Sale Service}", ex.Message);
+                //Console.WriteLine(ex.Message);
+                throw ex;
+                //return false;
+            }
+
+        }
+
+        public bool AlterTablesSqlServer()
+        {
+            try
+            {
+                StructureNDataClient sysTablesClient = new StructureNDataClient();
+
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+             .AddJsonFile("appsettings.json")
+             .Build();
+
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+
+                List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
+                SynchSetting lastSynchSetting = null;
+                SynchTypes synchType = SynchTypes.full;
+                MsSqlDbManager dbManager = new MsSqlDbManager();
+
+
+                pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting(SynchMethods.database_structure_alter.ToString(), Constants.SqlServer, "ready");
+                if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
+                {
+                    lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
+                    if (lastSynchSetting != null)
+                    {
+                        if (lastSynchSetting.synch_method == SynchMethods.database_structure_alter.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0))
+                        {
+                            if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
+                            {
+                                string tblLst = string.Empty;
+                                if (synchType == SynchTypes.custom)
+                                {
+                                    tblLst = lastSynchSetting.table_names;
+                                }
+                                TableStructureResponse tableStructureResponse = sysTablesClient.GetTableColumns(synchType, tblLst, Constants.SqlServer);
+
+                                if (tableStructureResponse != null)
+                                {
+                                    Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
+                                    {
+                                        Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
+                                        List<string> tables = Utility.ConverCommaSeparatedToList(tblLst);
+                                        List<string> queries= new List<string>();
+                                        foreach (var item in tables)
+                                        {
+                                            List<TableStructure> localStructure = synchSettingsDao.GetTableColumnsInfo(item);
+                                            List<TableStructure> onlineStructure = tableStructureResponse.tableStructures.Where(a => a.TableName == item).ToList();
+                                            if(localStructure!=null && localStructure.Count > 0 && onlineStructure!=null && onlineStructure.Count > 0)
+                                            {
+                                                List<string> differentColumns = onlineStructure.Select(c => c.ColumnName).Except(localStructure.Select(l => l.ColumnName)).ToList();
+                                                List<TableStructure> newStructure = onlineStructure.Where(o=>differentColumns.Contains(o.ColumnName)).ToList();
+                                                if(newStructure.Count>0)
+                                                {
+                                                    string qry = "alter table " + item + " add ";
+                                                    string cols = "";
+                                                    newStructure.ForEach(n => {
+                                                        cols += n.ColumnName + " " + n.DataType + (n.IsNullable == "YES" ? " NULL" : " NOT NULL") + (n.IsPrimaryKey == "YES" ? " PRIMARY KEY" : " ") + (!string.IsNullOrEmpty(n.ColumnDefault) ? (" DEFAULT "+ n.ColumnDefault) : "") + ",";
+                                                    });
+                                                    queries.Add(qry + cols.TrimEnd(','));
+                                                }
+                                            }
+                                        }
+                                        if (queries.Count > 0)
+                                        {
+                                            if (ReCreateStructureTables._AlterDBTables(DateTime.Now, queries, Constants.SqlServer))
+                                            {
+                                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                                Logger.write("{POS Sale Service BL}", "successfully altered tables in database");
+                                                return true;
+                                            }
+                                            else
+                                            {
+                                                Logger.write("{POS Sale Service BL}", "unable to alter tables in database");
+                                                return false;
+                                            }
+                                        }
+                                        else
+                                            return false;
+                                        
+                                    }
+                                }
+                                else
+                                {
+                                    Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
+                                    return false;
+                                }
+                            }
+
+                        }
+                    }
+                }
+                return true;
+
             }
             catch (Exception ex)
             {
@@ -231,6 +326,34 @@ namespace AutoSynchPoSService
                 {
                     Logger.write("{POS Sale Service BL}", "no pending sales data");
                                //Console.WriteLine("no pending sales data");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{POS Sale Service BL}", ex.Message);
+                //Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+        public bool DeleteQt(string dbtype,int daysToDeleteQT)
+        {
+            try
+            {
+                InvSaleDao invSaleDao = new InvSaleDao();
+
+                if (invSaleDao.DeleteOldQt(dbtype, daysToDeleteQT))
+                {
+                    Logger.write("{POS Sale Service BL}", "Deleted old QT successfully");
+                    //Console.WriteLine("no pending sales data");
+                    return true;
+                }
+                else
+                {
+                    Logger.write("{POS Sale Service BL}", "unable to delete old QT");
+                    //Console.WriteLine("no pending sales data");
                     return true;
                 }
             }
@@ -352,54 +475,55 @@ namespace AutoSynchPoSService
                         {
                             if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
                             {
-                                if (lastSynchSetting.synch_type.Equals(SynchTypes.products_recent.ToString()))
-                                {
-                                    bool downlaodedAll = false;
-                                    bool firsthit = true; string prodid = "0";
-                                    while (!downlaodedAll)
-                                    {
-                                        ProductsDao productsDao = new ProductsDao();
-                                        InvProductsResponse invProductsResponse = null;
-                                        {
-                                            Logger.write("{POS Sale Service BL}", "Getting some products");
+                                //if (lastSynchSetting.synch_type.Equals(SynchTypes.products_recent.ToString()))
+                                //{
+                                //    bool downlaodedAll = false;
+                                //    bool firsthit = true; string prodid = "0";
+                                //    while (!downlaodedAll)
+                                //    {
+                                //        ProductsDao productsDao = new ProductsDao();
+                                //        InvProductsResponse invProductsResponse = null;
+                                //        {
+                                //            Logger.write("{POS Sale Service BL}", "Getting some products");
                                             
-                                            Logger.write("{POS Sale Service BL}", prodid);
-                                            invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch, "r");
-                                            if (invProductsResponse != null)
-                                            {
-                                                if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
-                                                {
-                                                    Logger.write("{POS Sale Service BL}", "All products downloaded.");
-                                                    //Console.WriteLine("All products downloaded.");
-                                                    downlaodedAll = true;
-                                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
-                                                    synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
+                                //            Logger.write("{POS Sale Service BL}", prodid);
+                                //            invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch, "r");
+                                //            if (invProductsResponse != null)
+                                //            {
+                                //                if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
+                                //                {
+                                //                    Logger.write("{POS Sale Service BL}", "All products downloaded.");
+                                //                    //Console.WriteLine("All products downloaded.");
+                                //                    downlaodedAll = true;
+                                //                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                //                    //synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
 
-                                                }
-                                                else if (invProductsResponse.invProducts != null && invProductsResponse.invProducts.Count > 0)
-                                                {
-                                                    prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
-                                                    Logger.write("{POS Sale Service BL}", "Saving products.");
-                                                    //Console.WriteLine("Saving products.");
-                                                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
-                                                    {
-                                                        Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
-                                                        UpdateProductFlag updateProductFlag = new UpdateProductFlag();
-                                                        updateProductFlag.BranchId = Global.BranchId.ToString();
-                                                        invProductsResponse.invProducts.ForEach(p => {
-                                                            updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
-                                                        });
-                                                        ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
-                                                        if (ackResponse != null)
-                                                            Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    return true;
-                                }
-                                else if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
+                                //                }
+                                //                else if (invProductsResponse.invProducts != null && invProductsResponse.invProducts.Count > 0)
+                                //                {
+                                //                    prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
+                                //                    Logger.write("{POS Sale Service BL}", "Saving products.");
+                                //                    //Console.WriteLine("Saving products.");
+                                //                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
+                                //                    {
+                                //                        Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
+                                //                        UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                                //                        updateProductFlag.BranchId = Global.BranchId.ToString();
+                                //                        invProductsResponse.invProducts.ForEach(p => {
+                                //                            updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                                //                        });
+                                //                        ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
+                                //                        if (ackResponse != null)
+                                //                            Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
+                                //                    }
+                                //                }
+                                //            }
+                                //        }
+                                //    }
+                                //    return true;
+                                //}
+                                //else
+                                if (lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
                                 {
                                     bool downlaodedAll = false;
                                     bool firsthit = true; string prodid = "0";
@@ -421,7 +545,7 @@ namespace AutoSynchPoSService
                                                     //Console.WriteLine("All products downloaded.");
                                                     downlaodedAll = true;
                                                     synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
-                                                    synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(),Utility.GetNextWeekMorningDateTime(), "ready", Constants.SqlServer);
+                                                    //synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(),Utility.GetNextWeekMorningDateTime(), "ready", Constants.SqlServer);
                                                 }
                                                 else if (invProductsResponse.invProducts != null && invProductsResponse.invProducts.Count > 0)
                                                 {
@@ -431,15 +555,15 @@ namespace AutoSynchPoSService
                                                     if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
                                                     {
                                                         Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
-                                                        UpdateProductFlag updateProductFlag = new UpdateProductFlag();
-                                                        updateProductFlag.BranchId = Global.BranchId.ToString();
-                                                        invProductsResponse.invProducts.ForEach(p =>
-                                                        {
-                                                            updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
-                                                        });
-                                                        ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
-                                                        if (ackResponse != null)
-                                                            Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
+                                                        //UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                                                        //updateProductFlag.BranchId = Global.BranchId.ToString();
+                                                        //invProductsResponse.invProducts.ForEach(p =>
+                                                        //{
+                                                        //    updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                                                        //});
+                                                        //ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
+                                                        //if (ackResponse != null)
+                                                        //    Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
                                                     }
                                                 }
                                             }
@@ -447,7 +571,7 @@ namespace AutoSynchPoSService
                                     }
                                     return true;
                                 }
-                                else if (!lastSynchSetting.synch_type.Equals(SynchTypes.products_quick.ToString()))
+                                else if (lastSynchSetting.synch_type.Equals(SynchTypes.except_product_sale_master_detail_tables.ToString()))
                                 {
                                     SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType, IsBranchFilter);
                                     if (sysTablesResponse != null)
@@ -455,11 +579,11 @@ namespace AutoSynchPoSService
                                         if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer))
                                         {
                                             synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Where(w=>w.synch_type== lastSynchSetting.synch_type).Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
-                                            if(pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString())==null)
-                                             synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
-                                             synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), lastSynchSetting.synch_type, new DateTime(DateTime.Now.Year+1,1,1), "ready", Constants.SqlServer);
-                                            if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_recent.ToString()) == null)
-                                                synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
+                                            //if(pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString())==null)
+                                             //synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_quick.ToString(), DateTime.Now, "ready", Constants.SqlServer);
+                                            // synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), lastSynchSetting.synch_type, new DateTime(DateTime.Now.Year+1,1,1), "ready", Constants.SqlServer);
+                                            //if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_recent.ToString()) == null)
+                                            //    synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
                                             return true;
                                         }
 

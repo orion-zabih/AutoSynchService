@@ -22,5 +22,10 @@ namespace AutoSynchSqlServer.Models
         public int DependantWageId { get; set; }
         public string IncrementOn { get; set; } = null!;
         public int? Year { get; set; }
+        public string? FundType { get; set; }
+        public int CategoryId { get; set; }
+        public int GroupId { get; set; }
+        public string? EmployeeType { get; set; }
+        public int BasedOnPayChartYear { get; set; }
     }
 }

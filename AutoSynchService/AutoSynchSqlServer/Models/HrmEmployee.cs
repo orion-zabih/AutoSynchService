@@ -73,5 +73,7 @@ namespace AutoSynchSqlServer.Models
         public string? DisabilityDesc { get; set; }
         public string? IsDisabled { get; set; }
         public int InstituteId { get; set; }
+        public string? FundType { get; set; }
+        public decimal TaxRebateInPercent { get; set; }
     }
 }

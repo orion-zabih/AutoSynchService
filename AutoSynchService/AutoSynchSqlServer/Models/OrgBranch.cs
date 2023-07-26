@@ -115,5 +115,8 @@ namespace AutoSynchSqlServer.Models
         public string? InvShowOrderStatus { get; set; }
         public string? InvSaveOrderZeroItems { get; set; }
         public string? InvCreateJvInCaseOfKotsale { get; set; }
+        public string? InsExamUnPaidIsAppear { get; set; }
+        public string? MobileAreaCode { get; set; }
+        public int CurrentPayChartYear { get; set; }
     }
 }

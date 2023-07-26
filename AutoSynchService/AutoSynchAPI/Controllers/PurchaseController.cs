@@ -55,7 +55,7 @@ namespace AutoSynchAPI.Controllers
 
                             if (masterData != null)
                             {
-                                if (masterData.IsNew)
+                                if (masterData.Id==0)//isnew
                                 {
                                     //masterData.CreatedBy = (int)UserId;
 
@@ -87,8 +87,8 @@ namespace AutoSynchAPI.Controllers
                                         //result.Message = "Purchase Order Updated Successfully";
                                     }
                                 }
-                                if (masterData.Id > 0 && !masterData.IsNew)
-                                {
+                                if (masterData.Id > 0)//&& !masterData.IsNew
+                                    {
                                     dbContext.InvPurchaseOrderDetail.RemoveRange(dbContext.InvPurchaseOrderDetail.Where(x => x.MasterId == masterData.Id));
                                     foreach (var item in invPurchaseOrderDetails)
                                     {

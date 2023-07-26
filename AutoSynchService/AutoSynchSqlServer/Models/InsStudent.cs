@@ -71,5 +71,6 @@ namespace AutoSynchSqlServer.Models
         public DateTime? AdmittedDate { get; set; }
         public string? EnrollmentNo { get; set; }
         public bool IsCreatedLogin { get; set; }
+        public string? FatherCnic { get; set; }
     }
 }

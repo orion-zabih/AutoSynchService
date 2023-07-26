@@ -8,12 +8,30 @@ namespace AutoSynchPosService.Classes
 {
     public class Utility
     {
+        public static List<string> ConverCommaSeparatedToList(string css)
+        {
+            List<string> list = new List<string>();
+            string[] arr= css.Split(',');
+            list.AddRange(arr);
+            return list;
+        }
         public static DateTime GetNextDayMorningDateTime()
         {
             DateTime now = DateTime.Now;
             now = now.AddDays(1);
             now=new DateTime(now.Year, now.Month, now.Day,0,0,1);
             return now;
+        }
+        public static DateTime GetOldDateTime(int days)
+        {
+            DateTime now = DateTime.Now;
+            now = now.AddDays(-1*days);
+            now = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second);
+            return now;
+        }
+        public static string GetDateTimeStringDDMMYYYY(DateTime dt)
+        {
+            return dt.Year+"-"+dt.Month+"-" + dt.Day;
         }
         public static DateTime GetNextWeekMorningDateTime()
         {

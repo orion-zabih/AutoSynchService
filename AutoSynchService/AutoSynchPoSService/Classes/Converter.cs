@@ -1,4 +1,5 @@
-﻿using AutoSynchSqlServer.Models;
+﻿using AutoSynchPoSService.Classes;
+using AutoSynchSqlServer.Models;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 using Microsoft.VisualBasic;
 using System;
@@ -152,6 +153,26 @@ namespace AutoSynchPosService.Classes
                 synchSettingList.Add(synchSetting);
             }
             return synchSettingList;
+        }
+        internal static List<AutoSynchSqlServer.CustomModels.TableStructure> GetTableStructure(DataTable table)
+        {
+            var tableStructureList = new List<AutoSynchSqlServer.CustomModels.TableStructure>(table.Rows.Count);
+            foreach (DataRow row in table.Rows)
+            {
+                var values = row.ItemArray;
+                var tableStructure = new AutoSynchSqlServer.CustomModels.TableStructure()
+                {//setting_id,synch_method,synch_type,table_names,last_update_date,status
+
+                    TableName = Convert.ToString(values[0] != DBNull.Value ? values[0] : ""),
+                    ColumnName = Convert.ToString(values[1] != DBNull.Value ? values[1] : ""),
+                    ColumnDefault = Convert.ToString(values[2] != DBNull.Value ? values[2] : ""),
+                    IsNullable= Convert.ToString(values[3] != DBNull.Value ? values[3] : ""),
+                    DataType = Convert.ToString(values[4] != DBNull.Value ? values[4] : null),
+                    CharacterMaximumLength= Convert.ToString(values[5] != DBNull.Value ? values[5] : null)
+                };
+                tableStructureList.Add(tableStructure);
+            }
+            return tableStructureList;
         }
 
     }

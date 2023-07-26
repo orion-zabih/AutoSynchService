@@ -25,5 +25,6 @@
         database_structure,    // 0
         database_data,    // 1
         file_transfer,   // 2
+        database_structure_alter,
     }
 }

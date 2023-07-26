@@ -110,5 +110,10 @@ namespace AutoSynchSqlServer.Models
         public string? DmBookingType { get; set; }
         public string? DmFunctionType { get; set; }
         public string? DmFunctionHall { get; set; }
+        public int InsProbCountForDropout { get; set; }
+        public decimal InsLimitDropout { get; set; }
+        public decimal InsMaxLimitProbation { get; set; }
+        public decimal InsMinLimitProbation { get; set; }
+        public string? DmReason { get; set; }
     }
 }

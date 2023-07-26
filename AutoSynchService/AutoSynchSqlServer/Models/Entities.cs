@@ -40,7 +40,9 @@ namespace AutoSynchSqlServer.Models
         public virtual DbSet<AccVoucherDetail> AccVoucherDetail { get; set; } = null!;
         public virtual DbSet<AccVoucherMaster> AccVoucherMaster { get; set; } = null!;
         public virtual DbSet<AccVoucherNumbringSeries> AccVoucherNumbringSeries { get; set; } = null!;
+        public virtual DbSet<GenCountry> GenCountry { get; set; } = null!;
         public virtual DbSet<GenProject> GenProject { get; set; } = null!;
+        public virtual DbSet<GenReason> GenReason { get; set; } = null!;
         public virtual DbSet<GenTermsAndConditions> GenTermsAndConditions { get; set; } = null!;
         public virtual DbSet<HrmCategory> HrmCategory { get; set; } = null!;
         public virtual DbSet<HrmDepartment> HrmDepartment { get; set; } = null!;
@@ -425,6 +427,11 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.VoucherType).HasMaxLength(3);
             });
 
+            modelBuilder.Entity<GenCountry>(entity =>
+            {
+                entity.Property(e => e.Name).HasMaxLength(50);
+            });
+
             modelBuilder.Entity<GenProject>(entity =>
             {
                 entity.Property(e => e.IsActive)
@@ -432,6 +439,13 @@ namespace AutoSynchSqlServer.Models
                     .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.ProjectName).HasMaxLength(50);
+            });
+
+            modelBuilder.Entity<GenReason>(entity =>
+            {
+                entity.Property(e => e.Name).HasMaxLength(50);
+
+                entity.Property(e => e.ReasonType).HasMaxLength(20);
             });
 
             modelBuilder.Entity<GenTermsAndConditions>(entity =>
@@ -516,6 +530,8 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.FnsdLimitBalance).HasColumnType("decimal(18, 2)");
 
+                entity.Property(e => e.FundType).HasMaxLength(10);
+
                 entity.Property(e => e.Gender).HasMaxLength(10);
 
                 entity.Property(e => e.IsDisabled).HasMaxLength(10);
@@ -561,6 +577,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.SalaryTransferType).HasMaxLength(10);
 
                 entity.Property(e => e.Status).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TaxRebateInPercent).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.TaxType).HasMaxLength(20);
 
@@ -699,6 +717,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.AdmissionFee).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Code).HasMaxLength(50);
+
+                entity.Property(e => e.DisciplineType).HasMaxLength(50);
 
                 entity.Property(e => e.FinalTermPercentage).HasColumnType("decimal(18, 2)");
 
@@ -841,6 +861,10 @@ namespace AutoSynchSqlServer.Models
 
             modelBuilder.Entity<InsExaminationStudents>(entity =>
             {
+                entity.Property(e => e.Cgpa)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("CGPA");
+
                 entity.Property(e => e.Division).HasMaxLength(50);
 
                 entity.Property(e => e.IsAppear)
@@ -852,6 +876,10 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Percentage).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.Result).HasMaxLength(50);
+
+                entity.Property(e => e.Sgpa)
+                    .HasColumnType("decimal(18, 2)")
+                    .HasColumnName("SGPA");
 
                 entity.Property(e => e.TotalMarks).HasColumnType("decimal(18, 2)");
             });
@@ -1189,6 +1217,10 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.EmailAddress).HasMaxLength(200);
 
                 entity.Property(e => e.EnrollmentNo).HasMaxLength(100);
+
+                entity.Property(e => e.FatherCnic)
+                    .HasMaxLength(50)
+                    .HasColumnName("FatherCNIC");
 
                 entity.Property(e => e.FatherContact).HasMaxLength(50);
 
@@ -1632,6 +1664,10 @@ namespace AutoSynchSqlServer.Models
                     .HasColumnType("decimal(18, 2)")
                     .HasDefaultValueSql("((1))");
 
+                entity.Property(e => e.MaxQty).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.MinQty).HasColumnType("decimal(18, 2)");
+
                 entity.Property(e => e.MinimumLevel)
                     .HasColumnType("decimal(18, 2)")
                     .HasDefaultValueSql("((0))");
@@ -1835,6 +1871,8 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.Instructions).HasMaxLength(200);
 
                 entity.Property(e => e.OrderingMode).HasMaxLength(50);
+
+                entity.Property(e => e.Pono).HasColumnName("PONo");
 
                 entity.Property(e => e.Potype)
                     .HasMaxLength(50)
@@ -2207,6 +2245,8 @@ namespace AutoSynchSqlServer.Models
 
                 entity.Property(e => e.Email).HasMaxLength(100);
 
+                entity.Property(e => e.InsExamUnPaidIsAppear).HasMaxLength(10);
+
                 entity.Property(e => e.InsFeeAccInteg)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('No')");
@@ -2290,6 +2330,8 @@ namespace AutoSynchSqlServer.Models
                     .HasColumnName("IsShowSOHInOpening");
 
                 entity.Property(e => e.LongAddress).HasMaxLength(500);
+
+                entity.Property(e => e.MobileAreaCode).HasMaxLength(3);
 
                 entity.Property(e => e.MobileNumber).HasMaxLength(50);
 
@@ -2539,6 +2581,8 @@ namespace AutoSynchSqlServer.Models
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('Separate')");
 
+                entity.Property(e => e.DmReason).HasMaxLength(10);
+
                 entity.Property(e => e.DmReligion)
                     .HasMaxLength(10)
                     .HasDefaultValueSql("('Separate')");
@@ -2596,6 +2640,12 @@ namespace AutoSynchSqlServer.Models
                 entity.Property(e => e.FbrApiSandBox).HasMaxLength(100);
 
                 entity.Property(e => e.GradingPolicy).HasMaxLength(10);
+
+                entity.Property(e => e.InsLimitDropout).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.InsMaxLimitProbation).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.InsMinLimitProbation).HasColumnType("decimal(18, 2)");
 
                 entity.Property(e => e.IsActive)
                     .IsRequired()
@@ -2794,6 +2844,10 @@ namespace AutoSynchSqlServer.Models
             modelBuilder.Entity<PayWageDetail>(entity =>
             {
                 entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
+
+                entity.Property(e => e.EmployeeType).HasMaxLength(50);
+
+                entity.Property(e => e.FundType).HasMaxLength(10);
 
                 entity.Property(e => e.Increment).HasColumnType("decimal(18, 2)");
 

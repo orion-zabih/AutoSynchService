@@ -61,13 +61,15 @@ namespace AutoSynchPosService.Classes
                         objResponse.createQueries.Add(qry);
                         objResponse.createQueries.Add(qry2);
                     }
+                    
                     try
                     {
 
-                        //objResponse.dropQueries.ForEach(q => {
-                        //    msSqlDbManager.ExecuteTransQuery(q);
-                        //});
-                       // objSqliteManager.Commit();
+                        objResponse.dropQueries.ForEach(q =>
+                        {
+                            msSqlDbManager.ExecuteTransQuery(q);
+                        });
+                        //objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
                             try
                             {
@@ -99,6 +101,66 @@ namespace AutoSynchPosService.Classes
             catch (Exception ex)
             {
                  Logger.write("CreateDB", ex.ToString());
+                //Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+        internal static bool _AlterDBTables(DateTime dateTime, List<string> queries, string dbtype)
+        {
+            try
+            {
+                bool isStructureComplete = false;
+                string format = "yyyy-MM-dd HH:mm:ss";
+
+                
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager objSqliteManager = new SqliteManager();
+                   
+                        //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
+                        isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(queries);
+                }
+                else
+                {
+                    MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                    
+
+                    try
+                    {
+
+                       
+                        queries.ForEach(q => {
+                            try
+                            {
+                                msSqlDbManager.ExecuteTransQuery(q);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.write("Alter Table Sql Server:" + ex.Message, true);
+                            }
+                        });
+                        msSqlDbManager.Commit();
+                        isStructureComplete = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        msSqlDbManager.RollBack();
+                        throw;
+                    }
+                }
+                if (isStructureComplete)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("AlterDB", ex.ToString());
                 //Console.WriteLine(ex.Message);
 
                 return false;

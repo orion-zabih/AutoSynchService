@@ -57,5 +57,7 @@ namespace AutoSynchSqlServer.Models
         public decimal RetailPriceExclusiveTax { get; set; }
         public bool? IsSynch { get; set; }
         public string? GenericName { get; set; }
+        public decimal MinQty { get; set; }
+        public decimal MaxQty { get; set; }
     }
 }

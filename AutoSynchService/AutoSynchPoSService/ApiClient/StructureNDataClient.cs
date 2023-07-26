@@ -146,6 +146,50 @@ namespace AutoSynchPoSService.ApiClient
                 return null;
             }
         }
+        public TableStructureResponse? GetTableColumns(SynchTypes synchType,string tablelList, string dbType)
+        {
+            try
+            {
+                try
+                {
+
+                    invSaleApiUrl = "/api/SysTables" + "/GetTableColumns?branch_id=" + Global.BranchId + "&synch_type=" + synchType + "&table_list="+ tablelList+ "&local_db=" + dbType;
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            TableStructureResponse response = JsonConvert.DeserializeObject<TableStructureResponse>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public ApiResponse PostUpdatedProducts(UpdateProductFlag dataResponse)
         {
             ApiResponse responseDTO = new ApiResponse();

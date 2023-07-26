@@ -169,5 +169,41 @@ Total from InvSaleDetail where BillId = '" + BillId + "'");
 
             }
         }
+        internal bool DeleteOldQt(string dbtype,int daysToDeleteQT)
+        {
+            SqliteManager sqlite = new SqliteManager();
+            List<string> queries = new List<string>();
+            string tblName = "InvSaleMaster";
+            if (dbtype.Equals(Constants.Sqlite))
+                tblName = "InvSaleMasterTmp";
+
+            queries.Add(@"delete from InvSaleDetail where BillId in 
+(
+select Id from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'"+Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT))+"' and OrderStatus='QT')");
+
+            queries.Add(@"delete from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT'");
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+                sqlite.ExecuteTransactionMultiQueries(queries);
+                return true;
+            }
+            else
+            {
+                MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                try
+                {
+                    queries.ForEach(q => { msSqlDbManager.ExecuteTransQuery(q); });
+                    msSqlDbManager.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    msSqlDbManager.RollBack();
+                    return false;
+                }
+
+
+            }
+        }
     }
 }

@@ -29,6 +29,7 @@ namespace AutoSynchPosService.Classes
         public string LocalDb { get; set; }
         public string IsBranchFilter { get; set; }
         public string RecordsToFetch { get; set; }
+        public string DaysToDeleteQT { get; set; }
         public MySettings()
         {
             BranchId = "";
@@ -37,6 +38,7 @@ namespace AutoSynchPosService.Classes
             LocalDb = "";
             RecordsToFetch = "1000";
             IsBranchFilter = "false";
+            DaysToDeleteQT = "0";
         }
     }
    
