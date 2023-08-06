@@ -9,11 +9,13 @@ namespace AutoSynchPosService.Classes
     internal class ApiRequest
     {
         internal string BranchId { get; set; }
+        internal string LocalDatabase { get; set; }
         internal List<ApiRequestData> RequestDatas { get; set; }
         public ApiRequest()
         {
             RequestDatas = new List<ApiRequestData>();
-            BranchId = string.Empty;
+            BranchId = "0";
+            LocalDatabase = "SqlServer";
         }
     }
     internal class ApiRequestData

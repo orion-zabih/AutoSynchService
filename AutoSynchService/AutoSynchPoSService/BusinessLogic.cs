@@ -5,6 +5,7 @@ using AutoSynchPoSService.ApiClient;
 using AutoSynchPoSService.Classes;
 using AutoSynchService.DAOs;
 using AutoSynchSqlServer.CustomModels;
+using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;
 using FluentFTP.Helpers;
 using System;
@@ -129,7 +130,7 @@ namespace AutoSynchPoSService
                     pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting(SynchMethods.database_structure.ToString(), Constants.SqlServer, "ready");
                     if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
                     {
-                        lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
+                        lastSynchSetting = pendingSynchSettings.OrderBy(s => s.setting_id).First();
                         if (lastSynchSetting != null)
                         {
                             if (lastSynchSetting.synch_method == SynchMethods.database_structure.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0))
@@ -193,7 +194,7 @@ namespace AutoSynchPoSService
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
 
                 List<SynchSetting> pendingSynchSettings = new List<SynchSetting>();
-                SynchSetting lastSynchSetting = null;
+                //SynchSetting lastSynchSetting = null;
                 SynchTypes synchType = SynchTypes.full;
                 MsSqlDbManager dbManager = new MsSqlDbManager();
 
@@ -201,74 +202,88 @@ namespace AutoSynchPoSService
                 pendingSynchSettings = synchSettingsDao.GetPendingSynchSetting(SynchMethods.database_structure_alter.ToString(), Constants.SqlServer, "ready");
                 if (pendingSynchSettings != null && pendingSynchSettings.Count > 0)
                 {
-                    lastSynchSetting = pendingSynchSettings.OrderByDescending(s => s.setting_id).First();
-                    if (lastSynchSetting != null)
+                    foreach (SynchSetting lastSynchSetting in pendingSynchSettings.OrderBy(s => s.setting_id))
                     {
-                        if (lastSynchSetting.synch_method == SynchMethods.database_structure_alter.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0))
+                        if (lastSynchSetting != null)
                         {
-                            if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
+                            if (lastSynchSetting.synch_method == SynchMethods.database_structure_alter.ToString() && (lastSynchSetting.sync_timestamp.HasValue && DateTime.Compare(lastSynchSetting.sync_timestamp.Value, DateTime.Now) <= 0))
                             {
-                                string tblLst = string.Empty;
-                                if (synchType == SynchTypes.custom)
+                                if (Enum.TryParse<SynchTypes>(lastSynchSetting.synch_type, true, out synchType))  // ignore cases
                                 {
-                                    tblLst = lastSynchSetting.table_names;
-                                }
-                                TableStructureResponse tableStructureResponse = sysTablesClient.GetTableColumns(synchType, tblLst, Constants.SqlServer);
-
-                                if (tableStructureResponse != null)
-                                {
-                                    Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
+                                    string tblLst = string.Empty;
+                                    if (synchType == SynchTypes.custom)
                                     {
-                                        Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
-                                        List<string> tables = Utility.ConverCommaSeparatedToList(tblLst);
-                                        List<string> queries= new List<string>();
-                                        foreach (var item in tables)
+                                        tblLst = lastSynchSetting.table_names;
+                                    }
+                                    else
+                                    {
+                                        tblLst = String.Join(',', GetTables(synchType));
+                                    }
+                                    TableStructureResponse tableStructureResponse = sysTablesClient.GetTableColumns(synchType, (synchType==SynchTypes.custom)? tblLst:"empty", Constants.SqlServer);
+
+                                    if (tableStructureResponse != null)
+                                    {
+                                        Logger.write("{POS Sale Service BL}", "successfully got database structure from server. now creating database.");
                                         {
-                                            List<TableStructure> localStructure = synchSettingsDao.GetTableColumnsInfo(item);
-                                            List<TableStructure> onlineStructure = tableStructureResponse.tableStructures.Where(a => a.TableName == item).ToList();
-                                            if(localStructure!=null && localStructure.Count > 0 && onlineStructure!=null && onlineStructure.Count > 0)
+                                            Logger.write("{POS Sale Service BL}", "successfully created database file. now creating tables.");
+                                            List<string> tables = Utility.ConverCommaSeparatedToList(tblLst);
+                                            List<string> queries = new List<string>();
+                                            foreach (var item in tables)
                                             {
-                                                List<string> differentColumns = onlineStructure.Select(c => c.ColumnName).Except(localStructure.Select(l => l.ColumnName)).ToList();
-                                                List<TableStructure> newStructure = onlineStructure.Where(o=>differentColumns.Contains(o.ColumnName)).ToList();
-                                                if(newStructure.Count>0)
+                                                List<TableStructure> localStructure = synchSettingsDao.GetTableColumnsInfo(item);
+                                                List<TableStructure> onlineStructure = tableStructureResponse.tableStructures.Where(a => a.TableName == item).ToList();
+                                                if (localStructure != null && localStructure.Count > 0 && onlineStructure != null && onlineStructure.Count > 0)
                                                 {
-                                                    string qry = "alter table " + item + " add ";
-                                                    string cols = "";
-                                                    newStructure.ForEach(n => {
-                                                        cols += n.ColumnName + " " + n.DataType + (n.IsNullable == "YES" ? " NULL" : " NOT NULL") + (n.IsPrimaryKey == "YES" ? " PRIMARY KEY" : " ") + (!string.IsNullOrEmpty(n.ColumnDefault) ? (" DEFAULT "+ n.ColumnDefault) : "") + ",";
-                                                    });
-                                                    queries.Add(qry + cols.TrimEnd(','));
+                                                    List<string> differentColumns = onlineStructure.Select(c => c.ColumnName.ToLower()).Except(localStructure.Select(l => l.ColumnName.ToLower())).ToList();
+                                                    List<TableStructure> newStructure = onlineStructure.Where(o => differentColumns.Contains(o.ColumnName.ToLower())).ToList();
+                                                    if (newStructure.Count > 0)
+                                                    {
+                                                        string qry = "alter table " + item + " add ";
+                                                        string cols = "";
+                                                        newStructure.ForEach(n => {
+                                                            cols += n.ColumnName + " " + n.DataType + (n.IsNullable == "YES" ? " NULL" : " NOT NULL") + (n.IsPrimaryKey == "YES" ? " PRIMARY KEY" : " ") + (!string.IsNullOrEmpty(n.ColumnDefault) ? (" DEFAULT " + n.ColumnDefault) : "") + ",";
+                                                        });
+                                                        queries.Add(qry + cols.TrimEnd(','));
+                                                    }
                                                 }
                                             }
-                                        }
-                                        if (queries.Count > 0)
-                                        {
-                                            if (ReCreateStructureTables._AlterDBTables(DateTime.Now, queries, Constants.SqlServer))
+                                            if (queries.Count > 0)
                                             {
-                                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
-                                                Logger.write("{POS Sale Service BL}", "successfully altered tables in database");
-                                                return true;
+                                                if (ReCreateStructureTables._AlterDBTables(DateTime.Now, queries, Constants.SqlServer))
+                                                {
+                                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                                    Logger.write("{POS Sale Service BL}", "successfully altered tables in database");
+                                                    
+                                                }
+                                                else
+                                                {
+                                                    synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                                    Logger.write("{POS Sale Service BL}", "no different column to alter tables in database");
+                                                    //return true;
+                                                }
                                             }
                                             else
                                             {
-                                                Logger.write("{POS Sale Service BL}", "unable to alter tables in database");
-                                                return false;
+                                                synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                                Logger.write("{POS Sale Service BL}", "no defference found for alter database for "+lastSynchSetting.synch_type);
                                             }
+                                            //else
+                                                //return false;
+
                                         }
-                                        else
-                                            return false;
-                                        
+                                    }
+                                    else
+                                    {
+                                        Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
+                                        return false;
                                     }
                                 }
-                                else
-                                {
-                                    Logger.write("{POS Sale Service BL}", "unable to receive database tables structure from service");
-                                    return false;
-                                }
-                            }
 
+                            }
                         }
                     }
+                    //lastSynchSetting = pendingSynchSettings.OrderBy(s => s.setting_id).First();
+                    
                 }
                 return true;
 
@@ -281,6 +296,261 @@ namespace AutoSynchPoSService
                 //return false;
             }
 
+        }
+        private List<string> GetTables(SynchTypes synchType)
+        {
+            List<string> SynchTbls = new List<string>();
+            if (synchType == SynchTypes.full)
+            {
+                //using (Entities dbContext = new Entities())
+                //{
+                //    //dbContext.InvSaleMaster
+                //    //List<string> lstTables = new List<string>();
+                //    //lstTables.Add()
+
+                //    SynchTbls = dbContext.Model.GetEntityTypes().Where(et => et.GetTableName() != "Timestamp" && et.GetTableName() != "Sequence").Select(et => et.GetTableName()).ToList();
+
+                //    //lstTables.ForEach(table =>
+                //    //{
+                //    //    SynchTbls.Add(getTableName(table));
+                //    //});
+                //}
+                SynchTbls.Add("SysControllesGroup");
+                SynchTbls.Add("SysExecptionLogging");
+                SynchTbls.Add("SysFeature");
+                SynchTbls.Add("SysOrgFormsMapping");
+                SynchTbls.Add("SysForm");
+                SynchTbls.Add("SysOrgModulesMapping");
+                SynchTbls.Add("SysLayout");
+                SynchTbls.Add("SysModule");
+                SynchTbls.Add("SysModuleFormsMapping");
+                SynchTbls.Add("SysSystem");
+                SynchTbls.Add("SysWeekDay");
+                SynchTbls.Add("SysMonthName");
+                SynchTbls.Add("SysYear");
+                SynchTbls.Add("SysLableContent");
+                SynchTbls.Add("SysHtml");
+                SynchTbls.Add("SysInvTypeWiseControll");
+                SynchTbls.Add("InvCategory");
+                SynchTbls.Add("InvCompany");
+                SynchTbls.Add("InvCustomer");
+                SynchTbls.Add("InvCustomerType");
+                SynchTbls.Add("InvDeliveryChallanDetail");
+                SynchTbls.Add("InvDeliveryChallanMaster");
+                SynchTbls.Add("InvDemandNote");
+                SynchTbls.Add("InvDemandNoteDetail");
+                SynchTbls.Add("InvGatePassInDetail");
+                SynchTbls.Add("InvGatePassInMaster");
+                SynchTbls.Add("InvJcMonthSetting");
+                SynchTbls.Add("InvLocation");
+                SynchTbls.Add("InvPackageProductsMapping");
+                SynchTbls.Add("InvPaymentType");
+                SynchTbls.Add("InvProduct");
+                SynchTbls.Add("InvProductBatch");
+                SynchTbls.Add("InvProductionDetail");
+                SynchTbls.Add("InvProductionMaster");
+                SynchTbls.Add("InvProductLedger");
+                SynchTbls.Add("InvPurchaseDetail");
+                SynchTbls.Add("InvPurchaseMaster");
+                SynchTbls.Add("InvPurchaseOrderDetail");
+                SynchTbls.Add("InvPurchaseOrderMaster");
+                SynchTbls.Add("InvQuatationDetail");
+                SynchTbls.Add("InvQuatationMaster");
+                SynchTbls.Add("InvSaleClosing");
+                SynchTbls.Add("InvSaleClosingDetail");
+                SynchTbls.Add("InvSaleDetail");
+                SynchTbls.Add("InvSalemanToRoutsMapping");
+                SynchTbls.Add("InvSaleMaster");
+                SynchTbls.Add("InvSchemeDetail");
+                SynchTbls.Add("InvSchemeMaster");
+                SynchTbls.Add("InvShift");
+                SynchTbls.Add("InvStockAdjustment");
+                SynchTbls.Add("InvStockAdjustmentDetail");
+                SynchTbls.Add("InvStockTransfer");
+                SynchTbls.Add("InvStockTransferDetail");
+                SynchTbls.Add("InvThirdPartyCustomer");
+                SynchTbls.Add("InvUnit");
+                SynchTbls.Add("InvVehicle");
+                SynchTbls.Add("InvVendor");
+                SynchTbls.Add("InvWarehouse");
+                SynchTbls.Add("UsrSystemUser");
+                SynchTbls.Add("UsrUserBranchesMapping");
+                SynchTbls.Add("UsrUserFormsMapping");
+                SynchTbls.Add("UsrUserParmsMapping");
+                SynchTbls.Add("OrgBranch");
+                SynchTbls.Add("OrgFeaturesMapping");
+                SynchTbls.Add("OrgOrganization");
+                SynchTbls.Add("OrgOrgSystemsMapping");
+                SynchTbls.Add("AccFiscalYear");
+
+            }
+            else if (synchType == SynchTypes.only_sys_tables)
+            {
+                SynchTbls.Add("SysControllesGroup");
+                SynchTbls.Add("SysExecptionLogging");
+                SynchTbls.Add("SysFeature");
+                SynchTbls.Add("SysOrgFormsMapping");
+                SynchTbls.Add("SysForm");
+                SynchTbls.Add("SysOrgModulesMapping");
+                SynchTbls.Add("SysLayout");
+                SynchTbls.Add("SysModule");
+                SynchTbls.Add("SysModuleFormsMapping");
+                SynchTbls.Add("SysSystem");
+                SynchTbls.Add("SysWeekDay");
+                SynchTbls.Add("SysMonthName");
+                SynchTbls.Add("SysYear");
+                SynchTbls.Add("SysLableContent");
+                SynchTbls.Add("SysHtml");
+                SynchTbls.Add("SysInvTypeWiseControll");
+            }
+            else if (synchType == SynchTypes.only_sale_master_detail_tables)
+            {
+                SynchTbls.Add("InvSaleDetail");
+                SynchTbls.Add("InvSaleMaster");
+            }
+            else if (synchType == SynchTypes.except_sale_master_detail_tables)
+            {
+
+                SynchTbls.Add("SysControllesGroup");
+                SynchTbls.Add("SysExecptionLogging");
+                SynchTbls.Add("SysFeature");
+                SynchTbls.Add("SysOrgFormsMapping");
+                SynchTbls.Add("SysForm");
+                SynchTbls.Add("SysOrgModulesMapping");
+                SynchTbls.Add("SysLayout");
+                SynchTbls.Add("SysModule");
+                SynchTbls.Add("SysModuleFormsMapping");
+                SynchTbls.Add("SysSystem");
+                SynchTbls.Add("SysWeekDay");
+                SynchTbls.Add("SysMonthName");
+                SynchTbls.Add("SysYear");
+                SynchTbls.Add("SysLableContent");
+                SynchTbls.Add("SysHtml");
+                SynchTbls.Add("SysInvTypeWiseControll");
+                SynchTbls.Add("InvCategory");
+                SynchTbls.Add("InvCompany");
+                SynchTbls.Add("InvCustomer");
+                SynchTbls.Add("InvCustomerType");
+                SynchTbls.Add("InvDeliveryChallanDetail");
+                SynchTbls.Add("InvDeliveryChallanMaster");
+                SynchTbls.Add("InvDemandNote");
+                SynchTbls.Add("InvDemandNoteDetail");
+                SynchTbls.Add("InvGatePassInDetail");
+                SynchTbls.Add("InvGatePassInMaster");
+                SynchTbls.Add("InvJcMonthSetting");
+                SynchTbls.Add("InvLocation");
+                SynchTbls.Add("InvPackageProductsMapping");
+                SynchTbls.Add("InvPaymentType");
+                //.SynchTbls.Add("InvProduct");
+                SynchTbls.Add("InvProductBatch");
+                SynchTbls.Add("InvProductionDetail");
+                SynchTbls.Add("InvProductionMaster");
+                SynchTbls.Add("InvProductLedger");
+                SynchTbls.Add("InvPurchaseDetail");
+                SynchTbls.Add("InvPurchaseMaster");
+                SynchTbls.Add("InvPurchaseOrderDetail");
+                SynchTbls.Add("InvPurchaseOrderMaster");
+                SynchTbls.Add("InvQuatationDetail");
+                SynchTbls.Add("InvQuatationMaster");
+                SynchTbls.Add("InvSaleClosing");
+                SynchTbls.Add("InvSaleClosingDetail");
+                //SynchTbls.Add("InvSaleDetail");
+                SynchTbls.Add("InvSalemanToRoutsMapping");
+                //SynchTbls.Add("InvSaleMaster");
+                SynchTbls.Add("InvSchemeDetail");
+                SynchTbls.Add("InvSchemeMaster");
+                SynchTbls.Add("InvShift");
+                SynchTbls.Add("InvStockAdjustment");
+                SynchTbls.Add("InvStockAdjustmentDetail");
+                SynchTbls.Add("InvStockTransfer");
+                SynchTbls.Add("InvStockTransferDetail");
+                SynchTbls.Add("InvThirdPartyCustomer");
+                SynchTbls.Add("InvUnit");
+                SynchTbls.Add("InvVehicle");
+                SynchTbls.Add("InvVendor");
+                SynchTbls.Add("InvWarehouse");
+                SynchTbls.Add("UsrSystemUser");
+                SynchTbls.Add("UsrUserBranchesMapping");
+                SynchTbls.Add("UsrUserFormsMapping");
+                SynchTbls.Add("UsrUserParmsMapping");
+                SynchTbls.Add("OrgBranch");
+                SynchTbls.Add("OrgFeaturesMapping");
+                SynchTbls.Add("OrgOrganization");
+                SynchTbls.Add("OrgOrgSystemsMapping");
+                SynchTbls.Add("AccFiscalYear");
+            }
+            else if (synchType == SynchTypes.except_product_sale_master_detail_tables)
+            {
+
+                SynchTbls.Add("SysControllesGroup");
+                SynchTbls.Add("SysExecptionLogging");
+                SynchTbls.Add("SysFeature");
+                SynchTbls.Add("SysOrgFormsMapping");
+                SynchTbls.Add("SysForm");
+                SynchTbls.Add("SysOrgModulesMapping");
+                SynchTbls.Add("SysLayout");
+                SynchTbls.Add("SysModule");
+                SynchTbls.Add("SysModuleFormsMapping");
+                SynchTbls.Add("SysSystem");
+                SynchTbls.Add("SysWeekDay");
+                SynchTbls.Add("SysMonthName");
+                SynchTbls.Add("SysYear");
+                SynchTbls.Add("SysLableContent");
+                SynchTbls.Add("SysHtml");
+                SynchTbls.Add("SysInvTypeWiseControll");
+                SynchTbls.Add("InvCategory");
+                SynchTbls.Add("InvCompany");
+                SynchTbls.Add("InvCustomer");
+                SynchTbls.Add("InvCustomerType");
+                SynchTbls.Add("InvDeliveryChallanDetail");
+                SynchTbls.Add("InvDeliveryChallanMaster");
+                SynchTbls.Add("InvDemandNote");
+                SynchTbls.Add("InvDemandNoteDetail");
+                SynchTbls.Add("InvGatePassInDetail");
+                SynchTbls.Add("InvGatePassInMaster");
+                SynchTbls.Add("InvJcMonthSetting");
+                SynchTbls.Add("InvLocation");
+                SynchTbls.Add("InvPackageProductsMapping");
+                SynchTbls.Add("InvPaymentType");
+                //.SynchTbls.Add("InvProduct");
+                SynchTbls.Add("InvProductBatch");
+                SynchTbls.Add("InvProductionDetail");
+                SynchTbls.Add("InvProductionMaster");
+                SynchTbls.Add("InvProductLedger");
+                SynchTbls.Add("InvPurchaseDetail");
+                SynchTbls.Add("InvPurchaseMaster");
+                SynchTbls.Add("InvPurchaseOrderDetail");
+                SynchTbls.Add("InvPurchaseOrderMaster");
+                SynchTbls.Add("InvQuatationDetail");
+                SynchTbls.Add("InvQuatationMaster");
+                SynchTbls.Add("InvSaleClosing");
+                SynchTbls.Add("InvSaleClosingDetail");
+                //SynchTbls.Add("InvSaleDetail");
+                SynchTbls.Add("InvSalemanToRoutsMapping");
+                //SynchTbls.Add("InvSaleMaster");
+                SynchTbls.Add("InvSchemeDetail");
+                SynchTbls.Add("InvSchemeMaster");
+                SynchTbls.Add("InvShift");
+                SynchTbls.Add("InvStockAdjustment");
+                SynchTbls.Add("InvStockAdjustmentDetail");
+                SynchTbls.Add("InvStockTransfer");
+                SynchTbls.Add("InvStockTransferDetail");
+                SynchTbls.Add("InvThirdPartyCustomer");
+                SynchTbls.Add("InvUnit");
+                SynchTbls.Add("InvVehicle");
+                SynchTbls.Add("InvVendor");
+                SynchTbls.Add("InvWarehouse");
+                SynchTbls.Add("UsrSystemUser");
+                SynchTbls.Add("UsrUserBranchesMapping");
+                SynchTbls.Add("UsrUserFormsMapping");
+                SynchTbls.Add("UsrUserParmsMapping");
+                SynchTbls.Add("OrgBranch");
+                SynchTbls.Add("OrgFeaturesMapping");
+                SynchTbls.Add("OrgOrganization");
+                SynchTbls.Add("OrgOrgSystemsMapping");
+                SynchTbls.Add("AccFiscalYear");
+            }
+            return SynchTbls;
         }
         public bool UploadInvSaleToServer(string dbtype)
         {

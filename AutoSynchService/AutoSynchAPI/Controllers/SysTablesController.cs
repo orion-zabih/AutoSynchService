@@ -1,5 +1,6 @@
 ﻿using AutoSynchAPI.Classes;
 using AutoSynchAPI.Models;
+using AutoSynchPosService.Classes;
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -830,13 +831,83 @@ namespace AutoSynchAPI.Controllers
                     SynchTbls.Add("SysHtml");
                     SynchTbls.Add("SysInvTypeWiseControll");
                 }
-
                 else if (synchType == SynchTypes.only_sale_master_detail_tables)
                 {
                     SynchTbls.Add("InvSaleDetail");
                     SynchTbls.Add("InvSaleMaster");
                 }
                 else if (synchType == SynchTypes.except_sale_master_detail_tables)
+                {
+
+                    SynchTbls.Add("SysControllesGroup");
+                    SynchTbls.Add("SysExecptionLogging");
+                    SynchTbls.Add("SysFeature");
+                    SynchTbls.Add("SysOrgFormsMapping");
+                    SynchTbls.Add("SysForm");
+                    SynchTbls.Add("SysOrgModulesMapping");
+                    SynchTbls.Add("SysLayout");
+                    SynchTbls.Add("SysModule");
+                    SynchTbls.Add("SysModuleFormsMapping");
+                    SynchTbls.Add("SysSystem");
+                    SynchTbls.Add("SysWeekDay");
+                    SynchTbls.Add("SysMonthName");
+                    SynchTbls.Add("SysYear");
+                    SynchTbls.Add("SysLableContent");
+                    SynchTbls.Add("SysHtml");
+                    SynchTbls.Add("SysInvTypeWiseControll");
+                    SynchTbls.Add("InvCategory");
+                    SynchTbls.Add("InvCompany");
+                    SynchTbls.Add("InvCustomer");
+                    SynchTbls.Add("InvCustomerType");
+                    SynchTbls.Add("InvDeliveryChallanDetail");
+                    SynchTbls.Add("InvDeliveryChallanMaster");
+                    SynchTbls.Add("InvDemandNote");
+                    SynchTbls.Add("InvDemandNoteDetail");
+                    SynchTbls.Add("InvGatePassInDetail");
+                    SynchTbls.Add("InvGatePassInMaster");
+                    SynchTbls.Add("InvJcMonthSetting");
+                    SynchTbls.Add("InvLocation");
+                    SynchTbls.Add("InvPackageProductsMapping");
+                    SynchTbls.Add("InvPaymentType");
+                    //.SynchTbls.Add("InvProduct");
+                    SynchTbls.Add("InvProductBatch");
+                    SynchTbls.Add("InvProductionDetail");
+                    SynchTbls.Add("InvProductionMaster");
+                    SynchTbls.Add("InvProductLedger");
+                    SynchTbls.Add("InvPurchaseDetail");
+                    SynchTbls.Add("InvPurchaseMaster");
+                    SynchTbls.Add("InvPurchaseOrderDetail");
+                    SynchTbls.Add("InvPurchaseOrderMaster");
+                    SynchTbls.Add("InvQuatationDetail");
+                    SynchTbls.Add("InvQuatationMaster");
+                    SynchTbls.Add("InvSaleClosing");
+                    SynchTbls.Add("InvSaleClosingDetail");
+                    //SynchTbls.Add("InvSaleDetail");
+                    SynchTbls.Add("InvSalemanToRoutsMapping");
+                    //SynchTbls.Add("InvSaleMaster");
+                    SynchTbls.Add("InvSchemeDetail");
+                    SynchTbls.Add("InvSchemeMaster");
+                    SynchTbls.Add("InvShift");
+                    SynchTbls.Add("InvStockAdjustment");
+                    SynchTbls.Add("InvStockAdjustmentDetail");
+                    SynchTbls.Add("InvStockTransfer");
+                    SynchTbls.Add("InvStockTransferDetail");
+                    SynchTbls.Add("InvThirdPartyCustomer");
+                    SynchTbls.Add("InvUnit");
+                    SynchTbls.Add("InvVehicle");
+                    SynchTbls.Add("InvVendor");
+                    SynchTbls.Add("InvWarehouse");
+                    SynchTbls.Add("UsrSystemUser");
+                    SynchTbls.Add("UsrUserBranchesMapping");
+                    SynchTbls.Add("UsrUserFormsMapping");
+                    SynchTbls.Add("UsrUserParmsMapping");
+                    SynchTbls.Add("OrgBranch");
+                    SynchTbls.Add("OrgFeaturesMapping");
+                    SynchTbls.Add("OrgOrganization");
+                    SynchTbls.Add("OrgOrgSystemsMapping");
+                    SynchTbls.Add("AccFiscalYear");
+                }
+                else if (synchType == SynchTypes.except_product_sale_master_detail_tables)
                 {
 
                     SynchTbls.Add("SysControllesGroup");
@@ -918,15 +989,7 @@ namespace AutoSynchAPI.Controllers
                 }
                 using (Entities dbContext = new Entities())
                 {
-                    //dbContext.InvSaleMaster
-                    //List<string> lstTables = new List<string>();
-                    //lstTables.Add()
-
                     var lstTables = dbContext.Model.GetEntityTypes().Where(et => SynchTbls.Contains(et.GetTableName())).ToList();
-
-                    
-
-                    
                     switch (local_db)
                     {
                         case Constants.Sqlite:
@@ -957,11 +1020,7 @@ namespace AutoSynchAPI.Controllers
                                         tableStructure.IsNullable = "NO";
                                         tableStructure.ColumnDefault = "0";
                                         responseObj.tableStructures.Add(tableStructure);
-
-                                        //qry += cols + " IsUploaded bit default 0 " + ")";
                                     }
-
-
                                 });
                             }
                             break;
@@ -970,8 +1029,6 @@ namespace AutoSynchAPI.Controllers
                                 lstTables.ForEach(table =>
                                 {
                                     string tblName = getTableName(table.GetTableName(), local_db);
-                                    
-
                                     var columns = table.GetProperties().ToList();
                                     //string cols = string.Empty;
                                     foreach (var column in columns)
@@ -982,7 +1039,8 @@ namespace AutoSynchAPI.Controllers
                                         tableStructure.DataType = ReturnColumnTypeSqlserver(column.GetColumnType());
                                         tableStructure.IsNullable = column.IsColumnNullable() ? "YES" : "NO";
                                         tableStructure.IsPrimaryKey = column.IsPrimaryKey() ? "YES" : "NO";
-                                        tableStructure.ColumnDefault = column.GetDefaultValue() != null ? column.GetDefaultValue().ToString() : "";
+                                        //(column.ValueGenerated == ValueGenerated.OnAdd ? "" : getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValue()))
+                                        tableStructure.ColumnDefault = column.GetDefaultValue() != null ? ReturnColumnDefaultSqlserver(tableStructure.DataType, column.GetDefaultValue().ToString()) : "";
                                         responseObj.tableStructures.Add(tableStructure);
                                         //cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd ? isIdentityColumn(column, table) : "") + (column.IsColumnNullable() ? " NULL" : " NOT NULL") + ",";
                                     }
@@ -998,19 +1056,12 @@ namespace AutoSynchAPI.Controllers
                                         responseObj.tableStructures.Add(tableStructure);
                                         //qry += cols + " IsUploaded bit default 0 " + ")";
                                     }
-                                    
-
-                                    
                                 });
                             }
                             break;
                         default:
                             break;
                     }
-
-
-
-                    //int=dbContext.AccAccountHead.FirstOrDefault().HeadName.ma
                 }
 
                 if (responseObj.tableStructures != null && responseObj.tableStructures.Count() > 0)
@@ -1034,6 +1085,173 @@ namespace AutoSynchAPI.Controllers
                 return BadRequest(responseObj);
             }
         }
+
+        //[Route("GetColumnsData")]
+        //[HttpPost]
+        //public IActionResult GetColumnsData([FromBody] ApiRequest apiRequest)
+        //{
+        //    Models.SysTablesResponse responseObj = new Models.SysTablesResponse();
+        //    int _branchId = 0;
+        //    if (!string.IsNullOrEmpty(apiRequest.BranchId))
+        //    {
+        //        if (int.TryParse(apiRequest.BranchId, out _branchId))
+        //        {
+        //            try
+        //            {
+        //                using (Entities dbContext = new Entities())
+        //                {
+        //                    //if (synchType == SynchTypes.full || synchType == SynchTypes.except_product_sale_master_detail_tables)
+        //                    {
+        //                        var reqData = apiRequest.RequestDatas.FirstOrDefault(g => g.TableName == "SysControllesGroup");
+        //                        if (reqData != null)
+        //                            responseObj.sysControllesGroups = dbContext.SysControllesGroup.FromSqlRaw<SysControllesGroup>("select "+ String.Join(',', reqData.Columns)+" from "+reqData.TableName).ToList();
+        //                        //responseObj.sysExecptionLoggings = dbContext.SysExecptionLogging.ToList();
+        //                        responseObj.sysFeatures = dbContext.SysFeature.ToList();
+        //                        responseObj.sysOrgFormsMappings = dbContext.SysOrgFormsMapping.ToList();
+        //                        responseObj.sysForms = dbContext.SysForm.ToList();
+        //                        responseObj.sysOrgModulesMappings = dbContext.SysOrgModulesMapping.ToList();
+        //                        responseObj.sysLayouts = dbContext.SysLayout.ToList();
+        //                        responseObj.sysModules = dbContext.SysModule.ToList();
+        //                        responseObj.sysModuleFormsMappings = dbContext.SysModuleFormsMapping.ToList();
+        //                        responseObj.syssystems = dbContext.SysSystem.ToList();
+        //                        responseObj.sysWeekDays = dbContext.SysWeekDay.ToList();
+        //                        responseObj.sysMonthNames = dbContext.SysMonthName.ToList();
+        //                        responseObj.sysYears = dbContext.SysYear.ToList();
+        //                        responseObj.sysLableContents = dbContext.SysLableContent.ToList();
+        //                        responseObj.sysInvTypeWiseControlls = dbContext.SysInvTypeWiseControll.ToList();
+        //                        responseObj.sysHtmls = dbContext.SysHtml.Where(g => g.BranchId == _branchId).ToList();
+
+
+        //                        //var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId);
+        //                        //foreach (var item in invProducts)
+        //                        //{
+        //                        //    responseObj.invProducts.Add(item);
+        //                        //}
+        //                        responseObj.invProductBatchs = dbContext.InvProductBatch.ToList();
+        //                        //responseObj.invProductLedgers = dbContext.InvProductLedger.Where(g => g.BranchId == _branchId).ToList();
+        //                        responseObj.invSalemanToRoutsMappings = dbContext.InvSalemanToRoutsMapping.ToList();
+
+
+        //                        //Usr
+        //                        responseObj.UsrSystemUsers = dbContext.UsrSystemUser.ToList();
+        //                        responseObj.UsrUserFormsMappings = dbContext.UsrUserFormsMapping.ToList();
+        //                        responseObj.invJcMonthSettings = dbContext.InvJcMonthSetting.ToList();
+        //                        if (table_list == "IsBranchFilterY")
+        //                        { //Inv
+        //                            responseObj.invCategorys = dbContext.InvCategory.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invCompanys = dbContext.InvCompany.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invCustomers = dbContext.InvCustomer.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invCustomerTypes = dbContext.InvCustomerType.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invLocations = dbContext.InvLocation.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
+        //                            responseObj.invPaymentTypes = dbContext.InvPaymentType.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invShifts = dbContext.InvShift.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invThirdPartyCustomers = dbContext.InvThirdPartyCustomer.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invUnits = dbContext.InvUnit.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invVehicles = dbContext.InvVehicle.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId).ToList();
+        //                            responseObj.invWarehouses = dbContext.InvWarehouse.Where(g => g.BranchId == _branchId).ToList();
+        //                            //Usr
+        //                            responseObj.UsrUserBranchesMappings = dbContext.UsrUserBranchesMapping.Where(g => g.BranchId == _branchId).ToList();
+
+        //                            responseObj.UsrUserParmsMappings = dbContext.UsrUserParmsMapping.Where(g => g.BranchId == _branchId).ToList();
+        //                            //Org
+        //                            responseObj.OrgBranchs = dbContext.OrgBranch.Where(g => g.Id == _branchId).ToList();
+
+        //                            //AccFiscalYear
+        //                            responseObj.AccFiscalYears = dbContext.AccFiscalYear.Where(g => g.BranchId == _branchId).ToList();
+        //                        }
+        //                        else
+        //                        { //Inv
+        //                            responseObj.invCategorys = dbContext.InvCategory.ToList();
+        //                            responseObj.invCompanys = dbContext.InvCompany.ToList();
+        //                            responseObj.invCustomers = dbContext.InvCustomer.ToList();
+        //                            responseObj.invCustomerTypes = dbContext.InvCustomerType.ToList();
+        //                            responseObj.invLocations = dbContext.InvLocation.ToList();
+        //                            responseObj.invPackageProductsMappings = dbContext.InvPackageProductsMapping.ToList();
+        //                            responseObj.invPaymentTypes = dbContext.InvPaymentType.ToList();
+        //                            responseObj.invShifts = dbContext.InvShift.ToList();
+        //                            responseObj.invThirdPartyCustomers = dbContext.InvThirdPartyCustomer.ToList();
+        //                            responseObj.invUnits = dbContext.InvUnit.ToList();
+        //                            responseObj.invVehicles = dbContext.InvVehicle.ToList();
+        //                            responseObj.invVendors = dbContext.InvVendor.ToList();
+        //                            responseObj.invWarehouses = dbContext.InvWarehouse.ToList();
+        //                            //Usr
+        //                            responseObj.UsrUserBranchesMappings = dbContext.UsrUserBranchesMapping.ToList();
+        //                            responseObj.UsrUserParmsMappings = dbContext.UsrUserParmsMapping.ToList();
+        //                            //Org
+        //                            responseObj.OrgBranchs = dbContext.OrgBranch.ToList();
+        //                            //AccFiscalYear
+        //                            responseObj.AccFiscalYears = dbContext.AccFiscalYear.ToList();
+        //                        }
+        //                        //Org
+        //                        responseObj.OrgFeaturesMappings = dbContext.OrgFeaturesMapping.ToList();
+        //                        responseObj.OrgOrganizations = dbContext.OrgOrganization.ToList();
+        //                        responseObj.OrgOrgSystemsMappings = dbContext.OrgOrgSystemsMapping.ToList();
+
+
+
+        //                        //responseObj.invDeliveryChallanDetails = dbContext.InvDeliveryChallanDetail.ToList();
+        //                        //responseObj.invDeliveryChallanMasters = dbContext.InvDeliveryChallanMaster.ToList();
+        //                        //responseObj.invDemandNotes = dbContext.InvDemandNote.ToList();
+        //                        //responseObj.invDemandNoteDetails = dbContext.InvDemandNoteDetail.ToList();
+        //                        //responseObj.invGatePassInDetails = dbContext.InvGatePassInDetail.ToList();
+        //                        //responseObj.invGatePassInMasters = dbContext.InvGatePassInMaster.ToList();
+        //                        //responseObj.invProductionDetails = dbContext.InvProductionDetail.ToList();
+        //                        //responseObj.invProductionMasters = dbContext.InvProductionMaster.ToList();
+        //                        //responseObj.invPurchaseDetails = dbContext.InvPurchaseDetail.ToList();
+        //                        //responseObj.invPurchaseMasters = dbContext.InvPurchaseMaster.ToList();
+        //                        //responseObj.invPurchaseOrderDetails = dbContext.InvPurchaseOrderDetail.ToList();
+        //                        //responseObj.invPurchaseOrderMasters = dbContext.InvPurchaseOrderMaster.ToList();
+        //                        //responseObj.invQuatationDetails = dbContext.InvQuatationDetail.ToList();
+        //                        //responseObj.invQuatationMasters = dbContext.InvQuatationMaster.ToList();
+        //                        //responseObj.invSaleClosings = dbContext.InvSaleClosing.ToList();
+        //                        //responseObj.invSaleClosingDetails = dbContext.InvSaleClosingDetail.ToList();
+        //                        //responseObj.invSaleDetails = dbContext.InvSaleDetail.ToList();
+        //                        //responseObj.invSaleMasters = dbContext.InvSaleMaster.ToList();
+        //                        //responseObj.invSchemeDetails = dbContext.InvSchemeDetail.ToList();
+        //                        //responseObj.invSchemeMasters = dbContext.InvSchemeMaster.ToList();
+        //                        //responseObj.invStockAdjustments = dbContext.InvStockAdjustment.ToList();
+        //                        //responseObj.invStockAdjustmentDetails = dbContext.InvStockAdjustmentDetail.ToList();
+        //                        //responseObj.invStockTransfers = dbContext.InvStockTransfer.ToList();
+        //                        //responseObj.invStockTransferDetails = dbContext.InvStockTransferDetail.ToList();
+        //                    }
+                            
+        //                    if (responseObj.sysLayouts != null)
+        //                    {
+        //                        //responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
+        //                        //responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
+        //                        return Ok(responseObj);
+        //                    }
+        //                    else
+        //                    {
+        //                        //responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+        //                        //responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+        //                        return NotFound(responseObj);
+        //                    }
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+        //                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+        //                return BadRequest(responseObj);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+        //            //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+        //            return BadRequest(responseObj);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+        //        //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+        //        return BadRequest(responseObj);
+        //    }
+        //}
 
         private string getColumnName(string columnName)
         {
@@ -1174,6 +1392,42 @@ namespace AutoSynchAPI.Controllers
             //    colType = colType/* + " (" + maxLength + ")"*/;
             //}
             return colType;
+        }
+        private string ReturnColumnDefaultSqlserver(string colType,string defaultVal)
+        {
+            switch (colType.ToLower())
+            {
+                case "bit":
+                    {
+                        if(!string.IsNullOrEmpty(defaultVal))
+                        {
+                            if (defaultVal.Trim().ToLower() == "true")
+                                defaultVal = "1";
+                            else if (defaultVal.Trim().ToLower() == "false")
+                                defaultVal = "0";
+                        }
+                    }
+                    break;
+                case "bool":
+                    {
+                        if (!string.IsNullOrEmpty(defaultVal))
+                        {
+                            if (defaultVal.Trim().ToLower() == "true")
+                                defaultVal = "1";
+                            else if (defaultVal.Trim().ToLower() == "false")
+                                defaultVal = "0";
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            //if (maxLength > 0)
+            //{
+            //    colType = colType/* + " (" + maxLength + ")"*/;
+            //}
+            return defaultVal;
         }
         private string getDefaultValue(string columnType,object DefaultValue)
         {

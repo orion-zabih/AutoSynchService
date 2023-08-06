@@ -71,14 +71,15 @@ namespace AutoSynchPosService.Classes
                         });
                         //objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
-                            try
-                            {
-                                msSqlDbManager.ExecuteTransQuery(q);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.write("Create Table Sql Server:"+ex.Message,true);
-                            }
+                            msSqlDbManager.ExecuteTransQuery(q);
+                            //try
+                            //{
+                                
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //    Logger.write("Create Table Sql Server:"+ex.Message,true);
+                            //}
                         });
                         msSqlDbManager.Commit();    
                         isStructureComplete=true;
@@ -131,14 +132,15 @@ namespace AutoSynchPosService.Classes
 
                        
                         queries.ForEach(q => {
-                            try
-                            {
-                                msSqlDbManager.ExecuteTransQuery(q);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.write("Alter Table Sql Server:" + ex.Message, true);
-                            }
+                            msSqlDbManager.ExecuteTransQuery(q);
+                            //try
+                            //{
+                                
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //    Logger.write("Alter Table Sql Server:" + ex.Message, true);
+                            //}
                         });
                         msSqlDbManager.Commit();
                         isStructureComplete = true;
