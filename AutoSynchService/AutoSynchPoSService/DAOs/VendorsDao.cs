@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace AutoSynchService.DAOs
 {
-    internal class ProductsDao
+    internal class VendorsDao
     {
-        internal int GetMaxProductId(string dbtype)
+        internal int GetMaxVendorId(string dbtype)
         {
 			try
 			{
-                string qry = "select max(Id) from InvProduct";
+                string qry = "select max(Id) from InvVendor";
 
                 if (dbtype.Equals(Constants.Sqlite))
                 {
@@ -38,11 +38,11 @@ namespace AutoSynchService.DAOs
 				throw ex;
 			}
         }
-        internal int GetExistingProductId(string dbtype,string prodId)
+        internal int GetExistingVendorId(string dbtype,string prodId)
         {
             try
             {
-                string qry = "select Count(Id) from InvProduct where Id="+prodId;
+                string qry = "select Count(Id) from InvVendor where Id="+prodId;
 
                 if (dbtype.Equals(Constants.Sqlite))
                 {

@@ -130,7 +130,141 @@ namespace AutoSynchPosService.Classes
             }
             return invSaleMasterList;
         }
-       
+        internal static List<InvPurchaseMaster> GetInvPurchaseMaster(DataTable table)
+        {
+            var invPurchaseMasterList = new List<InvPurchaseMaster>(table.Rows.Count);
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                DataRow row = table.Rows[i];
+
+                var invSPurchaseMaster = new InvPurchaseMaster()
+                {
+                    Id = row.Field<int>("Id"),
+                    InvoiceNo = row.Field<int>("InvoiceNo"),
+                    InvoiceDate = row.Field<DateTime?>("InvoiceDate"),
+                    VendorId = row.Field<int?>("VendorId"),
+                    InvoiceDisc = row.Field<decimal?>("InvoiceDisc"),
+                    Frieght = row.Field<decimal?>("Frieght"),
+                    IsReturn = row.Field<bool>("IsReturn"),
+                    PaymentTypeId = row.Field<int>("PaymentTypeId"),
+                    InvoiceTotal = row.Field<decimal>("InvoiceTotal"),                    
+                    GrandTotal = row.Field<decimal>("GrandTotal"),
+                    ReferenceId= row.Field<int?>("ReferenceId"),
+                    Source= row.Field<string?>("Source"),
+                    WarehouseId= row.Field<int>("WarehouseId"),
+                    BranchId = row.Field<int>("BranchId"),
+                    IsCancel= row.Field<bool>("IsCancel"),
+                    Status = row.Field<string?>("Status"),
+                    CreatedBy = row.Field<int>("CreatedBy"),
+                    CreatedDate = row.Field<DateTime?>("CreatedDate"),
+                    UpdatedBy = row.Field<int>("UpdatedBy"),
+                    UpdatedDate = row.Field<DateTime?>("UpdatedDate"),
+                    CurrencyId= row.Field<int>("CurrencyId"),
+                    CurrencyRate= row.Field<decimal>("CurrencyRate"),
+                    GatePassNo = row.Field<int?>("GatePassNo"),
+                    BiltyNo = row.Field<string?>("BiltyNo"),
+                    BiltyDate= row.Field<DateTime?>("BiltyDate"),
+                    VehicleNo = row.Field<string?>("VehicleNo"),
+                    DriverName= row.Field<string?>("DriverName"),
+                    DriverContactNo= row.Field<string?>("DriverContactNo"),
+                    Commission= row.Field<decimal>("Commission"),
+                    Tax= row.Field<decimal>("Tax"),
+                    Remarks = row.Field<string?>("Remarks"),                    
+                    FiscalYearId = row.Field<int>("FiscalYearId"),
+                    LoadingCharges= row.Field<decimal>("LoadingCharges"),
+                    OtherCharges = row.Field<decimal>("OtherCharges"),
+                    GatePassId= row.Field<int>("GatePassId"),
+                    GrandTotalBeforeWhTax= row.Field<decimal>("GrandTotalBeforeWhTax"),
+                    WithholdingTaxInAmount = row.Field<decimal>("WithholdingTaxInAmount"),
+                    WithholdingTaxInPer = row.Field<decimal>("WithholdingTaxInPer"),
+                    PaymentType = row.Field<string?>("PaymentType"),                    
+                    AdvanceTaxAmount= row.Field<decimal>("AdvanceTaxAmount"),
+                    CancelRemarks= row.Field<string?>("CancelRemarks")
+
+                };
+
+                invPurchaseMasterList.Add(invSPurchaseMaster);
+            }
+            return invPurchaseMasterList;
+        }
+        internal static List<InvPurchaseDetail> GetInvPurchaseDetails(DataTable table)
+        {
+            var invPurchaseDetailList = new List<InvPurchaseDetail>(table.Rows.Count);
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                DataRow row = table.Rows[i];
+
+                var invpurchaseDetail = new InvPurchaseDetail()
+                {
+                    /*Id,AdditionalTaxAmount,AverageCost,BatchNo,CostPrice,CutQty,
+Disc,ExpiryDate,IsBatchChange,MasterId,ProductId,Qty,RetailPrice,SaleTaxInPercent,
+Scheme,TaxAmount,UnitId*/
+                    Id = row.Field<int>("Id"),
+                    AdditionalTaxAmount = row.Field<decimal>("AdditionalTaxAmount"),
+                    AverageCost = row.Field<decimal>("AverageCost"),
+                    BatchNo = row["BatchNo"] != DBNull.Value ? row.Field<string>("BatchNo") : "",
+                    CostPrice = row.Field<decimal>("CostPrice"),
+                    CutQty = row.Field<decimal>("CutQty"),
+                    Disc = row.Field<decimal>("Disc"),
+                    ExpiryDate = row.Field<DateTime?>("ExpiryDate"),
+                    IsBatchChange = row.Field<bool>("IsBatchChange"),
+                    MasterId = row.Field<int>("MasterId"),
+                    ProductId = row.Field<int>("ProductId"),                    
+                    Qty = row.Field<decimal>("Qty"),
+                    RetailPrice = row.Field<decimal>("RetailPrice"),
+                    SaleTaxInPercent = row.Field<decimal>("SaleTaxInPercent"),
+                    Scheme = row.Field<decimal>("Scheme"),
+                    TaxAmount = row.Field<decimal>("TaxAmount"),
+                    UnitId = row.Field<int>("UnitId")
+                };
+                invPurchaseDetailList.Add(invpurchaseDetail);
+            }
+            return invPurchaseDetailList;
+        }
+        internal static List<InvProductLedger> GetInvProductLedgers(DataTable table)
+        {
+            var invProductLedgerList = new List<InvProductLedger>(table.Rows.Count);
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                DataRow row = table.Rows[i];
+
+                var invProductLedger = new InvProductLedger()
+                {
+                    /*Id,AverageCost,BatchBarcode,BatchNo,BranchId,Cost,CreatedBy,
+CreatedDate,ExpiryDate,FiscalYearId,IsCancel,MaterialId,PackageId,ProductId,
+QtyCut,QtyIn,QtyOut,ReferenceId,Remarks,RetailPrice,Source,SourceParty,
+TransDate,UnitId,WarehouseId */
+                    Id = row.Field<int>("Id"),
+                    AverageCost = row.Field<decimal>("AverageCost"),
+                    BatchBarcode= row["BatchBarcode"] != DBNull.Value ? row.Field<string>("BatchBarcode") : "",
+                    BatchNo = row["BatchNo"] != DBNull.Value ? row.Field<string>("BatchNo") : "",
+                    BranchId= row.Field<int>("BranchId"),
+                    Cost= row.Field<decimal>("Cost"),
+                    CreatedBy= row.Field<int>("CreatedBy"),
+                    CreatedDate = row.Field<DateTime?>("CreatedDate"),
+                    ExpiryDate = row.Field<DateTime?>("ExpiryDate"),
+                    FiscalYearId= row.Field<int>("FiscalYearId"),
+                    IsCancel= row.Field<bool>("IsCancel"),
+                    MaterialId = row.Field<int>("MaterialId"),
+                    PackageId = row.Field<int>("PackageId"),
+                    ProductId = row.Field<int>("ProductId"),
+                    QtyCut = row.Field<decimal>("QtyCut"),
+                    QtyIn = row.Field<decimal>("QtyIn"),
+                    QtyOut = row.Field<decimal>("QtyOut"),
+                    ReferenceId = row.Field<int>("ReferenceId"),
+                    Remarks= row["Remarks"] != DBNull.Value ? row.Field<string>("Remarks") : "",
+                    RetailPrice= row.Field<decimal>("RetailPrice"),
+                    Source= row.Field<string>("Source"),
+                    SourceParty = row["SourceParty"] != DBNull.Value ? row.Field<string>("SourceParty") : "",
+                    TransDate = row.Field<DateTime?>("TransDate"),
+                    UnitId = row.Field<int>("UnitId"),
+                    WarehouseId= row.Field<int>("WarehouseId"),
+                };
+                invProductLedgerList.Add(invProductLedger);
+            }
+            return invProductLedgerList;
+        }
+
         internal static List<SynchSetting> GetSynchSetting(DataTable table)
         {
             var synchSettingList = new List<SynchSetting>(table.Rows.Count);

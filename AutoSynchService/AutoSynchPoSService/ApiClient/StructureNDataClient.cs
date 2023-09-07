@@ -102,6 +102,49 @@ namespace AutoSynchPoSService.ApiClient
                 return null;
             }
         }
+        public InvProductsResponse? GetVendors(string maxVendorId, int recordsToFetch, string isQuick = "f")//,string prodLedger="false"
+        {
+            try
+            {
+                try
+                {
+
+                    invSaleApiUrl = "/api/SysTables" + "/GetVendors?branch_id=" + Global.BranchId + "&max_vendor_id=" + maxVendorId + "&records_to_fetch=" + recordsToFetch + "&is_quick=" + isQuick;
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            InvProductsResponse response = JsonConvert.DeserializeObject<InvProductsResponse>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
 
         public TableStructureResponse? GetTableStructure(SynchTypes synchType, string dbType)
         {

@@ -1,4 +1,5 @@
 ﻿
+using AutoSynchService.DAOs;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -169,7 +170,7 @@ namespace AutoSynchPosService.Classes
             }
         }
 
-        internal static bool _InsertData(DateTime dateTime, SysTablesResponse? objResponse, InvProductsResponse? objProductjResponse, string dbtype)
+        internal static bool _InsertData(DateTime dateTime, SysTablesResponse? objResponse, InvProductsResponse? objProductjResponse, string dbtype,bool updateExisting)
         {
             try
             {
@@ -211,6 +212,7 @@ namespace AutoSynchPosService.Classes
                                 foreach (object item in collection)
                                 {
                                     string values = string.Empty;
+                                    bool isIgnoreInsert = false;
                                     fields.ForEach(fiel =>
                                     {
                                         fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
@@ -224,12 +226,26 @@ namespace AutoSynchPosService.Classes
                                         {
                                             values += "'" + vlu + "',";
                                         }
-                                        if(vlu != null && fiel != null && fiel.ToLower().Equals("id"))
-                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "delete from " + getTableName(clas.Name, dbtype) + " where " + fiel + "=" + vlu });
+                                        if (vlu != null && fiel != null && fiel.ToLower().Equals("id"))
+                                        {
+                                            string tbleName = getTableName(clas.Name, dbtype);
+                                            ProductsDao productsDao = new ProductsDao();
+                                            VendorsDao vendorsDao = new VendorsDao();
+                                            if (!updateExisting && ((tbleName.ToLower().Equals("invproduct") && productsDao.GetExistingProductId(dbtype, vlu.ToString()) != 0) || (tbleName.ToLower().Equals("invvendor") && vendorsDao.GetExistingVendorId(dbtype, vlu.ToString()) != 0)))
+                                            {
+                                                isIgnoreInsert = true;
+                                            }
+                                            else
+                                            {
+                                                isIgnoreInsert = false;
+                                                multiQueries.Add(new TableDataCls { TableName = tbleName, Qry = "delete from " + tbleName + " where " + fiel + "=" + vlu });
+                                            }
+                                        }
+                                            
                                     });
 
-
-                                    multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                    if (!isIgnoreInsert)
+                                        multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
                                 }
 
                                // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });

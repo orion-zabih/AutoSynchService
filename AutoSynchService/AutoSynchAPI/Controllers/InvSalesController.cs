@@ -3,6 +3,7 @@ using AutoSynchAPI.Models;
 using AutoSynchSqlServer.CustomModels;
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Security.Cryptography;
 
@@ -10,7 +11,7 @@ namespace AutoSynchAPI.Controllers
 {
     [Route("api/InvSales")]
     [ApiController]
-    public class InvSalesController : ControllerBase
+    public class InvSalesController : Controller
     {
 
         private readonly ILogger<InvSalesController> _logger;
@@ -655,7 +656,7 @@ namespace AutoSynchAPI.Controllers
                                            join b in dbContext.OrgBranch on x.BranchId equals b.Id
                                            where x.MappingForm == "Sales Return" && x.TransactionType == "Line" && b.OrgId == OrgId
                                            select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, BranchId = x.BranchId }).ToList();
-                        if (GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
                         {
                             AccountsDetails = AccountsDetails.Where(x => x.BranchId == masterData.BranchId).ToList();
                         }
@@ -667,7 +668,7 @@ namespace AutoSynchAPI.Controllers
                                            join b in dbContext.OrgBranch on x.BranchId equals b.Id
                                            where x.MappingForm == "Sales" && x.TransactionType == "Line" && b.OrgId == OrgId
                                            select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, BranchId = x.BranchId }).ToList();
-                        if (GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
                         {
                             AccountsDetails = AccountsDetails.Where(x => x.BranchId == masterData.BranchId).ToList();
                         }
@@ -940,7 +941,7 @@ namespace AutoSynchAPI.Controllers
                                          join b in dbContext.OrgBranch on x.BranchId equals b.Id
                                          where x.MappingForm == "Sales Return" && x.TransactionType == "Total" && b.OrgId == OrgId
                                          select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, BranchId = x.BranchId }).ToList();
-                        if (GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
                         {
                             AccountsTotal = AccountsTotal.Where(x => x.BranchId == masterData.BranchId).ToList();
                         }
@@ -952,7 +953,7 @@ namespace AutoSynchAPI.Controllers
                                          join b in dbContext.OrgBranch on x.BranchId equals b.Id
                                          where x.MappingForm == "Sales" && x.TransactionType == "Total" && b.OrgId == OrgId
                                          select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, BranchId = x.BranchId }).ToList();
-                        if (GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
                         {
                             AccountsTotal = AccountsTotal.Where(x => x.BranchId == masterData.BranchId).ToList();
                         }
@@ -3318,33 +3319,6 @@ namespace AutoSynchAPI.Controllers
         //    }
         //    return Journal;
         //}
-        private OrgOrganization GetOrganization(int OrgId, int BranchId, OrgOrganization OrgInfo, OrgBranch branch)
-        {
-           // var OrgInfo = new OrgOrganization();
-
-
-            //OrgInfo = (from x in dbContext.OrgOrganization where x.Id == OrgId select x).FirstOrDefault();
-
-            if (OrgInfo.UseInfoForAllBranches == false)
-            {
-                //List<OrgBranch> Branches = new List<OrgBranch>();
-                //OrgBranch branch = new OrgBranch();
-
-                //branch = (from x in dbContext.OrgBranch where x.Id == BranchId select x).FirstOrDefault();
-
-                OrgInfo.OrgName = branch.BranchName;
-                OrgInfo.OrgLogo = branch.BranchLogoName;
-                OrgInfo.LongAddress = branch.LongAddress;
-                OrgInfo.ShortAddress = branch.ShortAddress;
-                OrgInfo.MobileNumber = branch.MobileNumber;
-                OrgInfo.PhoneNumber = branch.PhoneNumber;
-                OrgInfo.Email = branch.Email;
-                OrgInfo.Website = branch.Website;
-                OrgInfo.KpraNo = OrgInfo.KpraNo;
-
-            }
-            return OrgInfo;
-        }
-    }
+         }
 
 }

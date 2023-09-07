@@ -104,6 +104,7 @@ namespace AutoSynchPoSService.ApiClient
             ApiResponse responseDTO = new ApiResponse();
             try
             {
+                dataResponse.BranchId = Global.BranchId;
                 invSaleApiUrl = "/api/InvSales/PostSaleDetails";
                 var json = JsonConvert.SerializeObject(dataResponse);
                 var response = ApiManager.PostAsync(json, invSaleApiUrl);

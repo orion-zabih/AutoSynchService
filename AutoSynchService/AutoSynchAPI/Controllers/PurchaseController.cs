@@ -1,20 +1,839 @@
 ﻿using AutoSynchAPI.Classes;
 using AutoSynchAPI.Models;
+using AutoSynchSqlServer.CustomModels;
 using AutoSynchSqlServer.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 using System.Transactions;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AutoSynchAPI.Controllers
 {
+    
     public class PurchaseController : Controller
     {
+        [Route("api/Purchase/InsertPurchaseVouchers")]
+        [HttpPost]
+        public IActionResult InsertPurchaseVouchers([FromBody] DataResponse dataResponse)
+        {
+            ApiResponse apiResponse = new ApiResponse();
+            int JvVoucherMasterId = 0;
+            //result.Success = true;
+            List<int> Vouchers = new List<int>();
+            
+            using(Entities dataContext=new Entities())
+            {
+
+                int oldId = 0;
+                OrgBranch orgBranch = dataContext.OrgBranch.FirstOrDefault(o => o.Id == dataResponse.BranchId);
+                OrgOrganization orgOrganization = dataContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
+
+                var FiscalYear = Common.GetPurchaseFiscalYear(orgOrganization.Id, dataResponse.BranchId, orgOrganization, orgBranch,dataContext);
+                try
+                {
+
+                    //Vouchers = (from x in dataContext.AccVoucherMaster where x.VoucherType == "PUR" && x.BranchId == dataResponse.BranchId select x.ReferenceId).ToList();
+                    //var PurchaseMaster = (from x in dataContext.InvPurchaseMaster
+                    //                      where x.BranchId == dataResponse.BranchId && !Vouchers.Contains(x.Id)
+                    //
+                    //  select x).ToList();`19
+                    
+                    foreach (var m in dataResponse.invPurchaseMaster)
+                    {
+                        m.InvoiceNo = ((from x in dataContext.InvPurchaseMaster
+                                        join y in dataContext.OrgBranch on x.BranchId equals y.Id
+                                        where x.FiscalYearId == (orgBranch.AccPurchaseFiscalYearId == 0 ? FiscalYear.Id : orgBranch.AccPurchaseFiscalYearId) && y.OrgId == orgBranch.OrgId
+                                        select (int?)x.InvoiceNo).Max() ?? 0) + 1;
+
+                        using (var transaction = dataContext.Database.BeginTransaction())
+                        {
+                            //dataContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(20));
+                            try
+                            {
+                                oldId = m.Id;
+                                m.Id = 0;
+                                m.Source = "local";
+                                dataContext.InvPurchaseMaster.Add(m);
+                                dataContext.SaveChanges();
+                                List<InvPurchaseDetail> invPurchaseDetails = dataResponse.invPurchaseDetails.Where(d => d.MasterId == oldId).ToList();
+                                //dataContext.AccVoucherMaster
+                                var orderItems = (from x in invPurchaseDetails
+                                                  select
+                                                  new InvPurchaseMasterUnmapped
+                                                  {
+                                                      CostPrice = x.CostPrice,
+                                                      ProductId = x.ProductId,
+                                                      UnitId = x.UnitId,
+                                                      RetailPrice = x.RetailPrice,
+                                                      Disc = x.Disc,
+                                                      TaxAmount = x.TaxAmount,
+                                                      Qty = x.Qty,
+                                                      CutQty = x.CutQty,
+                                                      AdditionalTaxAmount = x.AdditionalTaxAmount,
+                                                      SaleTaxInPercent = x.SaleTaxInPercent,
+
+                                                  }).ToList();
+                                string vendorName = (from x in dataContext.InvVendor where x.Id == m.VendorId select x.Name).FirstOrDefault();
+                                if (m != null)
+                                {
+                                    invPurchaseDetails.ForEach(d =>
+                                    {
+                                        dataContext.InvPurchaseDetail.Add(new InvPurchaseDetail
+                                        {
+                                            Id=0,
+                                            AdditionalTaxAmount = d.AdditionalTaxAmount,
+                                            AverageCost = d.AverageCost,
+                                            BatchNo = d.BatchNo,
+                                            CostPrice = d.CostPrice,
+                                            CutQty = d.CutQty,
+                                            Disc = d.Disc,
+                                            ExpiryDate = d.ExpiryDate,
+                                            IsBatchChange = d.IsBatchChange,
+                                            MasterId = m.Id,
+                                            ProductId = d.ProductId,
+                                            Qty = d.Qty,
+                                            RetailPrice = d.RetailPrice,
+                                            SaleTaxInPercent = d.SaleTaxInPercent,
+                                            Scheme = d.Scheme,
+                                            TaxAmount = d.TaxAmount,
+                                            UnitId = d.UnitId,
+                                           
+                                        });
+                                    });
+                                    dataResponse.invProductLedgers.ForEach(l => { 
+                                    
+                                        InvProductLedger ledger = new InvProductLedger();
+                                        ledger.ProductId = l.ProductId;
+                                        ledger.TransDate = l.TransDate;
+                                        ledger.MaterialId = l.MaterialId;
+                                        ledger.Remarks = l.Remarks;
+                                        ledger.Source = l.Source;
+                                        ledger.QtyIn = l.QtyIn;
+                                        ledger.QtyOut = l.QtyOut;
+                                        ledger.QtyCut = l.QtyCut;
+                                        ledger.Cost = l.Cost;
+                                        ledger.AverageCost = l.AverageCost;
+                                        ledger.RetailPrice = l.RetailPrice;
+                                        ledger.SourceParty = l.SourceParty;
+                                        
+                                        ledger.ReferenceId = m.Id;
+                                        ledger.BranchId = l.BranchId;
+                                        ledger.FiscalYearId = l.FiscalYearId;
+                                        ledger.CreatedBy = l.CreatedBy;
+                                        ledger.CreatedDate = l.CreatedDate;
+                                        ledger.UnitId = l.UnitId;
+                                        ledger.WarehouseId = l.WarehouseId;
+                                        dataContext.InvProductLedger.Add(ledger);
+                                        //dataContext.SaveChanges();
+                                    });
+                                List<AccVoucherDetail> accVoucherDetails = new List<AccVoucherDetail>();
+                                    accVoucherDetails = GetPurchaseJournal(orderItems, m, dataContext, orgOrganization.Id, orgOrganization, orgBranch);
+                                    int debitTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountDebit).Sum());
+                                    int creditTotal = Convert.ToInt32(accVoucherDetails.Select(x => x.AmountCredit).Sum());
+                                    bool isJournalEqual = true;
+                                    if (accVoucherDetails.Count() == 0 || debitTotal != creditTotal || (debitTotal + creditTotal) == 0)
+                                    {
+                                        isJournalEqual = false;
+                                        apiResponse.Message = "Purchase Journal Debit and Credit are not Equal";
+                                        apiResponse.Code = ApplicationResponse.SUCCESS_CODE;
+                                        //CustomLogging.InsertErrorLog("Direct Insertion", "Skip Ids due to Unbalance", m.Id.ToString(), dataContext);
+                                    }
+                                    else
+                                        isJournalEqual = true;
+                                    apiResponse.ReturnId = m.Id;
+                                    if (m != null && isJournalEqual)
+                                    {
+                                        string VendorName = "";
+                                        if (dataContext.AccVoucherMaster.Any(x => x.VoucherType == "PUR" && x.ReferenceId == m.Id))
+                                        {
+                                            var Jvmaster = (from x in dataContext.AccVoucherMaster where x.ReferenceId == m.Id && x.VoucherType == "PUR" select x).FirstOrDefault();
+                                            if (Jvmaster != null)
+                                            {
+                                                Jvmaster.VoucherNo = m.InvoiceNo.ToString();
+                                                Jvmaster.VoucherDate = m.InvoiceDate.HasValue ? m.InvoiceDate.Value : DateTime.Now;
+                                                Jvmaster.LastUpdatedBy = m.CreatedBy;
+                                                Jvmaster.LastUpdatedDate = DateTime.Now;
+                                                Jvmaster.VoucherStatus = "Approved";
+                                                if (m.VendorId != 0)
+                                                {
+                                                    VendorName = (from x in dataContext.InvVendor where x.Id == m.VendorId select x.Name).FirstOrDefault();
+                                                    if (VendorName != "" && VendorName != null)
+                                                    {
+                                                        VendorName = VendorName + " - ";
+                                                    }
+                                                }
+                                                if (m.Remarks != "" && m.Remarks != null)
+                                                {
+                                                    Jvmaster.Description = m.Remarks + " (" + VendorName + m.PaymentType + ")";
+                                                }
+                                                else
+                                                {
+                                                    Jvmaster.Description = VendorName + m.PaymentType;
+                                                }
+                                                dataContext.Entry(Jvmaster);
+                                                dataContext.SaveChanges();
+                                                JvVoucherMasterId = Jvmaster.Id;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            AccVoucherMaster accVoucherMaster = new AccVoucherMaster();
+                                            accVoucherMaster.VoucherNo = m.InvoiceNo.ToString();
+                                            accVoucherMaster.CreatedBy = m.CreatedBy;
+                                            accVoucherMaster.VoucherDate = m.InvoiceDate.HasValue ? m.InvoiceDate.Value : DateTime.Now;
+                                            accVoucherMaster.CreatedDate = DateTime.Now;
+                                            accVoucherMaster.BranchId = m.BranchId;
+                                            accVoucherMaster.FiscalYearId = m.FiscalYearId;
+                                            accVoucherMaster.VoucherType = "PUR";
+                                            accVoucherMaster.VoucherStatus = "Approved";
+                                            accVoucherMaster.ReferenceId = m.Id;
+                                            if (m.VendorId != 0)
+                                            {
+                                                VendorName = (from x in dataContext.InvVendor where x.Id == m.VendorId select x.Name).FirstOrDefault();
+                                                if (VendorName != "" && VendorName != null)
+                                                {
+                                                    VendorName = VendorName + " - ";
+                                                }
+                                            }
+                                            if (m.Remarks != "" && m.Remarks != null)
+                                            {
+                                                accVoucherMaster.Description = m.Remarks + " (" + VendorName + m.PaymentType + ")";
+                                            }
+                                            else
+                                            {
+                                                accVoucherMaster.Description = VendorName + m.PaymentType;
+                                            }
+                                            accVoucherMaster.Description = accVoucherMaster.Description + "-Missed Entry";
+                                            dataContext.AccVoucherMaster.Add(accVoucherMaster);
+                                            dataContext.SaveChanges();
+                                            JvVoucherMasterId = accVoucherMaster.Id;
+                                        }
+                                        dataContext.AccVoucherDetail.RemoveRange(dataContext.AccVoucherDetail.Where(x => x.VoucherMasterId == JvVoucherMasterId));
+                                        foreach (var detail in accVoucherDetails)
+                                        {
+                                            detail.VoucherMasterId = JvVoucherMasterId;
+                                            detail.Type = "Detail";
+                                            dataContext.AccVoucherDetail.Add(detail);
+                                            dataContext.SaveChanges();
+                                        }
+                                    }
+                                }
+                                transaction.Commit();
+                            }
+                            catch (Exception)
+                            {
+                                transaction.Rollback();
+                                throw;
+                            }
+                            
+                        }
+                    }
+                    
+                }
+                catch (Exception ex)
+                {
+                    apiResponse.Message = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        apiResponse.Message = ex.InnerException.Message;
+                    }
+                    apiResponse.Code=ApplicationResponse.SUCCESS_CODE;
+                    //CustomLogging.InsertErrorLog("Direct Insertion", "InsertPurchaseVouchers", ex.Message, dataContext);
+                }
+            }
+            return Ok(apiResponse);
+        }
+        private List<AccVoucherDetail> GetPurchaseJournal(List<InvPurchaseMasterUnmapped> Items, InvPurchaseMaster masterData, Entities dataContext, int OrgId, OrgOrganization OrgInfo, OrgBranch branch)
+        {
+            List<AccVoucherDetail> Journal = new List<AccVoucherDetail>();
+            try
+            {
+                if (masterData != null)
+                {
+                    //int OrgId = (from x in dataContext.OrgBranch where x.Id == masterData.BranchId select x.OrgId).FirstOrDefault();
+                    //int BranchId = masterData.BranchId;
+                    foreach (var item in Items)
+                    {
+                        var Product = (from x in dataContext.InvProduct where x.Id == item.ProductId select x).FirstOrDefault();
+                        if(Product != null)
+                        {
+                            item.ProductName = Product.Name;
+                            if (Product.SaleTaxCalMethodInPur == "Sheddule")
+                            {
+                                item.ItemCostValue = item.CostPrice * (item.Qty - item.CutQty) - item.Disc;
+                                item.ItemDisc = 0;
+                            }
+                            else
+                            {
+                                item.ItemCostValue = item.CostPrice * (item.Qty - item.CutQty);
+                                item.ItemDisc = item.Disc;
+                            }
+                            item.ItemCutValue = item.CostPrice * item.CutQty;
+                            item.ItemNetAmount = item.ItemCostValue - item.Disc + item.TaxAmount + item.AdditionalTaxAmount;
+                            if (Product.Type == "Material")
+                            {
+                                var mixture = (from x in dataContext.InvProduct where x.Id == Product.MixtureId select x).FirstOrDefault();
+                                if (mixture != null)
+                                {
+                                    item.ItemId = mixture.Id;
+                                }
+                            }
+                        }
+                    }
+                    List<AccAccountsMapping> AccountsDetails = new List<AccAccountsMapping>();
+                    if (masterData.IsReturn)
+                    {
+                        AccountsDetails = (from x in dataContext.AccAccountsMapping
+                                           join a in dataContext.AccAccount on x.AccountId equals a.Id
+                                           join b in dataContext.OrgBranch on x.BranchId equals b.Id
+                                           where x.MappingForm == "Purchase Return" && x.TransactionType == "Line" && b.OrgId == OrgId
+                                           select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, /*Name = a.AccountName,*/ BranchId = x.BranchId }).ToList();
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        {
+                            AccountsDetails = AccountsDetails.Where(x => x.BranchId == branch.Id).ToList();
+                        }
+                    }
+                    else
+                    {
+                        AccountsDetails = (from x in dataContext.AccAccountsMapping
+                                           join a in dataContext.AccAccount on x.AccountId equals a.Id
+                                           join b in dataContext.OrgBranch on x.BranchId equals b.Id
+                                           where x.MappingForm == "Purchase" && x.TransactionType == "Line" && b.OrgId == OrgId
+                                           select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description,  BranchId = x.BranchId }).ToList();//Account = a.AccountName,
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        {
+                            AccountsDetails = AccountsDetails.Where(x => x.BranchId == branch.Id).ToList();
+                        }
+                    }
+                    foreach (var map in AccountsDetails)
+                    {
+                        if (map.MappingSource == "Items Cost")
+                        {
+                            foreach (var item in Items)
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ProductId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.ItemCostValue, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.ItemCostValue, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Discount")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemDisc > 0))
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.ItemDisc, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.ItemDisc, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Cut")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemCutValue > 0))
+                            {
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + item.ProductName + ")";
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.ItemCutValue, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.ItemCutValue, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Tax")
+                        {
+                            foreach (var item in Items.Where(x => x.TaxAmount > 0))
+                            {
+                                var Product = (from x in dataContext.InvProduct where x.Id == item.ItemId select x).FirstOrDefault();
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.TaxAmount, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.TaxAmount, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items ExTax")
+                        {
+                            foreach (var item in Items.Where(x => x.AdditionalTaxAmount > 0))
+                            {
+                                var Product = (from x in dataContext.InvProduct where x.Id == item.ItemId select x).FirstOrDefault();
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.AdditionalTaxAmount, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.AdditionalTaxAmount, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items TotalTax")
+                        {
+                            foreach (var item in Items.Where(x => x.TaxAmount + x.AdditionalTaxAmount > 0))
+                            {
+                                var Product = (from x in dataContext.InvProduct where x.Id == item.ItemId select x).FirstOrDefault();
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.AccountId = map.AccountId;
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.TaxAmount + item.AdditionalTaxAmount, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.TaxAmount + item.AdditionalTaxAmount, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                        else if (map.MappingSource == "Items Net")
+                        {
+                            foreach (var item in Items.Where(x => x.ItemNetAmount > 0))
+                            {
+                                var Product = (from x in dataContext.InvProduct where x.Id == item.ItemId select x).FirstOrDefault();
+                                AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                                voucherDetail.PartnerId = item.ItemId;
+                                voucherDetail.PartnerType = "Product";
+                                voucherDetail.Description = map.Description + " (" + Product.Name + ")";
+                                voucherDetail.ProductId = item.ItemId;
+                                //voucherDetail.AccountName = map.Account;
+                                voucherDetail.MappingSource = map.MappingSource;
+                                if (map.DebitOrCredit == "Debit")
+                                {
+                                    voucherDetail.AmountDebit = Math.Round(item.ItemNetAmount, 2);
+                                    voucherDetail.AmountCredit = 0;
+                                }
+                                else
+                                {
+                                    voucherDetail.AmountDebit = 0;
+                                    voucherDetail.AmountCredit = Math.Round(item.ItemNetAmount, 2);
+                                }
+                                Journal.Add(voucherDetail);
+                            }
+                        }
+                    }
+                    List<AccAccountsMapping> AccountsTotal = new List<AccAccountsMapping>();
+                    if (masterData.IsReturn)
+                    {
+                        AccountsTotal = (from x in dataContext.AccAccountsMapping
+                                         join a in dataContext.AccAccount on x.AccountId equals a.Id
+                                         join b in dataContext.OrgBranch on x.BranchId equals b.Id
+                                         where x.MappingForm == "Purchase Return" && x.TransactionType == "Total" && b.OrgId == OrgId
+                                         select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, /*Account = a.AccountName,*/ BranchId = x.BranchId }).ToList();
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        {
+                            AccountsTotal = AccountsTotal.Where(x => x.BranchId == branch.Id).ToList();
+                        }
+                    }
+                    else
+                    {
+                        AccountsTotal = (from x in dataContext.AccAccountsMapping
+                                         join a in dataContext.AccAccount on x.AccountId equals a.Id
+                                         join b in dataContext.OrgBranch on x.BranchId equals b.Id
+                                         where x.MappingForm == "Purchase" && x.TransactionType == "Total" && b.OrgId == OrgId
+                                         select new AccAccountsMapping { Id = x.Id, AccountId = x.AccountId, MappingSource = x.MappingSource, DebitOrCredit = x.DebitOrCredit, Description = x.Description, /*Account = a.AccountName,*/ BranchId = x.BranchId }).ToList();
+                        if (Common.GetOrganization(OrgId, masterData.BranchId, OrgInfo, branch).DmAccMapping == "Separate")
+                        {
+                            AccountsTotal = AccountsTotal.Where(x => x.BranchId == branch.Id).ToList();
+                        }
+                    }
+                    foreach (var AccTotal in AccountsTotal)
+                    {
+                        if (AccTotal.MappingSource == "Items Cost" && Items.Select(x => x.ItemCostValue).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.ItemCostValue).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.ItemCostValue).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Cut" && Items.Select(x => x.ItemCutValue).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.ItemCutValue).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.ItemCutValue).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Discount" && Items.Select(x => x.ItemDisc).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.ItemDisc).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.ItemDisc).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Tax" && Items.Select(x => x.TaxAmount).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.TaxAmount).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.TaxAmount).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items ExTax" && Items.Select(x => x.AdditionalTaxAmount).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.AdditionalTaxAmount).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.AdditionalTaxAmount).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items TotalTax" && Items.Select(x => x.TaxAmount + x.AdditionalTaxAmount).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.TaxAmount + x.AdditionalTaxAmount).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.TaxAmount + x.AdditionalTaxAmount).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Items Net" && Items.Select(x => x.ItemNetAmount).Sum() > 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(Items.Select(x => x.ItemNetAmount).Sum(), 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(Items.Select(x => x.ItemNetAmount).Sum(), 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Discounts" && masterData.InvoiceDisc != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.InvoiceDisc.Value, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.InvoiceDisc.Value, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Withholding Tax" && masterData.WithholdingTaxInAmount != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.WithholdingTaxInAmount, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.WithholdingTaxInAmount, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Other" && masterData.OtherCharges != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.OtherCharges, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.OtherCharges, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Freight" && masterData.Frieght != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.Frieght.Value, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.Frieght.Value, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Loading" && masterData.LoadingCharges != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.LoadingCharges, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.LoadingCharges, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Advance Tax" && masterData.AdvanceTaxAmount != 0)
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.AdvanceTaxAmount, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.AdvanceTaxAmount, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable Credit" && masterData.PaymentType == "Credit" && masterData.VendorId != 0)
+                        {
+                            string VendorName = "";
+                            var vendor = (from x in dataContext.InvVendor where x.Id == masterData.VendorId select x).FirstOrDefault();
+                            if (vendor != null)
+                            {
+                                VendorName = vendor.Name;
+                            }
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description + " (" + VendorName + ")";
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            voucherDetail.PartnerId = masterData.VendorId.Value;
+                            voucherDetail.PartnerType = "Supplier";
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.GrandTotal, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.GrandTotal, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable Cash" && masterData.PaymentType == "Cash")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.GrandTotal, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.GrandTotal, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                        else if (AccTotal.MappingSource == "Net Payable CreditCard" && masterData.PaymentType == "Credit Card")
+                        {
+                            AccVoucherDetail voucherDetail = new AccVoucherDetail();
+                            voucherDetail.AccountId = AccTotal.AccountId;
+                            voucherDetail.Description = AccTotal.Description;
+                            //voucherDetail.AccountName = AccTotal.Account;
+                            voucherDetail.MappingSource = AccTotal.MappingSource;
+                            if (AccTotal.DebitOrCredit == "Debit")
+                            {
+                                voucherDetail.AmountDebit = Math.Round(masterData.GrandTotal, 2);
+                                voucherDetail.AmountCredit = 0;
+                            }
+                            else
+                            {
+                                voucherDetail.AmountDebit = 0;
+                                voucherDetail.AmountCredit = Math.Round(masterData.GrandTotal, 2);
+                            }
+                            Journal.Add(voucherDetail);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //CustomLogging.InsertErrorLog("Purchase", "GetSaleJournal", ex.Message, dataContext);
+            }
+            return Journal;
+        }
         public IActionResult Index()
         {
             return View();
         }
-        [Route("SavePurchaseOrder")]
+        [Route("api/Purchase/SavePurchaseOrder")]
         [HttpPost]
         public IActionResult SavePurchaseOrder([FromBody] DataResponse dataResponse)
         {

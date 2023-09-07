@@ -174,11 +174,11 @@ namespace AutoSynchPoSService
                             {
                                 if (_businessLogic.UploadInvSaleToServer(settings.LocalDb))
                                 {
-                                    Logger.write("Data uploaded to server successfully at: {time}");
+                                    Logger.write("Sale Data uploaded to server successfully at: {time}");
                                 }
                                 else
                                 {
-                                    Logger.write("Data upload to server failed at: {time}");
+                                    Logger.write("Sale Data upload to server failed at: {time}");
                                 }
                                 
                                     
@@ -187,16 +187,42 @@ namespace AutoSynchPoSService
                             {
                                 Logger.write(ex.Message, true);
                             }
+                            try
+                            {
+                                if (_businessLogic.UploadInvPurchaseToServer(settings.LocalDb))
+                                {
+                                    Logger.write("Purchase Data uploaded to server successfully at: {time}");
+                                }
+                                else
+                                {
+                                    Logger.write("Purchase Data upload to server failed at: {time}");
+                                }
 
-                            //if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch))
-                            //{
 
-                            //    Logger.write("Some products downlaoded successfully only at: {time}");
-                            //}
-                            //else
-                            //{
-                            //    Logger.write("Failed to download products only at: {time}");
-                            //}
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.write(ex.Message, true);
+                            }
+                            if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchProduct.Equals("true"))
+                            {
+                                if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
+                                {
+                                    Logger.write("Some products downlaoded successfully only at: {time}");
+                                }
+                                else
+                                {
+                                    Logger.write("Failed to download products only at: {time}");
+                                }
+                                //if (_businessLogic.GetVendorsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
+                                //{
+                                //    Logger.write("Some vendors downlaoded successfully only at: {time}");
+                                //}
+                                //else
+                                //{
+                                //    Logger.write("Failed to download vendors only at: {time}");
+                                //}
+                            }
                             try
                             {
                                 int daysToDeleteQT = 0;

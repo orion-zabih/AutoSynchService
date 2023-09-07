@@ -608,6 +608,67 @@ namespace AutoSynchPoSService
 
             return true;
         }
+
+        public bool UploadInvPurchaseToServer(string dbtype)
+        {
+            try
+            {
+                InvPurchaseDao invPurchaseDao = new InvPurchaseDao();
+                DataResponse dataResponse = new DataResponse();
+                dataResponse.invPurchaseMaster = invPurchaseDao.GetPurchaseMaster(dbtype);
+                if (dataResponse.invPurchaseMaster!= null && dataResponse.invPurchaseMaster.Count > 0)
+                {
+
+                    dataResponse.invPurchaseMaster.ForEach(m => {
+                        dataResponse.invPurchaseDetails.AddRange(invPurchaseDao.GetPurchaseDetails(m.Id, dbtype));
+                    });
+
+                    dataResponse.invPurchaseMaster.ForEach(m => {
+                        dataResponse.invProductLedgers.AddRange(invPurchaseDao.GetProductLedgers(m.Id, dbtype));
+                    });
+                    if (dataResponse.invPurchaseDetails != null && dataResponse.invPurchaseDetails.Count > 0)
+                    {
+                        InvPurchaseClient invPurchaseClient = new InvPurchaseClient();
+                        Logger.write("{POS Purchase Service BL}", "uploading Purchases data");
+                        //Console.WriteLine("uploading Purchases data");
+                        ApiResponse apiResponse = invPurchaseClient.PostInvPurchaseDetails(dataResponse);
+                        if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
+                        {
+                            Logger.write("{POS Purchase Service BL}", "Purchases data uploaded successfully");
+                            //Console.WriteLine("Purchases data uploaded successfully");
+                            invPurchaseDao.UpdateMasterIsUploaded(dataResponse.invPurchaseMaster.Select(m => m.Id).ToList(), dbtype);
+
+                        }
+                        else
+                        {
+                            Logger.write("{POS Purchase Service BL}", apiResponse.Message);
+                            //Console.WriteLine(apiResponse.Message);
+                            Logger.write("{POS Purchase Service BL}", "Purchases data did not uploaded successfully. please contact support");
+                            //Console.WriteLine("Purchases data did not uploaded successfully. please contact support");
+                        }
+                    }
+                    else
+                    {
+                        Logger.write("{POS Purchase Service BL}", "no pending Purchases data");
+                        //Console.WriteLine("no pending Purchases data");
+                    }
+                }
+                else
+                {
+                    Logger.write("{POS Purchase Service BL}", "no pending Purchases data");
+                    //Console.WriteLine("no pending Purchases data");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{POS Purchase Service BL}", ex.Message);
+                //Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
         public bool DeleteQt(string dbtype,int daysToDeleteQT)
         {
             try
@@ -822,7 +883,7 @@ namespace AutoSynchPoSService
                                                     prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
                                                     Logger.write("{POS Sale Service BL}", "Saving products.");
                                                     //Console.WriteLine("Saving products.");
-                                                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
+                                                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer,true))
                                                     {
                                                         Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
                                                         //UpdateProductFlag updateProductFlag = new UpdateProductFlag();
@@ -846,7 +907,7 @@ namespace AutoSynchPoSService
                                     SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType, IsBranchFilter);
                                     if (sysTablesResponse != null)
                                     {
-                                        if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer))
+                                        if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.SqlServer,true))
                                         {
                                             synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Where(w=>w.synch_type== lastSynchSetting.synch_type).Select(s => s.setting_id).ToList(), "done", Constants.SqlServer);
                                             if (pendingSynchSettings.FirstOrDefault(w => w.synch_type == SynchTypes.products_quick.ToString()) == null)
@@ -880,7 +941,7 @@ namespace AutoSynchPoSService
             }
 
         }
-        public  bool GetProductsOnlySqlServer(int recordsToFetch)
+        public  bool GetProductsOnlySqlServer(int recordsToFetch,bool updateExisting)
         {
             try
             {
@@ -895,7 +956,7 @@ namespace AutoSynchPoSService
                 {
                     Logger.write("{POS Sale Service BL}", "Saving products.");
                                //Console.WriteLine("Saving products.");
-                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer))
+                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer, updateExisting))
                     {
                         Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
 
@@ -908,6 +969,47 @@ namespace AutoSynchPoSService
                         if (ackResponse != null)
                             Logger.write("{POS Sale Service BL}", ackResponse.Code+": "+ackResponse.Message);
                         return true;
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{GetProductsOnlySqlServer}", ex.Message.ToString());
+                //Console.WriteLine(ex.Message.ToString());
+                return false;
+            }
+            return false;
+        }
+        public bool GetVendorsOnlySqlServer(int recordsToFetch, bool updateExisting)
+        {
+            try
+            {
+                StructureNDataClient sysTablesClient = new StructureNDataClient();
+                VendorsDao vendorsDao = new VendorsDao();
+                InvProductsResponse invVendorsResponse = null;
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+                Logger.write("{POS Sale Service BL}", "Getting some vendors only");
+                
+                invVendorsResponse = sysTablesClient.GetVendors("-1", recordsToFetch, "f");
+                if (invVendorsResponse != null)
+                {
+                    Logger.write("{POS Sale Service BL}", "Saving vendors data.");
+                    
+                    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invVendorsResponse, Constants.SqlServer, updateExisting))
+                    {
+                        Logger.write("{POS Sale Service BL}", "Saved vendors.sending acknowledgement to server");
+
+                        //UpdateVendorFlag updateProductFlag = new UpdateProductFlag();
+                        //updateProductFlag.BranchId = Global.BranchId.ToString();
+                        //invVendorsResponse.invVendors.ForEach(p => {
+                        //    updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                        //});
+                        //ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
+                        //if (ackResponse != null)
+                        //    Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
+                        //return true;
 
                     }
 
@@ -986,7 +1088,7 @@ namespace AutoSynchPoSService
                         SysTablesResponse sysTablesResponse = sysTablesClient.GetTableData(synchType, IsBranchFilter);
                         if (sysTablesResponse != null)
                         {
-                            if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.Sqlite))
+                            if (ReCreateStructureTables._InsertData(DateTime.Now, sysTablesResponse, null, Constants.Sqlite,true))
                             {
                                 if (pendingSynchSettings != null && pendingSynchSettings.Count() > 0)
                                     synchSettingsDao.UpdatePendingSynchSettings(pendingSynchSettings.Select(s => s.setting_id).ToList(), "done", Constants.Sqlite);

@@ -422,6 +422,200 @@ namespace AutoSynchAPI.Controllers
                 return BadRequest(apiResponse);
             }
         }
+        [Route("GetVendors")]
+        [HttpGet]
+        public IActionResult GetVendors(string branch_id, string max_vendor_id, string records_to_fetch, string is_quick)//,string product_ledger
+        {
+
+            Models.InvProductsResponse responseObj = new Models.InvProductsResponse();
+            int _branchId = 0;
+            if (!string.IsNullOrEmpty(branch_id))
+            {
+                if (int.TryParse(branch_id, out _branchId))
+                {
+                    try
+                    {
+                        using (Entities dbContext = new Entities())
+                        {
+                            int vendorId = 0;
+                            if (string.IsNullOrEmpty(max_vendor_id))
+                                vendorId = -1;
+                            if (vendorId == -1 || int.TryParse(max_vendor_id, out vendorId))
+                            {
+                                int recordsToFetch = 1000;
+                                int.TryParse(records_to_fetch, out recordsToFetch);
+                                
+                                    if (vendorId < 0)
+                                    {//&& g.IsSynch == true
+                                        responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId ).Take(recordsToFetch).ToList();
+
+                                    }
+                                    else
+                                    {
+                                        if (is_quick == "t")
+                                        {
+                                            if (vendorId == 0)
+                                            {
+                                                vendorId = dbContext.InvVendor.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                                vendorId = vendorId - 1;
+                                            }
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && g.Id > vendorId).Take(recordsToFetch).ToList();
+
+                                        }
+                                        else if (is_quick == "r")
+                                        {
+                                            DateTime now = DateTime.Now;
+                                            DateTime dateTimePrevious = now.AddDays(-2);
+                                            //DateTime dateTimeToday =new DateTime(now.Year,now.Month,now.Day,0,0,1);
+                                            if (vendorId == 0)
+                                            {
+                                                //  var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && ((g.UpdatedDate>= dateTimePrevious && g.UpdatedDate <= dateTimeToday)|| (g.CreatedDate >= dateTimePrevious && g.CreatedDate <= dateTimeToday)));
+                                                var invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious));
+                                                if (invVendors != null && invVendors.Count() != 0)
+                                                {
+                                                    vendorId = invVendors.Min(m => m.Id);
+                                                    vendorId = vendorId - 1;
+                                                }
+                                                else
+                                                {
+                                                    responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                                    responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                                    return Ok(responseObj);
+                                                }
+                                            }
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious) && g.Id > vendorId).Take(recordsToFetch).ToList();
+
+                                        }
+                                        else
+                                        {
+                                            if (vendorId == 0)
+                                            {// && g.IsSynch == true
+                                                vendorId = dbContext.InvVendor.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                            }// && g.IsSynch == true 
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && g.Id > vendorId).Take(recordsToFetch).ToList();
+
+                                        }
+
+                                    }
+                            }
+                            if (responseObj.invVendors != null)
+                            {
+                                if (responseObj.invVendors.Count > 0)
+                                {
+                                    responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
+                                    responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                                    return Ok(responseObj);
+                                }
+                                else
+                                {
+                                    if (dbContext.InvVendor.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= vendorId)
+                                    {
+                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                        return Ok(responseObj);
+                                    }
+                                    else if (is_quick == "r")
+                                    {
+                                        responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
+                                        responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;
+                                        return Ok(responseObj);
+                                    }
+                                    else
+                                        return Ok(responseObj);
+                                }
+
+                            }
+                            else
+                            {
+                                //responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+                                //responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+                                return NotFound(responseObj);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                        //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                        return BadRequest(responseObj);
+                    }
+                }
+                else
+                {
+                    //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                    return BadRequest(responseObj);
+                }
+            }
+            else
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(responseObj);
+            }
+        }
+        [Route("PostUpdatedVendors")]
+        [HttpPost]
+        public IActionResult PostUpdatedVendors([FromBody] UpdateProductFlag updateResponse)
+        {
+            ApiResponse apiResponse = new ApiResponse();
+            if (!string.IsNullOrEmpty(updateResponse.BranchId))
+            {
+                int _branchId = 0;
+                if (int.TryParse(updateResponse.BranchId, out _branchId) && updateResponse.updatedProducts != null && updateResponse.updatedProducts.Count > 0)
+                {
+                    try
+                    {
+                        using (Entities dbContext = new Entities())
+                        {
+                            using (var transaction = dbContext.Database.BeginTransaction())
+                            {
+                                List<int> vendorIds = updateResponse.updatedProducts.Select(s => s.ProductId).ToList();
+                                var VendorsToUpdate = dbContext.InvVendor.Where(p => p.BranchId == _branchId && vendorIds.Contains(p.Id));
+                                foreach (var item in VendorsToUpdate)
+                                {
+                                    //item.IsSynch = false;
+                                }
+                                try
+                                {
+                                    dbContext.SaveChanges();
+                                    transaction.Commit();
+                                }
+                                catch (Exception ex)
+                                {
+                                    transaction.Rollback();
+
+                                    throw ex;
+                                }
+                            }
+                            // dbContext.InvSaleMaster.AddRan
+                        }
+
+                        apiResponse.Code = ApplicationResponse.SUCCESS_CODE;
+                        apiResponse.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                        return Ok(apiResponse);
+                    }
+                    catch (Exception ex)
+                    {
+                        apiResponse.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                        apiResponse.Message = ex.Message;
+                        return BadRequest(apiResponse);
+                    }
+                }
+                else
+                {
+                    //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                    //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                    return BadRequest(apiResponse);
+                }
+            }
+            else
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(apiResponse);
+            }
+        }
 
         [Route("GetTableStructure")]
         [HttpGet]
@@ -672,7 +866,7 @@ namespace AutoSynchAPI.Controllers
                                     string cols = string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
-                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL")+ (column.ValueGenerated == ValueGenerated.OnAdd ? "":getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()),column.GetDefaultValue())) + ",";
+                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL")+ column.GetDefaultValueSql()==null? (column.ValueGenerated == ValueGenerated.OnAdd ? "":getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()),column.GetDefaultValue())): getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValueSql()) + ",";
                                     }
                                     if (tblName.ToLower().Equals("invsalemaster") || tblName.ToLower().Equals("invpurchasemaster"))
                                     {
