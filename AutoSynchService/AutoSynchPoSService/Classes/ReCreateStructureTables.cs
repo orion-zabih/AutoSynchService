@@ -72,15 +72,15 @@ namespace AutoSynchPosService.Classes
                         });
                         //objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
-                            msSqlDbManager.ExecuteTransQuery(q);
-                            //try
-                            //{
-                                
-                            //}
-                            //catch (Exception ex)
-                            //{
-                            //    Logger.write("Create Table Sql Server:"+ex.Message,true);
-                            //}
+                            
+                            try
+                            {
+                                msSqlDbManager.ExecuteTransQuery(q);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.write("Create Table Sql Server:" + ex.Message, true);
+                            }
                         });
                         msSqlDbManager.Commit();    
                         isStructureComplete=true;
@@ -185,71 +185,74 @@ namespace AutoSynchPosService.Classes
 
                     listofClasses.ForEach(t =>
                     {
-                    var listProperties = t.PropertyType.GetProperties().ToList();
-                    if (listProperties.Count > 2)
-
-                    {
-                        var clas = listProperties[2].PropertyType;
-                        tableNames.Add(getTableName(clas.Name, dbtype));
-                        //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
-                        List<string> fieldsold = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
-                            List<string> fields = new List<string>();
-                            fieldsold.ForEach (f =>
+                        if(t.PropertyType.Name!="ApiResponse")
                         {
-                            fields.Add( getColName(clas.Name, f));
-                            
-                        }) ;
-                            //foreach (string colNm in fields)
-                            //{
-                            //     getColName(clas.Name, colNm);
-                            //}
-                        string columns = string.Join(",", fields.ToArray());
-
-                        PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
-                            if (prop != null)
+                            var listProperties = t.PropertyType.GetProperties().ToList();
+                            if (listProperties.Count > 2)
                             {
-                                IList collection = (IList)prop.GetValue(objResponse != null ? objResponse : objProductjResponse, null);
-                                foreach (object item in collection)
+                                var clas = listProperties[2].PropertyType;
+                                tableNames.Add(getTableName(clas.Name, dbtype));
+                                //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
+                                List<string> fieldsold = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                                List<string> fields = new List<string>();
+                                fieldsold.ForEach(f =>
                                 {
-                                    string values = string.Empty;
-                                    bool isIgnoreInsert = false;
-                                    fields.ForEach(fiel =>
-                                    {
-                                        fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
-                                        object vlu = GetPropValue(item, fiel);
+                                    fields.Add(getColName(clas.Name, f));
 
-                                        if (vlu != null && vlu.ToString().Contains("'"))
+                                });
+                                //foreach (string colNm in fields)
+                                //{
+                                //     getColName(clas.Name, colNm);
+                                //}
+                                string columns = string.Join(",", fields.ToArray());
+
+                                PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
+                                if (prop != null)
+                                {
+                                    IList collection = (IList)prop.GetValue(objResponse != null ? objResponse : objProductjResponse, null);
+                                    foreach (object item in collection)
+                                    {
+                                        string values = string.Empty;
+                                        bool isIgnoreInsert = false;
+                                        fields.ForEach(fiel =>
                                         {
-                                            values += "'" + vlu.ToString().Replace("'", "''") + "',";
-                                        }
-                                        else
-                                        {
-                                            values += "'" + vlu + "',";
-                                        }
-                                        if (vlu != null && fiel != null && fiel.ToLower().Equals("id"))
-                                        {
-                                            string tbleName = getTableName(clas.Name, dbtype);
-                                            ProductsDao productsDao = new ProductsDao();
-                                            VendorsDao vendorsDao = new VendorsDao();
-                                            if (!updateExisting && ((tbleName.ToLower().Equals("invproduct") && productsDao.GetExistingProductId(dbtype, vlu.ToString()) != 0) || (tbleName.ToLower().Equals("invvendor") && vendorsDao.GetExistingVendorId(dbtype, vlu.ToString()) != 0)))
+                                            fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
+                                            object vlu = GetPropValue(item, fiel);
+
+                                            if (vlu != null && vlu.ToString().Contains("'"))
                                             {
-                                                isIgnoreInsert = true;
+                                                values += "'" + vlu.ToString().Replace("'", "''") + "',";
                                             }
                                             else
                                             {
-                                                isIgnoreInsert = false;
-                                                multiQueries.Add(new TableDataCls { TableName = tbleName, Qry = "delete from " + tbleName + " where " + fiel + "=" + vlu });
+                                                values += "'" + vlu + "',";
                                             }
-                                        }
-                                            
-                                    });
+                                            if (vlu != null && fiel != null && fiel.ToLower().Equals("id"))
+                                            {
+                                                string tbleName = getTableName(clas.Name, dbtype);
+                                                ProductsDao productsDao = new ProductsDao();
+                                                VendorsDao vendorsDao = new VendorsDao();
+                                                if (!updateExisting && ((tbleName.ToLower().Equals("invproduct") && productsDao.GetExistingProductId(dbtype, vlu.ToString()) != 0) || (tbleName.ToLower().Equals("invvendor") && vendorsDao.GetExistingVendorId(dbtype, vlu.ToString()) != 0)))
+                                                {
+                                                    isIgnoreInsert = true;
+                                                }
+                                                else
+                                                {
+                                                    isIgnoreInsert = false;
+                                                    multiQueries.Add(new TableDataCls { TableName = tbleName, Qry = "delete from " + tbleName + " where " + fiel + "=" + vlu });
+                                                }
+                                            }
 
-                                    if (!isIgnoreInsert)
-                                        multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                        });
+
+                                        if (!isIgnoreInsert)
+                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                    }
+
+                                    // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
                                 }
-
-                               // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
                             }
+
                         }
 
                     });

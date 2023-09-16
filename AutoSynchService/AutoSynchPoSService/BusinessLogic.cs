@@ -636,7 +636,7 @@ namespace AutoSynchPoSService
                         {
                             Logger.write("{POS Purchase Service BL}", "Purchases data uploaded successfully");
                             //Console.WriteLine("Purchases data uploaded successfully");
-                            invPurchaseDao.UpdateMasterIsUploaded(dataResponse.invPurchaseMaster.Select(m => m.Id).ToList(), dbtype);
+                            invPurchaseDao.UpdateMasterIsUploaded(apiResponse.updatedRecords, dbtype);
 
                         }
                         else
@@ -992,7 +992,7 @@ namespace AutoSynchPoSService
                 SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
                 Logger.write("{POS Sale Service BL}", "Getting some vendors only");
                 
-                invVendorsResponse = sysTablesClient.GetVendors("-1", recordsToFetch, "f");
+                invVendorsResponse = sysTablesClient.GetVendors("0", recordsToFetch, "r");
                 if (invVendorsResponse != null)
                 {
                     Logger.write("{POS Sale Service BL}", "Saving vendors data.");

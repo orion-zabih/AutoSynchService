@@ -180,8 +180,8 @@ namespace AutoSynchPoSService
                                 {
                                     Logger.write("Sale Data upload to server failed at: {time}");
                                 }
-                                
-                                    
+
+
                             }
                             catch (Exception ex)
                             {
@@ -214,14 +214,17 @@ namespace AutoSynchPoSService
                                 {
                                     Logger.write("Failed to download products only at: {time}");
                                 }
-                                //if (_businessLogic.GetVendorsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
-                                //{
-                                //    Logger.write("Some vendors downlaoded successfully only at: {time}");
-                                //}
-                                //else
-                                //{
-                                //    Logger.write("Failed to download vendors only at: {time}");
-                                //}
+                            }
+                            if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchVendor.Equals("true"))
+                            {
+                                if (_businessLogic.GetVendorsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
+                                {
+                                    Logger.write("Some vendors downlaoded successfully only at: {time}");
+                                }
+                                else
+                                {
+                                    Logger.write("Failed to download vendors only at: {time}");
+                                }
                             }
                             try
                             {

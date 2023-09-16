@@ -176,6 +176,9 @@ Total from InvSaleDetail where BillId = '" + BillId + "'");
             string tblName = "InvSaleMaster";
             if (dbtype.Equals(Constants.Sqlite))
                 tblName = "InvSaleMasterTmp";
+            queries.Add(@"delete from InvProductLedger where ReferenceId in 
+(
+select Id from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT')");
 
             queries.Add(@"delete from InvSaleDetail where BillId in 
 (

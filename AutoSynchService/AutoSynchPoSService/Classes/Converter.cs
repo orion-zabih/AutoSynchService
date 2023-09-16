@@ -146,7 +146,7 @@ namespace AutoSynchPosService.Classes
                     InvoiceDisc = row.Field<decimal?>("InvoiceDisc"),
                     Frieght = row.Field<decimal?>("Frieght"),
                     IsReturn = row.Field<bool>("IsReturn"),
-                    PaymentTypeId = row.Field<int>("PaymentTypeId"),
+                    PaymentTypeId = row["PaymentTypeId"] != DBNull.Value ? row.Field<int>("PaymentTypeId"):0,
                     InvoiceTotal = row.Field<decimal>("InvoiceTotal"),                    
                     GrandTotal = row.Field<decimal>("GrandTotal"),
                     ReferenceId= row.Field<int?>("ReferenceId"),

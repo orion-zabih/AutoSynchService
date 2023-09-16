@@ -465,13 +465,14 @@ namespace AutoSynchAPI.Controllers
                                         else if (is_quick == "r")
                                         {
                                             DateTime now = DateTime.Now;
-                                            DateTime dateTimePrevious = now.AddDays(-2);
+                                            DateTime dateTimePrevious = now.AddDays(-365);
                                             //DateTime dateTimeToday =new DateTime(now.Year,now.Month,now.Day,0,0,1);
                                             if (vendorId == 0)
                                             {
                                                 //  var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && ((g.UpdatedDate>= dateTimePrevious && g.UpdatedDate <= dateTimeToday)|| (g.CreatedDate >= dateTimePrevious && g.CreatedDate <= dateTimeToday)));
                                                 var invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious));
-                                                if (invVendors != null && invVendors.Count() != 0)
+                                                
+                                            if (invVendors != null && invVendors.Count() != 0)
                                                 {
                                                     vendorId = invVendors.Min(m => m.Id);
                                                     vendorId = vendorId - 1;
@@ -860,13 +861,33 @@ namespace AutoSynchAPI.Controllers
                                 lstTables.ForEach(table =>
                                 {
                                     string tblName = getTableName(table.GetTableName(), local_db);
+                                    
                                     qry = "create table " + tblName + "(";
                                     
                                     var columns = table.GetProperties().ToList();
                                     string cols = string.Empty;
+                                    string columnDefinition=string.Empty;
                                     foreach (var column in columns)
                                     {//column.IsNullable
-                                        cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL")+ column.GetDefaultValueSql()==null? (column.ValueGenerated == ValueGenerated.OnAdd ? "":getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()),column.GetDefaultValue())): getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValueSql()) + ",";
+                                        if(tblName == "InvSaleMaster" && getColumnName(column.Name)== "EventDateTime")
+                                        {
+
+                                        }
+                                        columnDefinition = getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType());
+                                        if (column.IsPrimaryKey())
+                                            columnDefinition += " PRIMARY KEY";
+                                        if (column.ValueGenerated == ValueGenerated.OnAdd)
+                                            columnDefinition += isIdentityColumn(column, table);
+                                        if (column.IsColumnNullable())
+                                            columnDefinition += " NULL";
+                                        else
+                                            columnDefinition+= " NOT NULL";
+                                        if (column.GetDefaultValueSql() == null && column.ValueGenerated != ValueGenerated.OnAdd)
+                                            columnDefinition += getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValue());
+                                        else
+                                            columnDefinition += getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValueSql());
+                                            cols += columnDefinition+",";
+                                        //cols += getColumnName(column.Name) + " " + ReturnColumnTypeSqlserver(column.GetColumnType()) + (column.IsPrimaryKey() ? " PRIMARY KEY" : "") + (column.ValueGenerated == ValueGenerated.OnAdd?isIdentityColumn(column,table):"") + (column.IsColumnNullable() ? " NULL" : " NOT NULL")+ column.GetDefaultValueSql()==null? (column.ValueGenerated == ValueGenerated.OnAdd ? "":getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()),column.GetDefaultValue())): getDefaultValue(ReturnColumnTypeSqlserver(column.GetColumnType()), column.GetDefaultValueSql()) + ",";
                                     }
                                     if (tblName.ToLower().Equals("invsalemaster") || tblName.ToLower().Equals("invpurchasemaster"))
                                     {
@@ -1628,6 +1649,7 @@ namespace AutoSynchAPI.Controllers
             string defaultVal = string.Empty;
             if (DefaultValue != null)
             {
+                    
                 switch (columnType.ToLower())
                 {
                     case "bit":
@@ -1644,12 +1666,18 @@ namespace AutoSynchAPI.Controllers
                         break;
                     case "datetime2":
                         {
+                            if(DefaultValue.ToString().Contains("'"))
+                                defaultVal = " DEFAULT " + DefaultValue.ToString() ;
+                            else
                             defaultVal = " DEFAULT '" + DefaultValue.ToString()+ "'";
                         }
                         break;
                     case "date":
                         {
-                            defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
+                            if (DefaultValue.ToString().Contains("'"))
+                                defaultVal = " DEFAULT " + DefaultValue.ToString();
+                            else
+                                defaultVal = " DEFAULT '" + DefaultValue.ToString() + "'";
                         }
                         break;
                     case "string":

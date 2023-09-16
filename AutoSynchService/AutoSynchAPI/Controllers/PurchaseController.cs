@@ -48,7 +48,7 @@ namespace AutoSynchAPI.Controllers
 
                         using (var transaction = dataContext.Database.BeginTransaction())
                         {
-                            //dataContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(20));
+                            dataContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(20));
                             try
                             {
                                 oldId = m.Id;
@@ -220,6 +220,7 @@ namespace AutoSynchAPI.Controllers
                                     }
                                 }
                                 transaction.Commit();
+                                apiResponse.updatedRecords.Add(new UpdatedRecords { Id = oldId, InvoiceNo = m.InvoiceNo });
                             }
                             catch (Exception)
                             {
@@ -229,7 +230,9 @@ namespace AutoSynchAPI.Controllers
                             
                         }
                     }
-                    
+                    apiResponse.Code = ApplicationResponse.SUCCESS_CODE;
+                    apiResponse.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                    return Ok(apiResponse);
                 }
                 catch (Exception ex)
                 {
@@ -238,11 +241,13 @@ namespace AutoSynchAPI.Controllers
                     {
                         apiResponse.Message = ex.InnerException.Message;
                     }
-                    apiResponse.Code=ApplicationResponse.SUCCESS_CODE;
+
+                    apiResponse.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                    return BadRequest(apiResponse);
                     //CustomLogging.InsertErrorLog("Direct Insertion", "InsertPurchaseVouchers", ex.Message, dataContext);
                 }
             }
-            return Ok(apiResponse);
+            
         }
         private List<AccVoucherDetail> GetPurchaseJournal(List<InvPurchaseMasterUnmapped> Items, InvPurchaseMaster masterData, Entities dataContext, int OrgId, OrgOrganization OrgInfo, OrgBranch branch)
         {
@@ -825,7 +830,7 @@ namespace AutoSynchAPI.Controllers
             }
             catch (Exception ex)
             {
-                //CustomLogging.InsertErrorLog("Purchase", "GetSaleJournal", ex.Message, dataContext);
+                //CustomLogging.InsertErrorLog("Purchase", "GetPurchaseJournal", ex.Message, dataContext);
             }
             return Journal;
         }

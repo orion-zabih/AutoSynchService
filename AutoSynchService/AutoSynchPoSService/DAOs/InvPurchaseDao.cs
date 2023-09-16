@@ -120,15 +120,15 @@ TransDate,UnitId,WarehouseId from InvProductLedger where ReferenceId= '" + Maste
                 return productLedgers;
             }
         }
-        internal bool UpdateMasterIsUploaded(List<int> Ids, string dbtype)
+        internal bool UpdateMasterIsUploaded(List<UpdatedRecords> updatedRecords, string dbtype)
         {
             SqliteManager sqlite = new SqliteManager();
             List<string> queries = new List<string>();
-            string tblName = "InvSaleMaster";
+            string tblName = "InvPurchaseMaster";
             if (dbtype.Equals(Constants.Sqlite))
                 tblName = "InvPurchaseMaster";
-            Ids.ForEach(id =>
-                queries.Add("update "+tblName+" set IsUploaded = 1 where Id = '" + id + "'")
+            updatedRecords.ForEach(id =>
+                queries.Add("update "+tblName+ " set InvoiceNo="+id.InvoiceNo+", IsUploaded = 1 where Id = '" + id.Id + "'")
                 );
             if (dbtype.Equals(Constants.Sqlite))
             {                
@@ -157,15 +157,12 @@ TransDate,UnitId,WarehouseId from InvProductLedger where ReferenceId= '" + Maste
         {
             SqliteManager sqlite = new SqliteManager();
             List<string> queries = new List<string>();
-            string tblName = "InvSaleMaster";
-            if (dbtype.Equals(Constants.Sqlite))
-                tblName = "InvSaleMasterTmp";
 
-            queries.Add(@"delete from InvSaleDetail where BillId in 
+            queries.Add(@"delete from InvPurchaseDetail where BillId in 
 (
-select Id from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'"+Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT))+"' and OrderStatus='QT')");
+select Id from InvPurchaseMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT))+"' and OrderStatus='QT')");
 
-            queries.Add(@"delete from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT'");
+            queries.Add(@"delete from InvPurchaseMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT'");
             if (dbtype.Equals(Constants.Sqlite))
             {
                 sqlite.ExecuteTransactionMultiQueries(queries);
