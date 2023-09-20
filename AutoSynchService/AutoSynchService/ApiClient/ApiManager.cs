@@ -1,9 +1,6 @@
-﻿using AutoSynchService.Classes;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,18 +20,19 @@ namespace AutoSynchService.ApiClient
            .AddJsonFile("appsettings.json", optional: false);
 
                 IConfiguration config = builder.Build();
-                                
+
                 client.BaseAddress = new Uri(config.GetSection("ApiLinks").GetValue<string>("BaseAddress"));
                 // Add an Accept header for JSON format.
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
+                client.Timeout = TimeSpan.FromMinutes(20);
                 //var response = await client.PostAsync(Utility.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json"));
                 //var response = client.PostAsync(Global.SERVICE_URL + apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
                 //var response = client.PostAsync(apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;
                 HttpResponseMessage responses = client.PostAsync(apiMethod, new StringContent(inputJson.ToString(), Encoding.UTF8, "application/json")).Result;  // Blocking call! Program will wait here until a response is received or a timeout occurs.
                 if (responses.IsSuccessStatusCode)
                 {
-                   return responses.Content.ReadAsStringAsync().Result;
+                    return responses.Content.ReadAsStringAsync().Result;
 
                 }
                 else
@@ -50,6 +48,7 @@ namespace AutoSynchService.ApiClient
             }
             catch (Exception ex)
             {
+                AutoSynchService.Classes.Logger.write("Post Async", ex.ToString());
                 throw ex;
             }
             finally
@@ -90,7 +89,7 @@ namespace AutoSynchService.ApiClient
                         return requestResult;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     throw;
                 }
@@ -101,6 +100,7 @@ namespace AutoSynchService.ApiClient
             }
             catch (Exception ex)
             {
+                AutoSynchService.Classes.Logger.write("Get Async", ex.ToString());
                 return null;
             }
         }

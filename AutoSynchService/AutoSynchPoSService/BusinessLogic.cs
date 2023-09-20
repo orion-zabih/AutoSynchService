@@ -3,7 +3,7 @@ using AutoSynchPosService.Classes;
 using AutoSynchPosService.DAOs;
 using AutoSynchPoSService.ApiClient;
 using AutoSynchPoSService.Classes;
-using AutoSynchService.DAOs;
+using AutoSynchPosService.DAOs;
 using AutoSynchSqlServer.CustomModels;
 using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;

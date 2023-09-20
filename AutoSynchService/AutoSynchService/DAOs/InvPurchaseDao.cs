@@ -1,4 +1,4 @@
-﻿using AutoSynchPosService.Classes;
+﻿using AutoSynchService.Classes;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AutoSynchPosService.DAOs
+namespace AutoSynchService.DAOs
 {
     internal class InvPurchaseDao
     {
@@ -128,7 +128,7 @@ TransDate,UnitId,WarehouseId from InvProductLedger where ReferenceId= '" + Maste
             if (dbtype.Equals(Constants.Sqlite))
                 tblName = "InvPurchaseMaster";
             updatedRecords.ForEach(id =>
-                queries.Add("update "+tblName+ " set IsUploaded = 1 where Id = '" + id.Id + "'")// InvoiceNo="+id.InvoiceNo+",
+                queries.Add("update "+tblName+ " set IsUploaded = 1 where Id = '" + id.Id + "'")//InvoiceNo="+id.InvoiceNo+", 
                 );
             if (dbtype.Equals(Constants.Sqlite))
             {                

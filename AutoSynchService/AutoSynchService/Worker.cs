@@ -1,8 +1,8 @@
 using AutoSynchService.ApiClient;
 using AutoSynchService.Classes;
 using AutoSynchService.DAOs;
-using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace AutoSynchService
@@ -10,6 +10,8 @@ namespace AutoSynchService
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly BusinessLogic _businessLogic;
+
 
         public Worker(ILogger<Worker> logger)
         {
@@ -21,90 +23,101 @@ namespace AutoSynchService
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+
+                _logger.LogInformation("Synching Data from Central Database at: {time}", DateTimeOffset.Now);
                 var builder = new ConfigurationBuilder()
              .SetBasePath(Directory.GetCurrentDirectory())
              .AddJsonFile("appsettings.json", optional: false);
                 IConfiguration config = builder.Build();
                 MySettings settings = config.GetSection("MySettings").Get<MySettings>();
-                string branchId=settings.BranchId;
+                string branchId = settings.BranchId;
                 int _branchId = 0;
                 if (!string.IsNullOrEmpty(branchId))
                 {
-                    if(int.TryParse(branchId, out _branchId))
+                    if (int.TryParse(branchId, out _branchId))
                     {
+                        _logger.LogInformation("Branch ID is {_branchId}", _branchId);
                         Global.BranchId = _branchId;
-                        
-
-                        FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
-                        if(ftpCredentials!=null && ftpCredentials.EnableFtpSynch == "true")
-                        {
-                            if (BusinessLogic.DownloadPublish(ftpCredentials))
-                            {
-                                _logger.LogInformation("Publish files downloaded successfully at: {time}", DateTimeOffset.Now);
-                            }
-                            else
-                            {
-                                _logger.LogInformation("Publish files downloading failed at: {time}", DateTimeOffset.Now);
-                            }
-                        }
+                        //FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
+                        //if (ftpCredentials != null && ftpCredentials.EnableFtpSynch == "true")
+                        //{
+                        //    if (BusinessLogic.DownloadPublish(ftpCredentials))
+                        //    {
+                        //        Logger.write("Publish files downloaded successfully at: {time}");
+                        //    }
+                        //    else
+                        //    {
+                        //        Logger.write("Publish files downloading failed at: {time}");
+                        //    }
+                        //}
                         int recordsToFetch = 1000;
                         int.TryParse(settings.RecordsToFetch, out recordsToFetch);
-                        //BusinessLogic.GetAndReplaceSysTables();
-                        if (settings.LocalDb.Equals(Constants.Sqlite))
+                        //Logger.write("Preparing to upload data from server");
+                        ////Console.WriteLine("Preparing to upload data from server");
+                        //try
+                        //{
+                        //    if (_businessLogic.UploadInvSaleToServer(settings.LocalDb))
+                        //    {
+                        //        Logger.write("Sale Data uploaded to server successfully at: {time}");
+                        //    }
+                        //    else
+                        //    {
+                        //        Logger.write("Sale Data upload to server failed at: {time}");
+                        //    }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Logger.write(ex.Message, true);
+                        //}
+                        //try
+                        //{
+                        //    if (_businessLogic.UploadInvPurchaseToServer(settings.LocalDb))
+                        //    {
+                        //        Logger.write("Purchase Data uploaded to server successfully at: {time}");
+                        //    }
+                        //    else
+                        //    {
+                        //        Logger.write("Purchase Data upload to server failed at: {time}");
+                        //    }
+                        //}
+                        //catch (Exception ex)
+                        //{
+                        //    Logger.write(ex.Message, true);
+                        //}
+                        if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchProduct.Equals("true"))
                         {
-                            if (BusinessLogic.GetAndReplaceSysTablesSqlite())
+                            _logger.LogInformation("Started fetching newly added products from Central Database at: {time}");
+                            if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                             {
-                                _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
+                                _logger.LogInformation("Some products downlaoded successfully only at: {time}");
+                                Logger.write("Some products downlaoded successfully only at: {time}");
                             }
                             else
                             {
-                                _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
+                                _logger.LogInformation("Failed to download products only at: {time}");
+                                Logger.write("Failed to download products only at: {time}");
                             }
                         }
-                        else if (settings.LocalDb.Equals(Constants.SqlServer))
+                        if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchVendor.Equals("true"))
                         {
-                            
-                            if (BusinessLogic.GetAndReplaceTablesSqlServer())
+                            _logger.LogInformation("Started fetching newly added vendors from Central Database at: {time}");
+                            if (_businessLogic.GetVendorsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                             {
-                                _logger.LogInformation("System Tables downloaded and replaced successfully at: {time}", DateTimeOffset.Now);
-                                if (BusinessLogic.GetAndReplaceDataSqlServer(recordsToFetch))
-                                {
-                                    _logger.LogInformation("Data Downloaded successfully successfully at: {time}", DateTimeOffset.Now);
-                                }
-
+                                _logger.LogInformation("Some vendors downlaoded successfully only at: {time}");
+                                Logger.write("Some vendors downlaoded successfully only at: {time}");
                             }
                             else
                             {
-                                _logger.LogInformation("System Tables downloading/replacing failed at: {time}", DateTimeOffset.Now);
+                                _logger.LogInformation("Failed to download vendors only at: {time}");
+                                Logger.write("Failed to download vendors only at: {time}");
                             }
                         }
-                        //if(!BusinessLogic.isFreshdb)
-                        
-                        Console.WriteLine("Preparing to upload data from server");
-                        if (BusinessLogic.UploadInvSaleToServer(settings.LocalDb))
-                        {
-                            _logger.LogInformation("Data uploaded to server successfully at: {time}", DateTimeOffset.Now);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Data upload to server failed at: {time}", DateTimeOffset.Now);
-                        }
-                        if(BusinessLogic.GetProductsOnlySqlServer(recordsToFetch))
-                        {
 
-                            _logger.LogInformation("Some products downlaoded successfully only at: {time}", DateTimeOffset.Now);
-                        }
-                        else
-                        {
-                            _logger.LogInformation("Failed to download products only at: {time}", DateTimeOffset.Now);
-                        }
                     }
                 }
-                
-                
-                
+
+
+
                 await Task.Delay(Utility.CalculateBackoffTime(settings.BackoffTimerUnit,settings.BackoffTimer), stoppingToken);
             }
         }

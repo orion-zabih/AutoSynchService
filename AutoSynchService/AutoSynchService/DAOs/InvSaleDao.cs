@@ -1,5 +1,4 @@
 ﻿using AutoSynchService.Classes;
-using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;
@@ -81,7 +80,7 @@ OrderStatus,
 PatientId,
 PaymentReceived,
 PaymentType,
-ISNULL(PaymentTypeId,0) PaymentTypeId,
+0 PaymentTypeId,
 QuatationId,
 ReadingPerDay,
 Remarks,
@@ -149,6 +148,45 @@ Total from InvSaleDetail where BillId = '" + BillId + "'");
                 );
             if (dbtype.Equals(Constants.Sqlite))
             {                
+                sqlite.ExecuteTransactionMultiQueries(queries);
+                return true;
+            }
+            else
+            {
+                MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                try
+                {
+                    queries.ForEach(q => { msSqlDbManager.ExecuteTransQuery(q); });
+                    msSqlDbManager.Commit();
+                    return true;
+                }
+                catch (Exception)
+                {
+                    msSqlDbManager.RollBack();
+                    return false;
+                }
+
+
+            }
+        }
+        internal bool DeleteOldQt(string dbtype,int daysToDeleteQT)
+        {
+            SqliteManager sqlite = new SqliteManager();
+            List<string> queries = new List<string>();
+            string tblName = "InvSaleMaster";
+            if (dbtype.Equals(Constants.Sqlite))
+                tblName = "InvSaleMasterTmp";
+            queries.Add(@"delete from InvProductLedger where ReferenceId in 
+(
+select Id from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT')");
+
+            queries.Add(@"delete from InvSaleDetail where BillId in 
+(
+select Id from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'"+Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT))+"' and OrderStatus='QT')");
+
+            queries.Add(@"delete from InvSaleMaster where TRY_CONVERT(DATE, OrderDate)<'" + Utility.GetDateTimeStringDDMMYYYY(Utility.GetOldDateTime(daysToDeleteQT)) + "' and OrderStatus='QT'");
+            if (dbtype.Equals(Constants.Sqlite))
+            {
                 sqlite.ExecuteTransactionMultiQueries(queries);
                 return true;
             }

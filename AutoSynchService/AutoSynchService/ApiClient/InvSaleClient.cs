@@ -1,4 +1,4 @@
-﻿using AutoSynchService.Models;
+﻿using AutoSynchService.Classes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,10 +8,53 @@ using System.Threading.Tasks;
 
 namespace AutoSynchService.ApiClient
 {
-   
     internal class InvSaleClient
-    { 
+    {
         string invSaleApiUrl = "/api/InvSales";
+        public string GetFixAccVoucher()//,string prodLedger="false"
+        {
+            try
+            {
+                try
+                {
+
+                    invSaleApiUrl = "/api/InvSales" + "/FixProblematicAccVouchers?branch_id=" + Global.BranchId ;
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            string response = JsonConvert.DeserializeObject<string>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
         public DataResponse? GetSaleDetails()
         {
             try
@@ -19,7 +62,7 @@ namespace AutoSynchService.ApiClient
                 try
                 {
 
-                    invSaleApiUrl += "/GetSaleDetails";
+                    invSaleApiUrl = "/api/InvSales/GetSaleDetails";
                     // var json = JsonConvert.SerializeObject(signinDTO);
                     var responses = ApiManager.GetAsync(invSaleApiUrl);
 
@@ -61,7 +104,8 @@ namespace AutoSynchService.ApiClient
             ApiResponse responseDTO = new ApiResponse();
             try
             {
-                invSaleApiUrl += "/PostSaleDetails";
+                dataResponse.BranchId = Global.BranchId;
+                invSaleApiUrl = "/api/InvSales/PostSaleDetails";
                 var json = JsonConvert.SerializeObject(dataResponse);
                 var response = ApiManager.PostAsync(json, invSaleApiUrl);
 

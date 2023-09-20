@@ -1,4 +1,4 @@
-﻿using AutoSynchService.Models;
+﻿using AutoSynchService.Classes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

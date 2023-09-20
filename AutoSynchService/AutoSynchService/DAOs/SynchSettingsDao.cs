@@ -1,5 +1,4 @@
 ﻿using AutoSynchService.Classes;
-using AutoSynchService.Models;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
 using FluentFTP.Helpers;
@@ -58,6 +57,32 @@ namespace AutoSynchService.DAOs
                 throw;
             }
         }
+        public bool ExecuteQry(List<string> queries)
+        {
+            MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+            try
+            {
+                queries.ForEach(q =>
+                {
+                    try
+                    {
+                        msSqlDbManager.ExecuteTransQuery(q);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.write("Add Synch setting Sql Server:" + ex.Message, true);
+                        
+                    }
+                });
+                msSqlDbManager.Commit();
+                return true;
+            }
+            catch (Exception)
+            {
+                msSqlDbManager.RollBack();
+                throw;
+            }
+        }
         private static void BackupDB(string filePath, string srcFilename, string destFileName)
         {
             var srcfile = Path.Combine(filePath, srcFilename);
@@ -109,12 +134,48 @@ namespace AutoSynchService.DAOs
             }
             
         }
+        internal bool CheckSynchSetting(string dbtype)
+        {
+            string qry = "select * from synch_setting";
+            try
+            {
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager sqlite = new SqliteManager();
+                    DataTable PendingOrdersSQlite = sqlite.GetDataTable(qry);
+                    if (PendingOrdersSQlite.Rows.Count == 0)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                    DataTable PendingOrdersSQlite = sqlDbManager.GetDataTable(qry);
+                    if (PendingOrdersSQlite.Rows.Count == 0)
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+            
+            return true;
+        }
 
         internal List<SynchSetting> GetPendingSynchSetting(string synch_method,string dbtype,string status="ready")
         {
             string qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = '"+status+"'";
             if (status == null){
                 qry = "select * from synch_setting where synch_method='" + synch_method + "'+";
+            }
+            else if (status.Equals("ready"))
+            {
+                qry = "select * from synch_setting where synch_method='" + synch_method + "' and status = '"+status+"'";
             }
             if (dbtype.Equals(Constants.Sqlite))
             {
@@ -186,7 +247,7 @@ namespace AutoSynchService.DAOs
 
             List<string> queries = new List<string>();
             string format = "yyyy-MM-dd HH:mm:ss";
-            string qry2 = $"insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,sync_timestamp,insertion_timestamp,update_timestamp) values({GetMaxId("synch_setting", "setting_id")+1}, '" + synchMethod + "','" + synchType + "','','ready','" + synchTime.ToString(format) + "','" + DateTime.Now.ToString(format) + "','" + DateTime.Now.ToString(format) + "')";
+            string qry2 = $"insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,sync_timestamp,insertion_timestamp,update_timestamp) values({GetMaxId("synch_setting", "setting_id")+1}, '" + synchMethod + "','" + synchType + "','','" + status + "','" + synchTime.ToString(format) + "','" + DateTime.Now.ToString(format) + "','" + DateTime.Now.ToString(format) + "')";
             if (dbtype.Equals(Constants.Sqlite))
             {
                 SqliteManager sqlite = new SqliteManager();
@@ -208,6 +269,24 @@ namespace AutoSynchService.DAOs
                     return false;
                 }
 
+            }
+        }
+        internal List<AutoSynchSqlServer.CustomModels.TableStructure> GetTableColumnsInfo(string tblName)
+        {
+            MsSqlDbManager sqlDbManager= new MsSqlDbManager();
+            try
+            {
+                DataTable dataTable = sqlDbManager.GetDataTable(@"SELECT TABLE_NAME,COLUMN_NAME,COLUMN_DEFAULT,IS_NULLABLE,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = N'"+tblName+"'");
+                Converter converter = new Converter();
+                List<AutoSynchSqlServer.CustomModels.TableStructure> tblStructures = Converter.GetTableStructure(dataTable);
+                return tblStructures;
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
     }

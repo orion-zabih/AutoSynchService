@@ -17,6 +17,7 @@
         except_product_sale_master_detail_tables, // 7
         custom, // 8
         products_quick, // 9
+        products_recent, // 10
         //products_ledger_quick, // 9
     }
     public enum SynchMethods
@@ -24,5 +25,6 @@
         database_structure,    // 0
         database_data,    // 1
         file_transfer,   // 2
+        database_structure_alter,
     }
 }

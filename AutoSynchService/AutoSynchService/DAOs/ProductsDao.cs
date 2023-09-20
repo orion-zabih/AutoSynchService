@@ -38,5 +38,31 @@ namespace AutoSynchService.DAOs
 				throw ex;
 			}
         }
+        internal int GetExistingProductId(string dbtype,string prodId)
+        {
+            try
+            {
+                string qry = "select Count(Id) from InvProduct where Id="+prodId;
+
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager sqlite = new SqliteManager();
+                    string maxid = sqlite.ExecuteScalar(qry);
+                    return int.Parse(maxid);
+                }
+                else
+                {
+                    MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                    object maxId = sqlDbManager.ExecuteScalar(qry);
+                    string maxid = maxId != DBNull.Value ? maxId.ToString() : "0";
+                    return int.Parse(maxid);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
     }
 }

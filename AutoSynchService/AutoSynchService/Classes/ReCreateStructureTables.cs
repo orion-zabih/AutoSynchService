@@ -1,4 +1,5 @@
-﻿using AutoSynchService.Models;
+﻿
+using AutoSynchService.DAOs;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
@@ -61,20 +62,24 @@ namespace AutoSynchService.Classes
                         objResponse.createQueries.Add(qry);
                         objResponse.createQueries.Add(qry2);
                     }
+                    
                     try
                     {
 
-                        objResponse.dropQueries.ForEach(q => {
+                        objResponse.dropQueries.ForEach(q =>
+                        {
                             msSqlDbManager.ExecuteTransQuery(q);
                         });
-                       // objSqliteManager.Commit();
+                        //objSqliteManager.Commit();
                         objResponse.createQueries.ForEach(q => {
+                            
                             try
                             {
                                 msSqlDbManager.ExecuteTransQuery(q);
                             }
                             catch (Exception ex)
                             {
+                                Logger.write("Create Table Sql Server:" + ex.Message, true);
                             }
                         });
                         msSqlDbManager.Commit();    
@@ -97,14 +102,75 @@ namespace AutoSynchService.Classes
             }
             catch (Exception ex)
             {
-                // Logger.write("CreateDB", ex.ToString());
-                Console.WriteLine(ex.Message);
+                 Logger.write("CreateDB", ex.ToString());
+                //Console.WriteLine(ex.Message);
+
+                return false;
+            }
+        }
+        internal static bool _AlterDBTables(DateTime dateTime, List<string> queries, string dbtype)
+        {
+            try
+            {
+                bool isStructureComplete = false;
+                string format = "yyyy-MM-dd HH:mm:ss";
+
+                
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager objSqliteManager = new SqliteManager();
+                   
+                        //multiQueries.Add("create table app_setting(last_update_date DATETIME,next_update_date DATETIME)");
+                        isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(queries);
+                }
+                else
+                {
+                    MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                    
+
+                    try
+                    {
+
+                       
+                        queries.ForEach(q => {
+                            msSqlDbManager.ExecuteTransQuery(q);
+                            //try
+                            //{
+                                
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //    Logger.write("Alter Table Sql Server:" + ex.Message, true);
+                            //}
+                        });
+                        msSqlDbManager.Commit();
+                        isStructureComplete = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        msSqlDbManager.RollBack();
+                        throw;
+                    }
+                }
+                if (isStructureComplete)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("AlterDB", ex.ToString());
+                //Console.WriteLine(ex.Message);
 
                 return false;
             }
         }
 
-        internal static bool _InsertData(DateTime dateTime, SysTablesResponse? objResponse, InvProductsResponse? objProductjResponse, string dbtype)
+        internal static bool _InsertData(DateTime dateTime, SysTablesResponse? objResponse, InvProductsResponse? objProductjResponse, string dbtype,bool updateExisting)
         {
             try
             {
@@ -119,45 +185,74 @@ namespace AutoSynchService.Classes
 
                     listofClasses.ForEach(t =>
                     {
-                        var listProperties = t.PropertyType.GetProperties().ToList();
-                        if (listProperties.Count > 2)
-
+                        if(t.PropertyType.Name!="ApiResponse")
                         {
-                            var clas = listProperties[2].PropertyType;
-                            tableNames.Add(getTableName(clas.Name, dbtype));
-                            //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
-                        var fields = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
-                        string columns = string.Join(",", fields.ToArray());
-
-                        PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
-                            if (prop != null)
+                            var listProperties = t.PropertyType.GetProperties().ToList();
+                            if (listProperties.Count > 2)
                             {
-                                IList collection = (IList)prop.GetValue(objResponse != null ? objResponse : objProductjResponse, null);
-                                foreach (object item in collection)
+                                var clas = listProperties[2].PropertyType;
+                                tableNames.Add(getTableName(clas.Name, dbtype));
+                                //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
+                                List<string> fieldsold = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                                List<string> fields = new List<string>();
+                                fieldsold.ForEach(f =>
                                 {
-                                    string values = string.Empty;
-                                    fields.ForEach(fiel =>
+                                    fields.Add(getColName(clas.Name, f));
+
+                                });
+                                //foreach (string colNm in fields)
+                                //{
+                                //     getColName(clas.Name, colNm);
+                                //}
+                                string columns = string.Join(",", fields.ToArray());
+
+                                PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
+                                if (prop != null)
+                                {
+                                    IList collection = (IList)prop.GetValue(objResponse != null ? objResponse : objProductjResponse, null);
+                                    foreach (object item in collection)
                                     {
-                                        object vlu = GetPropValue(item, fiel);
-
-                                        if (vlu != null && vlu.ToString().Contains("'"))
+                                        string values = string.Empty;
+                                        bool isIgnoreInsert = false;
+                                        fields.ForEach(fiel =>
                                         {
-                                            values += "'" + vlu.ToString().Replace("'", "''") + "',";
-                                        }
-                                        else
-                                        {
-                                            values += "'" + vlu + "',";
-                                        }
-                                        if(vlu != null && fiel != null && fiel.ToLower().Equals("id"))
-                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "delete from " + getTableName(clas.Name, dbtype) + " where " + fiel + "=" + vlu });
-                                    });
+                                            fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
+                                            object vlu = GetPropValue(item, fiel);
 
+                                            if (vlu != null && vlu.ToString().Contains("'"))
+                                            {
+                                                values += "'" + vlu.ToString().Replace("'", "''") + "',";
+                                            }
+                                            else
+                                            {
+                                                values += "'" + vlu + "',";
+                                            }
+                                            if (vlu != null && fiel != null && fiel.ToLower().Equals("id"))
+                                            {
+                                                string tbleName = getTableName(clas.Name, dbtype);
+                                                ProductsDao productsDao = new ProductsDao();
+                                                VendorsDao vendorsDao = new VendorsDao();
+                                                if (!updateExisting && ((tbleName.ToLower().Equals("invproduct") && productsDao.GetExistingProductId(dbtype, vlu.ToString()) != 0) || (tbleName.ToLower().Equals("invvendor") && vendorsDao.GetExistingVendorId(dbtype, vlu.ToString()) != 0)))
+                                                {
+                                                    isIgnoreInsert = true;
+                                                }
+                                                else
+                                                {
+                                                    isIgnoreInsert = false;
+                                                    multiQueries.Add(new TableDataCls { TableName = tbleName, Qry = "delete from " + tbleName + " where " + fiel + "=" + vlu });
+                                                }
+                                            }
 
-                                    multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                        });
+
+                                        if (!isIgnoreInsert)
+                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                    }
+
+                                    // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
                                 }
-
-                               // multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name), Qry = "SET IDENTITY_INSERT " + getTableName(clas.Name) + " ON" });
                             }
+
                         }
 
                     });
@@ -202,12 +297,13 @@ namespace AutoSynchService.Classes
                                     msSqlDbManager = new MsSqlDbManager();
                                     try
                                     {
+                                       
                                         msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " ON");
                                     }
                                     catch (Exception)
                                     {
                                     }
-                                    //msSqlDbManager.Commit();
+                                    ////msSqlDbManager.Commit();
                                     try
                                     {
                                       //  msSqlDbManager = new MsSqlDbManager();
@@ -216,8 +312,9 @@ namespace AutoSynchService.Classes
                                             msSqlDbManager.ExecuteTransQuery(quries[i]);
                                         }
                                     }
-                                    catch (Exception)
+                                    catch (Exception ex)
                                     {
+                                        Logger.write(ex.Message);
                                         msSqlDbManager.RollBack();
                                         throw;
                                     }
@@ -244,7 +341,7 @@ namespace AutoSynchService.Classes
                                 //        msSqlDbManager.ExecuteTransQuery(q);
 
                                 //    });
-                                //    msSqlDbManager.Commit();
+                                ////    msSqlDbManager.Commit();
                                 //}
                             });
                             
@@ -254,7 +351,7 @@ namespace AutoSynchService.Classes
                         catch (Exception ex)
                         {
                             msSqlDbManager.RollBack();
-                            Console.WriteLine(ex.Message);
+                            Logger.write("Insert record", ex.ToString());
                             isStructureComplete = false;
                         }
                         
@@ -278,6 +375,7 @@ namespace AutoSynchService.Classes
             {
                 //Logger.write("CreateDB", ex.ToString());
 
+                Logger.write("InsertData", ex.ToString());
                 return false;
             }
         }
@@ -301,6 +399,24 @@ namespace AutoSynchService.Classes
                     break;
             }
             return className;
+
+        }
+        private static string getColName(string className, string colName)
+        {
+           
+            switch (className.ToLower())
+            {
+               
+                case "orgbranch":
+                    {
+                        if(colName.ToLower() == "privatekey")
+                        colName= colName.ToLower() == "privatekey"? "[privatekey]": colName;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return colName;
 
         }
         private static object GetPropValue(object src, string propName)

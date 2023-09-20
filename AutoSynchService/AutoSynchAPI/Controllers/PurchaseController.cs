@@ -41,10 +41,11 @@ namespace AutoSynchAPI.Controllers
                     
                     foreach (var m in dataResponse.invPurchaseMaster)
                     {
-                        m.InvoiceNo = ((from x in dataContext.InvPurchaseMaster
-                                        join y in dataContext.OrgBranch on x.BranchId equals y.Id
-                                        where x.FiscalYearId == (orgBranch.AccPurchaseFiscalYearId == 0 ? FiscalYear.Id : orgBranch.AccPurchaseFiscalYearId) && y.OrgId == orgBranch.OrgId
-                                        select (int?)x.InvoiceNo).Max() ?? 0) + 1;
+                        //m.InvoiceNo = ((from x in dataContext.InvPurchaseMaster
+                        //                join y in dataContext.OrgBranch on x.BranchId equals y.Id
+                        //                where x.FiscalYearId == (orgBranch.AccPurchaseFiscalYearId == 0 ? FiscalYear.Id : orgBranch.AccPurchaseFiscalYearId) && y.OrgId == orgBranch.OrgId
+                        //                select (int?)x.InvoiceNo).Max() ?? 0) + 1;
+                        
 
                         using (var transaction = dataContext.Database.BeginTransaction())
                         {

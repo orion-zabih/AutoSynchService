@@ -1,7 +1,8 @@
 ﻿
+using AutoSynchService.Classes;
 using AutoSynchSqlServer.Models;
 
-namespace AutoSynchService.Models
+namespace AutoSynchService.Classes
 {
     public class SysTablesResponse
     {
@@ -155,12 +156,12 @@ namespace AutoSynchService.Models
     {
         public ApiResponse Response { get; set; }
         public List<InvProduct> invProducts { get; set; }
-        //public List<InvProductLedger> invProductLedgers { get; set; }
+        public List<InvVendor> invVendors { get; set; }
         public InvProductsResponse()
         {
             Response = new ApiResponse();
             invProducts = new List<InvProduct>();
-           // invProductLedgers=new List<InvProductLedger>();
+            invVendors=new List<InvVendor>();
         }
     }
 }

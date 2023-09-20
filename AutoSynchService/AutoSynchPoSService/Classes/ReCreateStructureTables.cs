@@ -1,5 +1,5 @@
 ﻿
-using AutoSynchService.DAOs;
+using AutoSynchPosService.DAOs;
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServerLocal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;

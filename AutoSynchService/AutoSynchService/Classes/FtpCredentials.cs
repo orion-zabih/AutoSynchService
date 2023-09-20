@@ -27,7 +27,12 @@ namespace AutoSynchService.Classes
         public string BackoffTimerUnit { get; set; }
         public int BackoffTimer { get; set; }
         public string LocalDb { get; set; }
+        public string IsBranchFilter { get; set; }
         public string RecordsToFetch { get; set; }
+        public string DaysToDeleteQT { get; set; }
+        public string SynchVendor { get; set; }
+        public string SynchProduct { get; set; }
+        public string UpdateExisting { get; set; }
         public MySettings()
         {
             BranchId = "";
@@ -35,6 +40,8 @@ namespace AutoSynchService.Classes
             BackoffTimer = 24;
             LocalDb = "";
             RecordsToFetch = "1000";
+            IsBranchFilter =SynchVendor = SynchProduct=UpdateExisting= "false";
+            DaysToDeleteQT = "0";
         }
     }
    
