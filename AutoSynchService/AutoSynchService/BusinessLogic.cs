@@ -979,6 +979,91 @@ namespace AutoSynchService
             }
             return false;
         }
+        public bool GetProductsRecentSqlServer(int recordsToFetch, bool updateExisting)
+        {
+            try
+            {
+                StructureNDataClient sysTablesClient = new StructureNDataClient();
+                ProductsDao productsDao = new ProductsDao();
+                InvProductsResponse invProductsResponse = null;
+                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
+                Logger.write("{POS Sale Service BL}", "Getting some products only");
+                bool downlaodedAll = false;
+                bool firsthit = true; string prodid = "0";
+                while (!downlaodedAll)
+                {
+                    {
+                        Logger.write("{POS Sale Service BL}", "Getting some products");
+
+                        Logger.write("{POS Sale Service BL}", prodid);
+                        invProductsResponse = sysTablesClient.GetProducts(prodid, recordsToFetch, "r");
+                        if (invProductsResponse != null)
+                        {
+                            if (invProductsResponse.Response.Code == ApplicationResponse.MAX_REACHED_CODE)
+                            {
+                                Logger.write("{POS Sale Service BL}", "All products downloaded.");
+                                //Console.WriteLine("All products downloaded.");
+                                downlaodedAll = true;
+                                //synchSettingsDao.UpdatePendingSynchSettings(new List<int> { lastSynchSetting.setting_id }, "done", Constants.SqlServer);
+                                //synchSettingsDao.InsertSynchSettings(SynchMethods.database_data.ToString(), SynchTypes.products_recent.ToString(), Utility.GetNextDayMorningDateTime(), "ready", Constants.SqlServer);
+
+                            }
+                            else if (invProductsResponse.invProducts != null && invProductsResponse.invProducts.Count > 0)
+                            {
+                                prodid = invProductsResponse.invProducts.Max(pid => pid.Id).ToString();
+                                Logger.write("{POS Sale Service BL}", "Saving products.");
+                                //Console.WriteLine("Saving products.");                              
+
+                                if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer, updateExisting))
+                                {
+                                    Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
+                                    UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                                    updateProductFlag.BranchId = Global.BranchId.ToString();
+                                    invProductsResponse.invProducts.ForEach(p =>
+                                    {
+                                        updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                                    });
+                                    ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
+                                    if (ackResponse != null)
+                                        Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+                //Console.WriteLine("Getting some products");
+                //invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch, "f");
+                //if (invProductsResponse != null)
+                //{
+                //    Logger.write("{POS Sale Service BL}", "Saving products.");
+                //    //Console.WriteLine("Saving products.");
+                //    if (ReCreateStructureTables._InsertData(DateTime.Now, null, invProductsResponse, Constants.SqlServer, updateExisting))
+                //    {
+                //        Logger.write("{POS Sale Service BL}", "Saved products.sending acknowledgement to server");
+
+                //        UpdateProductFlag updateProductFlag = new UpdateProductFlag();
+                //        updateProductFlag.BranchId = Global.BranchId.ToString();
+                //        invProductsResponse.invProducts.ForEach(p => {
+                //            updateProductFlag.updatedProducts.Add(new UpdatedProduct { ProductId = p.Id, RetailPrice = p.RetailPrice, UpdateStatus = "t" });
+                //        });
+                //        ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
+                //        if (ackResponse != null)
+                //            Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
+                //        return true;
+
+                //    }
+
+                //}
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{GetProductsOnlySqlServer}", ex.Message.ToString());
+                //Console.WriteLine(ex.Message.ToString());
+                return false;
+            }
+            return false;
+        }
         public bool GetVendorsOnlySqlServer(int recordsToFetch, bool updateExisting)
         {
             try

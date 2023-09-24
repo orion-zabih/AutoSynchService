@@ -261,7 +261,7 @@ namespace AutoSynchAPI.Controllers
                                         else if (is_quick == "r")
                                         {
                                             DateTime now = DateTime.Now;
-                                           DateTime dateTimePrevious = now.AddDays(-2);
+                                           DateTime dateTimePrevious = now.AddDays(-100);
                                             //DateTime dateTimeToday =new DateTime(now.Year,now.Month,now.Day,0,0,1);
                                             if (prodId == 0)
                                             {

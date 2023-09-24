@@ -13,14 +13,19 @@ namespace AutoSynchService
         private readonly BusinessLogic _businessLogic;
 
 
-        public Worker(ILogger<Worker> logger)
-        {
-            _logger = logger;
+        //public Worker(ILogger<Worker> logger)
+        //{
+        //    _logger = logger;
 
-        }
+        //}
 
+        public Worker(
+            BusinessLogic businessLogic,
+            ILogger<Worker> logger) =>
+            (_businessLogic, _logger) = (businessLogic, logger);
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+
             while (!stoppingToken.IsCancellationRequested)
             {
 
@@ -89,12 +94,23 @@ namespace AutoSynchService
                             _logger.LogInformation("Started fetching newly added products from Central Database at: {time}");
                             if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                             {
-                                _logger.LogInformation("Some products downlaoded successfully only at: {time}");
+                                _logger.LogInformation("Some products downlaoded successfully at: {time}");
                                 Logger.write("Some products downlaoded successfully only at: {time}");
                             }
                             else
                             {
                                 _logger.LogInformation("Failed to download products only at: {time}");
+                                Logger.write("Failed to download products only at: {time}");
+                            }
+                            _logger.LogInformation("Started fetching recently added products from Central Database at: {time}");
+                            if (_businessLogic.GetProductsRecentSqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
+                            {
+                                _logger.LogInformation("Recently added products downlaoded successfully at: {time}");
+                                Logger.write("Some products downlaoded successfully only at: {time}");
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Failed to download Recently added products at: {time}");
                                 Logger.write("Failed to download products only at: {time}");
                             }
                         }
