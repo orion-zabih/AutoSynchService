@@ -24,7 +24,6 @@ namespace AutoSynchAPI.Controllers
             
             using(Entities dataContext=new Entities())
             {
-
                 int oldId = 0;
                 OrgBranch orgBranch = dataContext.OrgBranch.FirstOrDefault(o => o.Id == dataResponse.BranchId);
                 OrgOrganization orgOrganization = dataContext.OrgOrganization.FirstOrDefault(o => o.Id == orgBranch.OrgId);
@@ -46,7 +45,11 @@ namespace AutoSynchAPI.Controllers
                         //                where x.FiscalYearId == (orgBranch.AccPurchaseFiscalYearId == 0 ? FiscalYear.Id : orgBranch.AccPurchaseFiscalYearId) && y.OrgId == orgBranch.OrgId
                         //                select (int?)x.InvoiceNo).Max() ?? 0) + 1;
                         
-
+                        var existingRecord=dataContext.InvPurchaseMaster.FirstOrDefault(o => o.InvoiceNo == m.InvoiceNo && o.FiscalYearId==m.FiscalYearId && o.BranchId==orgBranch.Id);
+                        if (existingRecord != null)
+                        {
+                            continue; 
+                        }
                         using (var transaction = dataContext.Database.BeginTransaction())
                         {
                             dataContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(20));

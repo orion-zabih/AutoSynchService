@@ -21,3 +21,5 @@ AutoSynchService/packages/
 AutoSynchService/.vs
 /AutoSynchService/AutoSynchPoSService/bin
 /AutoSynchService/AutoSynchPoSService/obj
+/AutoSynchService/AutoSynchDesktopApp/bin/Debug/net6.0-windows
+/AutoSynchService/AutoSynchDesktopApp/obj

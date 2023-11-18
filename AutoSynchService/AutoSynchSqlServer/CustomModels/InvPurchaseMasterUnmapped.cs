@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace AutoSynchSqlServer.CustomModels
 {
+
     public class InvPurchaseMasterUnmapped
     {
         [NotMapped]
@@ -84,4 +85,30 @@ namespace AutoSynchSqlServer.CustomModels
         [NotMapped]
         public decimal SaleTaxInPercent { get; set; }
     }
+    public class InvPurchaseMasterDup
+    {
+        [NotMapped]
+        public int counts { get; set; }
+        [NotMapped]
+        public string? FbrInvoiceNumber { get; set; }
+        
+        [NotMapped]
+        public int InvoiceNo { get; set; }
+
+        [NotMapped]
+        public int BranchId { get; set; }
+
+        [NotMapped]
+        public int FiscalYearId { get; set; }
+
+    }
+    public class InvPurchaseMasterMin
+    {
+        [NotMapped]
+        public int OrderNo { get; set; }
+        //[NotMapped]
+        //public string? FbrInvoiceNumber { get; set; }
+
+    }
+
 }

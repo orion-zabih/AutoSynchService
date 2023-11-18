@@ -15,11 +15,14 @@ namespace AutoSynchSqlServer.Models
 
         public virtual DbSet<Sequence> Sequence { get; set; }
         public virtual DbSet<Timestamp> Timestamp { get; set; }
-
+        public virtual DbSet<InvPurchaseMasterDup> InvPurchaseMasterDup { get; set; }
+        public virtual DbSet<InvPurchaseMasterMin> InvPurchaseMasterMin { get; set; }
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Sequence>().HasNoKey();
             modelBuilder.Entity<Timestamp>().HasNoKey();
+            modelBuilder.Entity<InvPurchaseMasterDup>().HasNoKey();
+            modelBuilder.Entity<InvPurchaseMasterMin>().HasNoKey();
 
 
 
@@ -36,6 +39,27 @@ namespace AutoSynchSqlServer.Models
                        .HasColumnName("current_timestamp");
             });
 
+            modelBuilder.Entity<InvPurchaseMasterDup>(entity =>
+            {
+                entity.Property(e => e.counts)
+                       .HasColumnName("counts");
+                entity.Property(e => e.FbrInvoiceNumber)
+                       .HasColumnName("FbrInvoiceNumber");
+                entity.Property(e => e.InvoiceNo)
+                       .HasColumnName("InvoiceNo");
+                entity.Property(e => e.BranchId)
+                       .HasColumnName("BranchId");
+
+                entity.Property(e => e.FiscalYearId)
+                       .HasColumnName("FiscalYearId");
+            });
+            modelBuilder.Entity<InvPurchaseMasterMin>(entity =>
+            {
+                entity.Property(e => e.OrderNo)
+                       .HasColumnName("OrderNo");
+                //entity.Property(e => e.FbrInvoiceNumber)
+                //       .HasColumnName("FbrInvoiceNumber");
+            });
 
         }
 

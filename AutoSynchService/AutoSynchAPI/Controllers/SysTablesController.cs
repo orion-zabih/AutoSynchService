@@ -826,10 +826,10 @@ namespace AutoSynchAPI.Controllers
 
                     var lstTables = dbContext.Model.GetEntityTypes().Where(et => SynchTbls.Contains(et.GetTableName())).ToList();
 
-                    lstTables.ForEach(table =>
-                    {
-                        responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
-                    });
+                    //lstTables.ForEach(table =>
+                    //{
+                    //    responseObj.dropQueries.Add("DROP TABLE IF EXISTS " + getTableName(table.GetTableName(), local_db));
+                    //});
 
                     string qry = string.Empty;
                     switch (local_db)

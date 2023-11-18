@@ -9,6 +9,7 @@
 
 //await host.RunAsync();
 
+using AutoSynchClientEngine;
 using AutoSynchPoSService;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;

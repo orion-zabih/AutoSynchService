@@ -1,7 +1,7 @@
-using AutoSynchService.ApiClient;
-using AutoSynchService.Classes;
-using AutoSynchService.DAOs;
-using AutoSynchSqlite.DbManager;
+using AutoSynchClientEngine;
+using AutoSynchClientEngine.ApiClient;
+using AutoSynchClientEngine.Classes;
+using AutoSynchClientEngine.DAOs;
 using Microsoft.Extensions.Logging;
 using System.Data;
 
@@ -43,52 +43,10 @@ namespace AutoSynchService
                     {
                         _logger.LogInformation("Branch ID is {_branchId}", _branchId);
                         Global.BranchId = _branchId;
-                        //FtpCredentials ftpCredentials = config.GetSection("FtpCredentials").Get<FtpCredentials>();
-                        //if (ftpCredentials != null && ftpCredentials.EnableFtpSynch == "true")
-                        //{
-                        //    if (BusinessLogic.DownloadPublish(ftpCredentials))
-                        //    {
-                        //        Logger.write("Publish files downloaded successfully at: {time}");
-                        //    }
-                        //    else
-                        //    {
-                        //        Logger.write("Publish files downloading failed at: {time}");
-                        //    }
-                        //}
+                        
                         int recordsToFetch = 1000;
                         int.TryParse(settings.RecordsToFetch, out recordsToFetch);
-                        //Logger.write("Preparing to upload data from server");
-                        ////Console.WriteLine("Preparing to upload data from server");
-                        //try
-                        //{
-                        //    if (_businessLogic.UploadInvSaleToServer(settings.LocalDb))
-                        //    {
-                        //        Logger.write("Sale Data uploaded to server successfully at: {time}");
-                        //    }
-                        //    else
-                        //    {
-                        //        Logger.write("Sale Data upload to server failed at: {time}");
-                        //    }
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    Logger.write(ex.Message, true);
-                        //}
-                        //try
-                        //{
-                        //    if (_businessLogic.UploadInvPurchaseToServer(settings.LocalDb))
-                        //    {
-                        //        Logger.write("Purchase Data uploaded to server successfully at: {time}");
-                        //    }
-                        //    else
-                        //    {
-                        //        Logger.write("Purchase Data upload to server failed at: {time}");
-                        //    }
-                        //}
-                        //catch (Exception ex)
-                        //{
-                        //    Logger.write(ex.Message, true);
-                        //}
+                        
                         if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchProduct.Equals("true"))
                         {
                             _logger.LogInformation("Started fetching newly added products from Central Database at: {time}");

@@ -1,3 +1,4 @@
+using AutoSynchClientEngine;
 using AutoSynchService;
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>

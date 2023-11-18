@@ -21,6 +21,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchPoSService", "Auto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchPostVoucher", "AutoSynchPostVoucher\AutoSynchPostVoucher.csproj", "{799C8F9B-68A5-448D-8DB1-BC2C06DD8167}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoSynchClientEngine", "AutoSynchClientEngine\AutoSynchClientEngine.csproj", "{AC9B962A-46A2-4028-A01D-17095BD5B271}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoSynchDesktopApp", "AutoSynchDesktopApp\AutoSynchDesktopApp.csproj", "{CD98F4F7-9CCC-4203-B3F9-8CAB93C0327F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +67,14 @@ Global
 		{799C8F9B-68A5-448D-8DB1-BC2C06DD8167}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{799C8F9B-68A5-448D-8DB1-BC2C06DD8167}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{799C8F9B-68A5-448D-8DB1-BC2C06DD8167}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC9B962A-46A2-4028-A01D-17095BD5B271}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC9B962A-46A2-4028-A01D-17095BD5B271}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC9B962A-46A2-4028-A01D-17095BD5B271}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC9B962A-46A2-4028-A01D-17095BD5B271}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD98F4F7-9CCC-4203-B3F9-8CAB93C0327F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD98F4F7-9CCC-4203-B3F9-8CAB93C0327F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD98F4F7-9CCC-4203-B3F9-8CAB93C0327F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD98F4F7-9CCC-4203-B3F9-8CAB93C0327F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
