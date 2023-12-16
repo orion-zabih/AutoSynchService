@@ -74,16 +74,13 @@ namespace AutoSynchAPI.Controllers
 
                         dataResponse.invSaleMaster.ForEach(m =>
                         {
-                            if ((!string.IsNullOrEmpty(m.FbrInvoiceNumber) && dbContext.InvSaleMaster.FirstOrDefault(d => d.FbrInvoiceNumber == m.FbrInvoiceNumber) != null) || (dbContext.InvSaleMaster.FirstOrDefault(d => d.InvoiceNo == m.InvoiceNo && d.FiscalYearId == m.FiscalYearId && d.BranchId == m.BranchId) != null))
+                            if ((!string.IsNullOrEmpty(m.FbrInvoiceNumber) && dbContext.InvSaleMaster.FirstOrDefault(d => d.FbrInvoiceNumber == m.FbrInvoiceNumber) != null) || (dbContext.InvSaleMaster.FirstOrDefault(d => d.InvoiceNo == m.InvoiceNo && d.FiscalYearId == m.FiscalYearId && d.BranchId == m.BranchId && d.Source=="local") != null))
                             {
 
 
                             }
                             else
                             {
-
-
-
                                 List<AccVoucherDetail> accVoucherDetails = new List<AccVoucherDetail>();
                                 oldId = m.Id;
                                 //if (newId == 0)
@@ -362,9 +359,13 @@ namespace AutoSynchAPI.Controllers
         {
             try
             {
+                int year = DateTime.Now.Year;
+                int month = DateTime.Now.Month;
+                
                 for (int i = 1; i <= branch_id; i++)
                 {
-                    for (int j = 6; j <= 11; j++)
+                    
+                    for (int j = 6; j <= month; j++)
                     {
                         try
                         {
@@ -377,7 +378,7 @@ InvProduct p on d.ProductId=p.Id inner join
 OrgBranch b on m.BranchId=b.Id inner join 
 InvCategory c on p.CategoryId=c.Id
 where m.FbrInvoiceNumber is not null and b.OrgId=1 and m.IsDeleted=0 and m.OrderStatus<>'KOT'
- and m.IsCanceled = 0 and m.IsReturn = 0 and (TRY_CONVERT(date,m.CompletedDate) >= '2023-" + getmonth(j) + "-01' and TRY_CONVERT(date,m.CompletedDate) < '2023-" + getmonth(j + 1) + @"-01')
+ and m.IsCanceled = 0 and m.IsReturn = 0 and (TRY_CONVERT(date,m.CompletedDate) >= '"+year+"-" + getmonth(j) + "-01' and TRY_CONVERT(date,m.CompletedDate) < '"+year+"-" + getmonth(j + 1) + @"-01')
  and m.BranchId= " + i + " group by m.FbrInvoiceNumber having count(distinct m.Id)>1";
                                 var accOverallMasterIds = dbContext.InvPurchaseMasterDup.FromSqlRaw<InvPurchaseMasterDup>(qry).ToList();
                                 if (accOverallMasterIds != null)
@@ -419,13 +420,15 @@ where FbrInvoiceNumber='" + o.FbrInvoiceNumber + "' and BranchId= " + i).FirstOr
         }
         [Route("DeleteDupsNullFbrInvNo")]
         [HttpGet]
-        public IActionResult DeleteDupsNullFbrInvNo()
+        public IActionResult DeleteDupsNullFbrInvNo(string sc)
         {
             try
             {
                         try
-                        {
-                            using (Entities dbContext = new Entities())
+                {
+                    int year = DateTime.Now.Year;
+                    int month = DateTime.Now.Month;
+                    using (Entities dbContext = new Entities())
                             {
                                 string qry = @"select count(distinct m.Id) counts,m.InvoiceNo,m.BranchId,m.FiscalYearId,m.FbrInvoiceNumber from InvSaleDetail d inner join 
 InvSaleMaster m on d.BillId=m.Id inner join
@@ -434,11 +437,23 @@ InvProduct p on d.ProductId=p.Id inner join
 OrgBranch b on m.BranchId=b.Id inner join 
 InvCategory c on p.CategoryId=c.Id
 where b.OrgId=1 and m.IsDeleted=0 and m.OrderStatus<>'KOT'
- and m.IsCanceled = 0 and m.IsReturn = 0 and (TRY_CONVERT(date,m.CompletedDate) >= '2023-06-01' and TRY_CONVERT(date,m.CompletedDate) < '2023-11-01')
+ and m.IsCanceled = 0 and m.IsReturn = 0 and (TRY_CONVERT(date,m.CompletedDate) >= '"+year+"-06-01' and TRY_CONVERT(date,m.CompletedDate) < '"+year+"-"+month+@"-01')
  and m.BranchId=10 
  group by m.InvoiceNo,m.BranchId,m.FiscalYearId,m.FbrInvoiceNumber
  having count(distinct m.Id)>1
 order by count(distinct m.Id) desc";
+                        if (sc == "y")
+                        {
+                            qry = @"select count(distinct x.Id) counts,x.InvoiceNo,x.BranchId,x.FiscalYearId,x.FbrInvoiceNumber from InvSaleMaster x
+						inner join UsrSystemUser u on x.CreatedBy = u.Id
+                        inner join orgBranch b on x.BranchId = b.Id
+                        where b.OrgId = 1 and x.IsDeleted = 0 and x.IsCanceled = 0 and x.IsReturn = 0 
+						and x.Source='local'
+						and (TRY_CONVERT(date,x.CompletedDate) >= '"+year+"-06-01' and TRY_CONVERT(date,x.CompletedDate) < '"+year+"-"+month+@"-01')
+						group by x.InvoiceNo,x.BranchId,x.FiscalYearId,x.FbrInvoiceNumber 
+						having count(distinct x.Id)>1
+						order by count(x.id) desc";
+                        }
                                 var accOverallMasterIds = dbContext.InvPurchaseMasterDup.FromSqlRaw<InvPurchaseMasterDup>(qry).ToList();
                                 if (accOverallMasterIds != null)
                                 {

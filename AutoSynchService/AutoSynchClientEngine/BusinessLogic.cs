@@ -25,6 +25,10 @@ namespace AutoSynchClientEngine
         public BusinessLogic(
             ILogger<BusinessLogic> logger) =>
             (_logger) = (logger);
+        public BusinessLogic()
+        {
+           
+        }
         internal bool isFreshdb { get; set; }
         public bool GetAndReplaceTablesSqlServer()
         {
@@ -298,6 +302,20 @@ namespace AutoSynchClientEngine
                 //return false;
             }
 
+        }
+        public UsrSystemUser GetUsrSystemUser(string loginname,string password,string dbtype)
+        {
+            UsersDao usersDao = new UsersDao();
+            UsrSystemUser? usrSystemUser = usersDao.GetUser(loginname, password, dbtype);
+            if (usrSystemUser != null)
+            {
+                usrSystemUser.LoginName = loginname;
+                usrSystemUser.Password = password;
+                return usrSystemUser;
+            }
+            else
+                return null;
+                
         }
         private List<string> GetTables(SynchTypes synchType)
         {
@@ -610,6 +628,137 @@ namespace AutoSynchClientEngine
 
             return true;
         }
+
+        public List<InvSaleMaster> GetUnSynchedInvSale(string dbtype, string branchId)
+        {
+            try
+            {
+                InvSaleDao invSaleDao = new InvSaleDao();
+                List<InvSaleMaster> invSaleMaster = invSaleDao.GetSaleMaster(dbtype, branchId);
+                if (invSaleMaster != null && invSaleMaster.Count > 0)
+                {
+                    return invSaleMaster;                    
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write(ex.ToString());
+                throw;
+            }
+
+        }
+        public List<InvPurchaseMaster> GetUnSynchedInvPurchase(string dbtype)
+        {
+            try
+            {
+                InvPurchaseDao invPurchaseDao = new InvPurchaseDao();
+                List<InvPurchaseMaster> invPurchaseMaster = invPurchaseDao.GetPurchaseMaster(dbtype);
+                if (invPurchaseMaster != null && invPurchaseMaster.Count > 0)
+                {
+                    return invPurchaseMaster;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write(ex.ToString());
+                throw;
+            }
+
+        }
+        public List<string> ExportUnSynchedInvSale(string dbtype, string branchId)
+        {
+            try
+            {
+                InvSaleDao invSaleDao = new InvSaleDao();
+                List<string> invSaleMaster = invSaleDao.GetSaleMaster(dbtype, branchId,true);
+                if (invSaleMaster != null && invSaleMaster.Count > 0)
+                {
+                    string csvFilePath = "output.csv";
+
+                    // Open the CSV file for writing using StreamWriter
+                    using (StreamWriter writer = new StreamWriter(csvFilePath))
+                    {
+                        // Write the list of strings as a CSV row
+                        writer.WriteLine(invSaleMaster);
+                    }
+
+                    return invSaleMaster;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write(ex.ToString());
+                throw;
+            }
+
+        }
+        //public bool ExportNotUploadedInvSaleToServer(string dbtype, string branchId)
+        //{
+        //    try
+        //    {
+        //        InvSaleDao invSaleDao = new InvSaleDao();
+        //        List<string> invSaleMaster = invSaleDao.GetSaleMaster(dbtype, branchId,true);
+        //        if (invSaleMaster != null && invSaleMaster.Count > 0)
+        //        {
+
+        //            dataResponse.invSaleMaster.ForEach(m => {
+        //                dataResponse.invSaleDetails.AddRange(invSaleDao.GetSaleDetails(m.Id, dbtype,true));
+        //            });
+        //            if (dataResponse.invSaleDetails != null && dataResponse.invSaleDetails.Count > 0)
+        //            {
+        //                InvSaleClient invSaleClient = new InvSaleClient();
+        //                Logger.write("{POS Sale Service BL}", "uploading sales data");
+        //                //Console.WriteLine("uploading sales data");
+        //                ApiResponse apiResponse = invSaleClient.PostInvSaleDetails(dataResponse);
+        //                if (apiResponse.Code == ApplicationResponse.SUCCESS_CODE)
+        //                {
+        //                    Logger.write("{POS Sale Service BL}", "sales data uploaded successfully");
+        //                    //Console.WriteLine("sales data uploaded successfully");
+        //                    invSaleDao.UpdateMasterIsUploaded(dataResponse.invSaleMaster.Select(m => m.Id).ToList(), dbtype);
+
+        //                }
+        //                else
+        //                {
+        //                    Logger.write("{POS Sale Service BL}", apiResponse.Message);
+        //                    //Console.WriteLine(apiResponse.Message);
+        //                    Logger.write("{POS Sale Service BL}", "sales data did not uploaded successfully. please contact support");
+        //                    //Console.WriteLine("sales data did not uploaded successfully. please contact support");
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Logger.write("{POS Sale Service BL}", "no pending sales data");
+        //                //Console.WriteLine("no pending sales data");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            Logger.write("{POS Sale Service BL}", "no pending sales data");
+        //            //Console.WriteLine("no pending sales data");
+        //            return true;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.write("{POS Sale Service BL}", ex.Message);
+        //        //Console.WriteLine(ex.Message);
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
 
         public bool UploadInvPurchaseToServer(string dbtype)
         {
@@ -950,7 +1099,6 @@ namespace AutoSynchClientEngine
                 StructureNDataClient sysTablesClient = new StructureNDataClient();
                 ProductsDao productsDao = new ProductsDao();
                 InvProductsResponse invProductsResponse = null;
-                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
                 Logger.write("{POS Sale Service BL}", "Getting some products only");
                                //Console.WriteLine("Getting some products");
                 invProductsResponse = sysTablesClient.GetProducts("-1", recordsToFetch,"f");
@@ -1117,7 +1265,6 @@ namespace AutoSynchClientEngine
                 StructureNDataClient sysTablesClient = new StructureNDataClient();
                 VendorsDao vendorsDao = new VendorsDao();
                 InvProductsResponse invVendorsResponse = null;
-                SynchSettingsDao synchSettingsDao = new SynchSettingsDao();
                 Logger.write("{POS Sale Service BL}", "Getting some vendors only");
 
                 invVendorsResponse = sysTablesClient.GetVendors("0", recordsToFetch, "r");
@@ -1137,7 +1284,7 @@ namespace AutoSynchClientEngine
                         //ApiResponse ackResponse = sysTablesClient.PostUpdatedProducts(updateProductFlag);
                         //if (ackResponse != null)
                         //    Logger.write("{POS Sale Service BL}", ackResponse.Code + ": " + ackResponse.Message);
-                        //return true;
+                        return true;
 
                     }
 

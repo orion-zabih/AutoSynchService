@@ -447,7 +447,7 @@ namespace AutoSynchAPI.Controllers
                                 
                                     if (vendorId < 0)
                                     {//&& g.IsSynch == true
-                                        responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId ).Take(recordsToFetch).ToList();
+                                        responseObj.invVendors = dbContext.InvVendor.Take(recordsToFetch).ToList();
 
                                     }
                                     else
@@ -456,10 +456,10 @@ namespace AutoSynchAPI.Controllers
                                         {
                                             if (vendorId == 0)
                                             {
-                                                vendorId = dbContext.InvVendor.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                                vendorId = dbContext.InvVendor.Min(m => m.Id);
                                                 vendorId = vendorId - 1;
                                             }
-                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && g.Id > vendorId).Take(recordsToFetch).ToList();
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.Id > vendorId).Take(recordsToFetch).ToList();
 
                                         }
                                         else if (is_quick == "r")
@@ -470,7 +470,7 @@ namespace AutoSynchAPI.Controllers
                                             if (vendorId == 0)
                                             {
                                                 //  var invProducts = dbContext.InvProduct.Where(g => g.BranchId == _branchId && ((g.UpdatedDate>= dateTimePrevious && g.UpdatedDate <= dateTimeToday)|| (g.CreatedDate >= dateTimePrevious && g.CreatedDate <= dateTimeToday)));
-                                                var invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious));
+                                                var invVendors = dbContext.InvVendor.Where(g => g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious);
                                                 
                                             if (invVendors != null && invVendors.Count() != 0)
                                                 {
@@ -484,16 +484,16 @@ namespace AutoSynchAPI.Controllers
                                                     return Ok(responseObj);
                                                 }
                                             }
-                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious) && g.Id > vendorId).Take(recordsToFetch).ToList();
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => (g.UpdatedDate >= dateTimePrevious || g.CreatedDate >= dateTimePrevious) && g.Id > vendorId).Take(recordsToFetch).ToList();
 
                                         }
                                         else
                                         {
                                             if (vendorId == 0)
                                             {// && g.IsSynch == true
-                                                vendorId = dbContext.InvVendor.Where(g => g.BranchId == _branchId).Min(m => m.Id);
+                                                vendorId = dbContext.InvVendor.Min(m => m.Id);
                                             }// && g.IsSynch == true 
-                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.BranchId == _branchId && g.Id > vendorId).Take(recordsToFetch).ToList();
+                                            responseObj.invVendors = dbContext.InvVendor.Where(g => g.Id > vendorId).Take(recordsToFetch).ToList();
 
                                         }
 
@@ -509,7 +509,7 @@ namespace AutoSynchAPI.Controllers
                                 }
                                 else
                                 {
-                                    if (dbContext.InvVendor.Where(g => g.BranchId == _branchId).Max(m => m.Id) <= vendorId)
+                                    if (dbContext.InvVendor.Max(m => m.Id) <= vendorId)
                                     {
                                         responseObj.Response.Code = ApplicationResponse.MAX_REACHED_CODE;
                                         responseObj.Response.Message = ApplicationResponse.MAX_REACHED_MESSAGE;

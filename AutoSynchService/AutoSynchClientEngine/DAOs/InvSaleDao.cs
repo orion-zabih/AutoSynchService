@@ -2,6 +2,7 @@
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,48 +14,7 @@ namespace AutoSynchClientEngine.DAOs
 {
     internal class InvSaleDao
     {
-
-        internal string JvInCaseOfQtsale(string dbtype,string branchId)
-        {
-            string qry = "select InvCreateJvInCaseOfQtsale from OrgBranch where Id=" + branchId;
-            DataTable PendingOrdersSQlite=new DataTable();
-            if (dbtype.Equals(Constants.Sqlite))
-            {
-                SqliteManager sqlite = new SqliteManager();
-                PendingOrdersSQlite = sqlite.GetDataTable(qry);
-            }
-            else
-            {
-                MsSqlDbManager msSqlDb = new MsSqlDbManager();
-                PendingOrdersSQlite = msSqlDb.GetDataTable(qry);
-            }
-            if (PendingOrdersSQlite.Rows.Count > 0)
-            {
-                return PendingOrdersSQlite.Rows[0].Field<string>("InvCreateJvInCaseOfQtsale");
-            }
-            else return "No";
-        }
-        internal List<InvSaleMaster> GetSaleMaster(string dbtype,string branchId)
-        {
-            if(dbtype.Equals(Constants.Sqlite))
-            {
-
-                SqliteManager sqlite = new SqliteManager();
-                string qry = "select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
-                if (JvInCaseOfQtsale(dbtype, branchId)=="Yes")
-                {
-                    qry = "select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
-                }
-                DataTable PendingOrdersSQlite = sqlite.GetDataTable(qry);
-                Converter converter = new Converter();
-                List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
-                return saleMasters;
-            }
-            else
-            {
-
-                MsSqlDbManager msSqlDb = new MsSqlDbManager();
-                string qry = @"select top(1000) Id,
+        private string master_qry_cols = @"Id,
 ISNULL(ApprovedBy,0) ApprovedBy,
 ISNULL(BedId,0) BedId,
 BranchId,
@@ -123,18 +83,95 @@ UpdatedDate,
 VehicleId,
 VehicleNo,
 WardId,
-IsUploaded from InvSaleMaster where IsDeleted = 0 and IsCanceled = 0 and OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null)";
-                    // OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
+IsUploaded";
+        private string sale_qry = @"select top(1000) #cols# from InvSaleMaster where IsDeleted = 0 and IsCanceled = 0 and OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null)";
+        
+        private string sale_detail_qry = @"select #cols# from InvSaleDetail";
+        internal string JvInCaseOfQtsale(string dbtype,string branchId)
+        {
+            string qry = "select InvCreateJvInCaseOfQtsale from OrgBranch where Id=" + branchId;
+            DataTable PendingOrdersSQlite=new DataTable();
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+                SqliteManager sqlite = new SqliteManager();
+                PendingOrdersSQlite = sqlite.GetDataTable(qry);
+            }
+            else
+            {
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+                PendingOrdersSQlite = msSqlDb.GetDataTable(qry);
+            }
+            if (PendingOrdersSQlite.Rows.Count > 0)
+            {
+                return PendingOrdersSQlite.Rows[0].Field<string>("InvCreateJvInCaseOfQtsale");
+            }
+            else return "No";
+        }
+        internal List<InvSaleMaster> GetSaleMaster(string dbtype,string branchId)
+        {
+            if(dbtype.Equals(Constants.Sqlite))
+            {
+
+                SqliteManager sqlite = new SqliteManager();
+                string qry = "select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
+                if (JvInCaseOfQtsale(dbtype, branchId)=="Yes")
+                {
+                    qry = "select * from InvSaleMasterTmp where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
+                }
+                DataTable PendingOrdersSQlite = sqlite.GetDataTable(qry);
+                Converter converter = new Converter();
+                List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
+                return saleMasters;
+            }
+            else
+            {
+
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+
+                sale_qry = sale_qry.Replace("#cols#", master_qry_cols);
+                // OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
                 if (JvInCaseOfQtsale(dbtype, branchId) == "Yes")
                 {
-                    qry = qry.Replace("OrderStatus='Invoice' and ",string.Empty);
+                    sale_qry = sale_qry.Replace("OrderStatus='Invoice' and ",string.Empty);
                 }
-                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(qry);
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(sale_qry);
                 Converter converter = new Converter();
                 List<InvSaleMaster> saleMasters = Converter.GetInvSaleMaster(PendingOrdersSQlite);
                 return saleMasters;
             }
         }
+        internal List<string> GetSaleMaster(string dbtype, string branchId, bool isCommaSeparated = false)
+        {
+            
+            {
+
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+                if (isCommaSeparated)
+                {
+                    sale_qry = sale_qry.Replace("#cols#", $"CONCAT({master_qry_cols})");
+                }
+                else
+                {
+                    sale_qry = sale_qry.Replace("#cols#", master_qry_cols);
+                }
+                // OrderStatus='Invoice' and (IsUploaded != 1 or IsUploaded is null) LIMIT 1000";
+                if (JvInCaseOfQtsale(dbtype, branchId) == "Yes")
+                {
+                    sale_qry = sale_qry.Replace("OrderStatus='Invoice' and ", string.Empty);
+                }
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(sale_qry);
+                List<string> saleMasters = new List<string>();
+                saleMasters.Add(Model.master_header);
+                for (int i = 0; i < PendingOrdersSQlite.Rows.Count; i++)
+                {
+                    DataRow row = PendingOrdersSQlite.Rows[i];
+
+                    saleMasters.Add(row.Field<string>(0));
+                }
+                return saleMasters;
+            }
+        }
+
         internal List<InvSaleDetail> GetSaleDetails(decimal BillId, string dbtype)
         {
             if (dbtype.Equals(Constants.Sqlite))
@@ -148,24 +185,43 @@ IsUploaded from InvSaleMaster where IsDeleted = 0 and IsCanceled = 0 and OrderSt
             else
             {
                 MsSqlDbManager msSqlDb = new MsSqlDbManager();
-                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(@"select Id,
-BillId,
-Discount,
-FurtherTax,
-InvoiceType,
-IsDeleted,
-Pctcode,
-Price,
-PriceExclusiveTax,
-ProductId,
-Qty,
-SaleValue,
-TaxCharged,
-TaxRate,
-Total from InvSaleDetail where BillId = '" + BillId + "'");
+                //if (isCommaSeparated)
+                //{
+                //    sale_detail_qry = sale_detail_qry.Replace("#cols#", $"CONCAT({master_qry_cols})");
+                //}
+                //else
+                {
+                    sale_detail_qry = sale_detail_qry.Replace("#cols#", Model.detail_header);
+                }
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(sale_detail_qry+" where BillId = '" + BillId + "'");
                 Converter converter = new Converter();
                 List<InvSaleDetail> saleDetails = Converter.GetInvSaleDetails(PendingOrdersSQlite);
                 return saleDetails;
+            }
+        }
+        internal List<string> GetSaleDetails(decimal BillId, string dbtype, bool isCommaSeparated = false)
+        {
+            
+            {
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+                if (isCommaSeparated)
+                {
+                    sale_detail_qry = sale_detail_qry.Replace("#cols#", $"CONCAT({Model.detail_header})");
+                }
+                else
+                {
+                    sale_detail_qry = sale_detail_qry.Replace("#cols#", Model.detail_header);
+                }
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(sale_detail_qry + " where BillId = '" + BillId + "'");
+                List<string> saleMasters = new List<string>();
+                saleMasters.Add(Model.detail_header);
+                for (int i = 0; i < PendingOrdersSQlite.Rows.Count; i++)
+                {
+                    DataRow row = PendingOrdersSQlite.Rows[i];
+
+                    saleMasters.Add(row.Field<string>(0));
+                }
+                return saleMasters;
             }
         }
         internal bool UpdateMasterIsUploaded(List<int> Ids, string dbtype)

@@ -45,7 +45,7 @@ namespace AutoSynchAPI.Controllers
                         //                where x.FiscalYearId == (orgBranch.AccPurchaseFiscalYearId == 0 ? FiscalYear.Id : orgBranch.AccPurchaseFiscalYearId) && y.OrgId == orgBranch.OrgId
                         //                select (int?)x.InvoiceNo).Max() ?? 0) + 1;
                         
-                        var existingRecord=dataContext.InvPurchaseMaster.FirstOrDefault(o => o.InvoiceNo == m.InvoiceNo && o.FiscalYearId==m.FiscalYearId && o.BranchId==orgBranch.Id);
+                        var existingRecord=dataContext.InvPurchaseMaster.FirstOrDefault(o => o.InvoiceNo == m.InvoiceNo && o.FiscalYearId==m.FiscalYearId && o.BranchId==orgBranch.Id && o.Source == "local");
                         if (existingRecord != null)
                         {
                             continue; 

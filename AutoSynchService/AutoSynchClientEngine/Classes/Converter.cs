@@ -21,7 +21,7 @@ namespace AutoSynchClientEngine.Classes
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 DataRow row = table.Rows[i];
-            
+
                 var invSaleDetail = new InvSaleDetail()
                 {
                     Id = row.Field<int>("Id"),
@@ -34,12 +34,12 @@ namespace AutoSynchClientEngine.Classes
                     SaleValue = row.Field<decimal>("SaleValue"),
                     TaxCharged = row.Field<decimal>("TaxCharged"),
                     TaxRate = row.Field<decimal>("TaxRate"),
-                    Pctcode = row["Pctcode"] != DBNull.Value ? row.Field<string>("Pctcode") :"",
+                    Pctcode = row["Pctcode"] != DBNull.Value ? row.Field<string>("Pctcode") : "",
                     FurtherTax = row.Field<decimal>("FurtherTax"),
                     Discount = row.Field<decimal>("Discount"),
                     InvoiceType = row.Field<int>("InvoiceType"),
                     PriceExclusiveTax = row.Field<decimal>("PriceExclusiveTax")
-                    
+
                 };
                 invSaleDetailList.Add(invSaleDetail);
             }
@@ -146,40 +146,40 @@ namespace AutoSynchClientEngine.Classes
                     InvoiceDisc = row.Field<decimal?>("InvoiceDisc"),
                     Frieght = row.Field<decimal?>("Frieght"),
                     IsReturn = row.Field<bool>("IsReturn"),
-                    PaymentTypeId = row["PaymentTypeId"] != DBNull.Value ? row.Field<int>("PaymentTypeId"):0,
-                    InvoiceTotal = row.Field<decimal>("InvoiceTotal"),                    
+                    PaymentTypeId = row["PaymentTypeId"] != DBNull.Value ? row.Field<int>("PaymentTypeId") : 0,
+                    InvoiceTotal = row.Field<decimal>("InvoiceTotal"),
                     GrandTotal = row.Field<decimal>("GrandTotal"),
-                    ReferenceId= row.Field<int?>("ReferenceId"),
-                    Source= row.Field<string?>("Source"),
-                    WarehouseId= row.Field<int>("WarehouseId"),
+                    ReferenceId = row.Field<int?>("ReferenceId"),
+                    Source = row.Field<string?>("Source"),
+                    WarehouseId = row.Field<int>("WarehouseId"),
                     BranchId = row.Field<int>("BranchId"),
-                    IsCancel= row.Field<bool>("IsCancel"),
+                    IsCancel = row.Field<bool>("IsCancel"),
                     Status = row.Field<string?>("Status"),
                     CreatedBy = row.Field<int>("CreatedBy"),
                     CreatedDate = row.Field<DateTime?>("CreatedDate"),
                     UpdatedBy = row.Field<int>("UpdatedBy"),
                     UpdatedDate = row.Field<DateTime?>("UpdatedDate"),
-                    CurrencyId= row.Field<int>("CurrencyId"),
-                    CurrencyRate= row.Field<decimal>("CurrencyRate"),
+                    CurrencyId = row.Field<int>("CurrencyId"),
+                    CurrencyRate = row.Field<decimal>("CurrencyRate"),
                     GatePassNo = row.Field<int?>("GatePassNo"),
                     BiltyNo = row.Field<string?>("BiltyNo"),
-                    BiltyDate= row.Field<DateTime?>("BiltyDate"),
+                    BiltyDate = row.Field<DateTime?>("BiltyDate"),
                     VehicleNo = row.Field<string?>("VehicleNo"),
-                    DriverName= row.Field<string?>("DriverName"),
-                    DriverContactNo= row.Field<string?>("DriverContactNo"),
-                    Commission= row.Field<decimal>("Commission"),
-                    Tax= row.Field<decimal>("Tax"),
-                    Remarks = row.Field<string?>("Remarks"),                    
+                    DriverName = row.Field<string?>("DriverName"),
+                    DriverContactNo = row.Field<string?>("DriverContactNo"),
+                    Commission = row.Field<decimal>("Commission"),
+                    Tax = row.Field<decimal>("Tax"),
+                    Remarks = row.Field<string?>("Remarks"),
                     FiscalYearId = row.Field<int>("FiscalYearId"),
-                    LoadingCharges= row.Field<decimal>("LoadingCharges"),
+                    LoadingCharges = row.Field<decimal>("LoadingCharges"),
                     OtherCharges = row.Field<decimal>("OtherCharges"),
-                    GatePassId= row.Field<int>("GatePassId"),
-                    GrandTotalBeforeWhTax= row.Field<decimal>("GrandTotalBeforeWhTax"),
+                    GatePassId = row.Field<int>("GatePassId"),
+                    GrandTotalBeforeWhTax = row.Field<decimal>("GrandTotalBeforeWhTax"),
                     WithholdingTaxInAmount = row.Field<decimal>("WithholdingTaxInAmount"),
                     WithholdingTaxInPer = row.Field<decimal>("WithholdingTaxInPer"),
-                    PaymentType = row.Field<string?>("PaymentType"),                    
-                    AdvanceTaxAmount= row.Field<decimal>("AdvanceTaxAmount"),
-                    CancelRemarks= row.Field<string?>("CancelRemarks")
+                    PaymentType = row.Field<string?>("PaymentType"),
+                    AdvanceTaxAmount = row.Field<decimal>("AdvanceTaxAmount"),
+                    CancelRemarks = row.Field<string?>("CancelRemarks")
 
                 };
 
@@ -209,7 +209,7 @@ Scheme,TaxAmount,UnitId*/
                     ExpiryDate = row.Field<DateTime?>("ExpiryDate"),
                     IsBatchChange = row.Field<bool>("IsBatchChange"),
                     MasterId = row.Field<int>("MasterId"),
-                    ProductId = row.Field<int>("ProductId"),                    
+                    ProductId = row.Field<int>("ProductId"),
                     Qty = row.Field<decimal>("Qty"),
                     RetailPrice = row.Field<decimal>("RetailPrice"),
                     SaleTaxInPercent = row.Field<decimal>("SaleTaxInPercent"),
@@ -236,15 +236,15 @@ QtyCut,QtyIn,QtyOut,ReferenceId,Remarks,RetailPrice,Source,SourceParty,
 TransDate,UnitId,WarehouseId */
                     Id = row.Field<int>("Id"),
                     AverageCost = row.Field<decimal>("AverageCost"),
-                    BatchBarcode= row["BatchBarcode"] != DBNull.Value ? row.Field<string>("BatchBarcode") : "",
+                    BatchBarcode = row["BatchBarcode"] != DBNull.Value ? row.Field<string>("BatchBarcode") : "",
                     BatchNo = row["BatchNo"] != DBNull.Value ? row.Field<string>("BatchNo") : "",
-                    BranchId= row.Field<int>("BranchId"),
-                    Cost= row.Field<decimal>("Cost"),
-                    CreatedBy= row.Field<int>("CreatedBy"),
+                    BranchId = row.Field<int>("BranchId"),
+                    Cost = row.Field<decimal>("Cost"),
+                    CreatedBy = row.Field<int>("CreatedBy"),
                     CreatedDate = row.Field<DateTime?>("CreatedDate"),
                     ExpiryDate = row.Field<DateTime?>("ExpiryDate"),
-                    FiscalYearId= row.Field<int>("FiscalYearId"),
-                    IsCancel= row.Field<bool>("IsCancel"),
+                    FiscalYearId = row.Field<int>("FiscalYearId"),
+                    IsCancel = row.Field<bool>("IsCancel"),
                     MaterialId = row.Field<int>("MaterialId"),
                     PackageId = row.Field<int>("PackageId"),
                     ProductId = row.Field<int>("ProductId"),
@@ -252,13 +252,13 @@ TransDate,UnitId,WarehouseId */
                     QtyIn = row.Field<decimal>("QtyIn"),
                     QtyOut = row.Field<decimal>("QtyOut"),
                     ReferenceId = row.Field<int>("ReferenceId"),
-                    Remarks= row["Remarks"] != DBNull.Value ? row.Field<string>("Remarks") : "",
-                    RetailPrice= row.Field<decimal>("RetailPrice"),
-                    Source= row.Field<string>("Source"),
+                    Remarks = row["Remarks"] != DBNull.Value ? row.Field<string>("Remarks") : "",
+                    RetailPrice = row.Field<decimal>("RetailPrice"),
+                    Source = row.Field<string>("Source"),
                     SourceParty = row["SourceParty"] != DBNull.Value ? row.Field<string>("SourceParty") : "",
                     TransDate = row.Field<DateTime?>("TransDate"),
                     UnitId = row.Field<int>("UnitId"),
-                    WarehouseId= row.Field<int>("WarehouseId"),
+                    WarehouseId = row.Field<int>("WarehouseId"),
                 };
                 invProductLedgerList.Add(invProductLedger);
             }
@@ -288,6 +288,30 @@ TransDate,UnitId,WarehouseId */
             }
             return synchSettingList;
         }
+        internal static UsrSystemUser? GetUsrSystemUser(DataTable table)
+        {
+            if (table.Rows.Count == 0)
+                return null;
+            var usrSystemUserList = new List<UsrSystemUser>(table.Rows.Count);
+            foreach (DataRow row in table.Rows)
+            {
+                var values = row.ItemArray;
+                var synchSetting = new UsrSystemUser()
+                {
+                    Id = Convert.ToInt32(row["Id"]),
+                    FullName= Convert.ToString(row["FullName"] != DBNull.Value ? row["FullName"] : ""),
+                    OrgId = Convert.ToInt32(row["OrgId"]),
+                    AuthorizationType= Convert.ToString(row["AuthorizationType"] != DBNull.Value ? row["AuthorizationType"] : ""),
+                    UserRole = Convert.ToString(row["UserRole"] != DBNull.Value ? row["UserRole"] : ""),
+                    UserType = Convert.ToString(row["UserType"] != DBNull.Value ? row["UserType"] : ""),
+                    UpdatedDate = Convert.ToDateTime(row["UpdatedDate"] != DBNull.Value ? row["UpdatedDate"] : null),
+                    LastLoginDate = Convert.ToDateTime(row["LastLoginDate"] != DBNull.Value ? row["LastLoginDate"] : null),
+                    DefDateOfJoning = Convert.ToDateTime(row["DefDateOfJoning"] != DBNull.Value ? row["DefDateOfJoning"] : null)
+                };
+                usrSystemUserList.Add(synchSetting);
+            }
+            return usrSystemUserList.OrderBy(u=>u.Id).LastOrDefault();
+        }
         internal static List<AutoSynchSqlServer.CustomModels.TableStructure> GetTableStructure(DataTable table)
         {
             var tableStructureList = new List<AutoSynchSqlServer.CustomModels.TableStructure>(table.Rows.Count);
@@ -300,14 +324,15 @@ TransDate,UnitId,WarehouseId */
                     TableName = Convert.ToString(values[0] != DBNull.Value ? values[0] : ""),
                     ColumnName = Convert.ToString(values[1] != DBNull.Value ? values[1] : ""),
                     ColumnDefault = Convert.ToString(values[2] != DBNull.Value ? values[2] : ""),
-                    IsNullable= Convert.ToString(values[3] != DBNull.Value ? values[3] : ""),
+                    IsNullable = Convert.ToString(values[3] != DBNull.Value ? values[3] : ""),
                     DataType = Convert.ToString(values[4] != DBNull.Value ? values[4] : null),
-                    CharacterMaximumLength= Convert.ToString(values[5] != DBNull.Value ? values[5] : null)
+                    CharacterMaximumLength = Convert.ToString(values[5] != DBNull.Value ? values[5] : null)
                 };
                 tableStructureList.Add(tableStructure);
             }
             return tableStructureList;
         }
-
     }
+
+    
 }

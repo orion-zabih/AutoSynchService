@@ -23,3 +23,6 @@ AutoSynchService/.vs
 /AutoSynchService/AutoSynchPoSService/obj
 /AutoSynchService/AutoSynchDesktopApp/bin/Debug/net6.0-windows
 /AutoSynchService/AutoSynchDesktopApp/obj
+/AutoSynchService/AutoSynchClientEngine/bin
+/AutoSynchService/AutoSynchClientEngine/obj
+/AutoSynchService/AutoSynchDesktopApp/bin
