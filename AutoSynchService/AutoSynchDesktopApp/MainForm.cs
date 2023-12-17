@@ -158,7 +158,19 @@ namespace AutoSynchDesktopApp
 
         private void btnSyncFiscalYears_Click(object sender, EventArgs e)
         {
-
+            if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchVendor.Equals("true"))
+            {
+                if (_businessLogic.GetFiscalYearsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
+                {
+                    MessageBox.Show("Fiscal year data downlaoded successfully");
+                    Logger.write("Some Fiscal years data downlaoded successfully at: {time}");
+                }
+                else
+                {
+                    MessageBox.Show("Failed to download Fiscal year data");
+                    Logger.write("Failed to download Fiscal years data at: {time}");
+                }
+            }
         }
 
         private void btnSyncUsers_Click(object sender, EventArgs e)

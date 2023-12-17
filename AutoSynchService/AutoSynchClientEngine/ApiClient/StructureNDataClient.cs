@@ -1,5 +1,6 @@
 ﻿using AutoSynchClientEngine.Classes;
 using AutoSynchClientEngine.Classes;
+using AutoSynchSqlServer.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -120,6 +121,49 @@ namespace AutoSynchClientEngine.ApiClient
                         {
                             //var jsonResult = streamReader.ReadToEnd();
                             InvProductsResponse response = JsonConvert.DeserializeObject<InvProductsResponse>(responses);
+                            if (response != null)
+                            {
+                                return response;
+                            }
+                            return null;
+
+                        }
+
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public AccFiscalYearResponse? GetFiscalYears()//,string prodLedger="false"
+        {
+            try
+            {
+                try
+                {
+
+                    invSaleApiUrl = "/api/SysTables" + "/GetFiscalYears?branch_id=" + Global.BranchId ;
+                    // var json = JsonConvert.SerializeObject(signinDTO);
+                    var responses = ApiManager.GetAsync(invSaleApiUrl);
+
+                    // List data response.
+                    if (responses != null)
+                    {
+                        //using (var streamReader = new StreamReader(responses))
+                        {
+                            //var jsonResult = streamReader.ReadToEnd();
+                            AccFiscalYearResponse response = JsonConvert.DeserializeObject<AccFiscalYearResponse>(responses);
                             if (response != null)
                             {
                                 return response;

@@ -379,6 +379,197 @@ namespace AutoSynchClientEngine.Classes
                 return false;
             }
         }
+        internal static bool _InsertFiscalYearData(DateTime dateTime, AccFiscalYearResponse? objFiscalYearResponse, string dbtype, bool updateExisting)
+        {
+            try
+            {
+                var listofClasses =  typeof(AccFiscalYearResponse).GetProperties().ToList();
+                List<TableDataCls> multiQueries = new List<TableDataCls>();
+                bool isStructureComplete = false;
+                List<string> tableNames = new List<string>();
+                if (objFiscalYearResponse != null)
+                {
+                    Type myType =  objFiscalYearResponse.GetType();
+                    IList<PropertyInfo> props = new List<PropertyInfo>(myType.GetProperties());
+
+                    listofClasses.ForEach(t =>
+                    {
+                        if (t.PropertyType.Name != "ApiResponse")
+                        {
+                            var listProperties = t.PropertyType.GetProperties().ToList();
+                            if (listProperties.Count > 2)
+                            {
+                                var clas = listProperties[2].PropertyType;
+                                tableNames.Add(getTableName(clas.Name, dbtype));
+                                //multiQueries.Add(new TableDataCls {TableName= getTableName(clas.Name),Qry= "SET IDENTITY_INSERT " + getTableName(clas.Name) + " OFF"});
+                                List<string> fieldsold = clas.GetProperties().ToList().OrderByDescending(p => p.Name).Select(p => p.Name).ToList();
+                                List<string> fields = new List<string>();
+                                fieldsold.ForEach(f =>
+                                {
+                                    fields.Add(getColName(clas.Name, f));
+
+                                });
+                                //foreach (string colNm in fields)
+                                //{
+                                //     getColName(clas.Name, colNm);
+                                //}
+                                string columns = string.Join(",", fields.ToArray());
+
+                                PropertyInfo prop = props.FirstOrDefault(u => u.Name == t.Name);
+                                if (prop != null)
+                                {
+                                    IList collection = (IList)prop.GetValue(objFiscalYearResponse, null);
+                                    foreach (object item in collection)
+                                    {
+                                        string values = string.Empty;
+                                        bool isIgnoreInsert = false;
+                                        fields.ForEach(fiel =>
+                                        {
+                                            fiel = fiel == "[privatekey]" ? "PrivateKey" : fiel;
+                                            object vlu = GetPropValue(item, fiel);
+
+                                            if (vlu != null && vlu.ToString().Contains("'"))
+                                            {
+                                                values += "'" + vlu.ToString().Replace("'", "''") + "',";
+                                            }
+                                            else
+                                            {
+                                                values += "'" + vlu + "',";
+                                            }
+                                            if (vlu != null && fiel != null && fiel.ToLower().Equals("id"))
+                                            {
+                                                string tbleName = getTableName(clas.Name, dbtype);
+                                                ProductsDao productsDao = new ProductsDao();
+                                                if (!updateExisting && productsDao.GetExistingAccFiscalYearId(dbtype, vlu.ToString()) != 0)
+                                                {
+                                                    isIgnoreInsert = true;
+                                                }
+                                                else
+                                                {
+                                                    isIgnoreInsert = false;
+                                                    multiQueries.Add(new TableDataCls { TableName = tbleName, Qry = "delete from " + tbleName + " where " + fiel + "=" + vlu });
+                                                }
+                                            }
+
+                                        });
+
+                                        if (!isIgnoreInsert)
+                                            multiQueries.Add(new TableDataCls { TableName = getTableName(clas.Name, dbtype), Qry = "insert into " + getTableName(clas.Name, dbtype) + "(" + columns + ") values(" + values.TrimEnd(',') + ")" });
+                                    }
+                                }
+                            }
+                        }
+
+                    });
+                    //release, database
+                    string format = "yyyy-MM-dd HH:mm:ss";
+                    string qry = " insert into synch_setting(setting_id,synch_method,synch_type,table_names,status,insertion_timestamp,update_timestamp) values(1,'database','" + SynchTypes.full + "','','done','" + dateTime.ToString(format) + "','" + dateTime.ToString(format) + "')";
+                    if (dbtype.Equals(Constants.Sqlite))
+                    {
+                        SqliteManager objSqliteManager = new SqliteManager();
+                        DataTable dt = objSqliteManager.GetDataTable("SELECT name FROM sqlite_master WHERE type='table' AND name='synch_setting'");
+                        if (dt.Rows.Count == 0)
+                        {
+                            tableNames.Add("synch_setting");
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = "create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names text,status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)" });
+                            // modify the format depending upon input required in the column in database 
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = qry });
+
+                        }
+                        isStructureComplete = objSqliteManager.ExecuteTransactionMultiQueries(multiQueries.Select(q => q.Qry).ToList());
+                    }
+                    else
+                    {
+                        MsSqlDbManager msSqlDbManager = new MsSqlDbManager();
+                        DataTable dt = msSqlDbManager.GetDataTable("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' and TABLE_NAME='synch_setting'");
+                        if (dt.Rows.Count == 0)
+                        {
+                            tableNames.Add("synch_setting");
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = "create table synch_setting(setting_id int primary key,synch_method varchar(16),synch_type varchar(64),table_names varchar(max),status varchar(32) default 'ready',insertion_timestamp datetime,update_timestamp datetime)" });
+                            // modify the format depending upon input required in the column in database 
+                            multiQueries.Add(new TableDataCls { TableName = "synch_setting", Qry = qry });
+                        }
+                        try
+                        {
+                            tableNames.ForEach(t => {
+                                List<string> quries = multiQueries.Where(q => q.TableName == t).Select(s => s.Qry).ToList();
+                                if (quries.Count > 0)
+                                {
+                                    msSqlDbManager = new MsSqlDbManager();
+                                    try
+                                    {
+
+                                        msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " ON");
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                    ////msSqlDbManager.Commit();
+                                    try
+                                    {
+                                        //  msSqlDbManager = new MsSqlDbManager();
+                                        for (int i = 0; i < quries.Count; i++)
+                                        {
+                                            msSqlDbManager.ExecuteTransQuery(quries[i]);
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.write(ex.Message);
+                                        msSqlDbManager.RollBack();
+                                        throw;
+                                    }
+                                    finally
+                                    {
+                                        try
+                                        {
+                                            msSqlDbManager.ExecuteTransQuery("SET IDENTITY_INSERT " + t + " OFF");
+                                        }
+                                        catch (Exception)
+                                        {
+                                        }
+                                        msSqlDbManager.Commit();
+                                    }
+
+
+                                }
+                                
+                            });
+
+
+                            isStructureComplete = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            msSqlDbManager.RollBack();
+                            Logger.write("Insert record", ex.ToString());
+                            isStructureComplete = false;
+                        }
+
+                    }
+                    if (isStructureComplete)
+                        return true;
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                //Logger.write("CreateDB", ex.ToString());
+
+                Logger.write("InsertData", ex.ToString());
+                return false;
+            }
+        }
         private static string getTableName(string className,string local_db)
         {
             if (local_db.Equals(Constants.SqlServer))

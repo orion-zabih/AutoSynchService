@@ -555,6 +555,48 @@ namespace AutoSynchAPI.Controllers
                 return BadRequest(responseObj);
             }
         }
+        [Route("GetFiscalYears")]
+        [HttpGet]
+        public IActionResult GetFiscalYears(string branch_id)//,string product_ledger
+        {
+
+            Models.AccFiscalYearResponse responseObj = new Models.AccFiscalYearResponse();
+            try
+            {
+                using (Entities dbContext = new Entities())
+                {
+                    responseObj.accFiscalYear = dbContext.AccFiscalYear.ToList();
+                    if (responseObj.accFiscalYear != null)
+                    {
+                        if (responseObj.accFiscalYear.Count > 0)
+                        {
+                            responseObj.Response.Code = ApplicationResponse.SUCCESS_CODE;
+                            responseObj.Response.Message = ApplicationResponse.SUCCESS_MESSAGE;
+                            return Ok(responseObj);
+                        }
+                        else
+                        {
+                            responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+                            responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+
+                        }
+                    }
+                    else
+                    {
+                        //responseObj.Response.Code = ApplicationResponse.NOT_EXISTS_CODE;
+                        //responseObj.Response.Message = ApplicationResponse.NOT_EXISTS_MESSAGE;
+                        return NotFound(responseObj);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //responseObj.Response.Code = ApplicationResponse.GENERIC_ERROR_CODE;
+                //responseObj.Response.Message = ApplicationResponse.GENERIC_ERROR_MESSAGE;
+                return BadRequest(responseObj);
+            }
+            return Ok(responseObj);
+        }
         [Route("PostUpdatedVendors")]
         [HttpPost]
         public IActionResult PostUpdatedVendors([FromBody] UpdateProductFlag updateResponse)

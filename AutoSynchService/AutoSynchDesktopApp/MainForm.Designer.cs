@@ -72,24 +72,24 @@
             // btnSyncFiscalYears
             // 
             this.btnSyncFiscalYears.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnSyncFiscalYears.Location = new System.Drawing.Point(453, 249);
+            this.btnSyncFiscalYears.Location = new System.Drawing.Point(453, 25);
             this.btnSyncFiscalYears.Name = "btnSyncFiscalYears";
             this.btnSyncFiscalYears.Size = new System.Drawing.Size(201, 90);
             this.btnSyncFiscalYears.TabIndex = 6;
             this.btnSyncFiscalYears.Text = "Sync Fiscal Years";
             this.btnSyncFiscalYears.UseVisualStyleBackColor = true;
-            this.btnSyncFiscalYears.Visible = false;
             this.btnSyncFiscalYears.Click += new System.EventHandler(this.btnSyncFiscalYears_Click);
             // 
             // btnSyncPosApp
             // 
             this.btnSyncPosApp.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.btnSyncPosApp.Location = new System.Drawing.Point(453, 25);
+            this.btnSyncPosApp.Location = new System.Drawing.Point(453, 249);
             this.btnSyncPosApp.Name = "btnSyncPosApp";
             this.btnSyncPosApp.Size = new System.Drawing.Size(201, 90);
             this.btnSyncPosApp.TabIndex = 4;
             this.btnSyncPosApp.Text = "Update POS";
             this.btnSyncPosApp.UseVisualStyleBackColor = true;
+            this.btnSyncPosApp.Visible = false;
             this.btnSyncPosApp.Click += new System.EventHandler(this.btnSyncPosApp_Click);
             // 
             // btnUpdateDatabase

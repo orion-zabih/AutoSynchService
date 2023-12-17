@@ -23,6 +23,7 @@ namespace AutoSynchService
             BusinessLogic businessLogic,
             ILogger<Worker> logger) =>
             (_businessLogic, _logger) = (businessLogic, logger);
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
 

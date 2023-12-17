@@ -64,5 +64,31 @@ namespace AutoSynchClientEngine.DAOs
                 throw ex;
             }
         }
+        internal int GetExistingAccFiscalYearId(string dbtype, string prodId)
+        {
+            try
+            {
+                string qry = "select Count(Id) from AccFiscalYear where Id=" + prodId;
+
+                if (dbtype.Equals(Constants.Sqlite))
+                {
+                    SqliteManager sqlite = new SqliteManager();
+                    string maxid = sqlite.ExecuteScalar(qry);
+                    return int.Parse(maxid);
+                }
+                else
+                {
+                    MsSqlDbManager sqlDbManager = new MsSqlDbManager();
+                    object maxId = sqlDbManager.ExecuteScalar(qry);
+                    string maxid = maxId != DBNull.Value ? maxId.ToString() : "0";
+                    return int.Parse(maxid);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
     }
 }

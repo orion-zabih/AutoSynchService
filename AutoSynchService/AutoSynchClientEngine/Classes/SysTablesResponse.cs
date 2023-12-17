@@ -164,4 +164,16 @@ namespace AutoSynchClientEngine.Classes
             invVendors=new List<InvVendor>();
         }
     }
+
+    public class AccFiscalYearResponse
+    {
+        public ApiResponse Response { get; set; }
+        public List<AccFiscalYear> accFiscalYear { get; set; }
+
+        public AccFiscalYearResponse()
+        {
+            Response = new ApiResponse();
+            accFiscalYear = new List<AccFiscalYear>();
+        }
+    }
 }

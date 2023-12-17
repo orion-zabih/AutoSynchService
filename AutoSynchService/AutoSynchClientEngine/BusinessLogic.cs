@@ -1298,6 +1298,36 @@ namespace AutoSynchClientEngine
             }
             return false;
         }
+        public bool GetFiscalYearsOnlySqlServer(int recordsToFetch, bool updateExisting)
+        {
+            try
+            {
+                StructureNDataClient sysTablesClient = new StructureNDataClient();
+                AccFiscalYearResponse? accFiscalYearResponse = null;
+                Logger.write("{POS Sale Service BL}", "Getting some vendors only");
+
+                accFiscalYearResponse = sysTablesClient.GetFiscalYears();
+                if (accFiscalYearResponse != null)
+                {
+                    Logger.write("{POS Sale Service BL}", "Saving fiscal year data.");
+
+                    if (ReCreateStructureTables._InsertFiscalYearData(DateTime.Now, accFiscalYearResponse, Constants.SqlServer, updateExisting))
+                    {
+                        Logger.write("{POS Sale Service BL}", "Saved fiscal year");
+                        return true;
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{GetFiscalYearsOnlySqlServer}", ex.Message.ToString());
+                //Console.WriteLine(ex.Message.ToString());
+                return false;
+            }
+            return false;
+        }
 
         public bool GetAndReplaceSysTablesSqlite(string IsBranchFilter)
         {
