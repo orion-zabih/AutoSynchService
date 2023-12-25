@@ -29,6 +29,7 @@ namespace AutoSynchClientEngine.Classes
         public string LocalDb { get; set; }
         public string IsBranchFilter { get; set; }
         public string RecordsToFetch { get; set; }
+        public string RecordsToUpload { get; set; }
         public string DaysToDeleteQT { get; set; }
         public string SynchVendor { get; set; }
         public string SynchProduct { get; set; }
@@ -40,6 +41,7 @@ namespace AutoSynchClientEngine.Classes
             BackoffTimer = 24;
             LocalDb = "";
             RecordsToFetch = "1000";
+            RecordsToUpload = "25";
             IsBranchFilter =SynchVendor = SynchProduct=UpdateExisting= "false";
             DaysToDeleteQT = "0";
         }

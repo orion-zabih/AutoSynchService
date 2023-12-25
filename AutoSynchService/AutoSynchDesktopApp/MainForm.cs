@@ -52,8 +52,10 @@ namespace AutoSynchDesktopApp
         {
             if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchProduct.Equals("true"))
             {
+                Cursor.Current = Cursors.WaitCursor;
                 if (_businessLogic.GetProductsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                 {
+                    Cursor.Current = Cursors.Default;
                     Logger.write("Some products downlaoded successfully only at: {time}");
                     MessageBox.Show("Some products downlaoded successfully");
                 }
@@ -88,8 +90,10 @@ namespace AutoSynchDesktopApp
             if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchVendor.Equals("true"))
             {
                 //_logger.LogInformation("Started fetching newly added vendors from Central Database at: {time}");
+                Cursor.Current = Cursors.WaitCursor;
                 if (_businessLogic.GetVendorsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                 {
+                    Cursor.Current = Cursors.Default;
                     //_logger.LogInformation("Some vendors downlaoded successfully only at: {time}");
                     MessageBox.Show("Vendors data downlaoded successfully");
                     Logger.write("Some vendors downlaoded successfully only at: {time}");
@@ -107,7 +111,7 @@ namespace AutoSynchDesktopApp
         {
             try
             {
-                using (SaleManagement saleManagement = new SaleManagement(settings.LocalDb, branchId))
+                using (SaleManagement saleManagement = new SaleManagement(settings.LocalDb, branchId,settings.RecordsToUpload))
                 {
                     saleManagement.ShowDialog();
                 }
@@ -122,7 +126,7 @@ namespace AutoSynchDesktopApp
         {
             try
             {
-                using (PurchaseManagement purchaseManagement = new PurchaseManagement(settings.LocalDb, branchId))
+                using (PurchaseManagement purchaseManagement = new PurchaseManagement(settings.LocalDb, branchId,settings.RecordsToUpload))
                 {
                     purchaseManagement.ShowDialog();
                 }
@@ -160,8 +164,10 @@ namespace AutoSynchDesktopApp
         {
             if (settings.LocalDb.Equals(Constants.SqlServer) && settings.SynchVendor.Equals("true"))
             {
+                Cursor.Current = Cursors.WaitCursor;
                 if (_businessLogic.GetFiscalYearsOnlySqlServer(recordsToFetch, settings.UpdateExisting.Equals("true")))
                 {
+                    Cursor.Current = Cursors.Default;
                     MessageBox.Show("Fiscal year data downlaoded successfully");
                     Logger.write("Some Fiscal years data downlaoded successfully at: {time}");
                 }

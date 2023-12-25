@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Collections;
 
 namespace AutoSynchClientEngine
 {
@@ -572,13 +573,18 @@ namespace AutoSynchClientEngine
             }
             return SynchTbls;
         }
-        public bool UploadInvSaleToServer(string dbtype, string branchId)
+        public bool UploadInvSaleToServer(string dbtype, string branchId,List<int>? chunk)
         {
             try
             {
                 InvSaleDao invSaleDao = new InvSaleDao();
                 DataResponse dataResponse = new DataResponse();
-                dataResponse.invSaleMaster = invSaleDao.GetSaleMaster(dbtype,branchId);
+                if(chunk != null)
+                {
+                    dataResponse.invSaleMaster = invSaleDao.GetSaleMaster(dbtype, branchId, chunk);
+                }
+                else
+                    dataResponse.invSaleMaster = invSaleDao.GetSaleMaster(dbtype,branchId);
                 if (dataResponse.invSaleMaster != null && dataResponse.invSaleMaster.Count > 0)
                 {
 
@@ -616,6 +622,50 @@ namespace AutoSynchClientEngine
                 {
                     Logger.write("{POS Sale Service BL}", "no pending sales data");
                                //Console.WriteLine("no pending sales data");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.write("{POS Sale Service BL}", ex.Message);
+                //Console.WriteLine(ex.Message);
+                return false;
+            }
+
+            return true;
+        }
+        public bool UploadInvSaleToServerAll(string dbtype, string branchId, string upload_records_no)
+        {
+            try
+            {
+                InvSaleDao invSaleDao = new InvSaleDao();
+                
+                List<int> invSaleMaster = invSaleDao.GetSaleMasterIds(dbtype, branchId);
+                if (invSaleMaster != null && invSaleMaster.Count > 0)
+                {
+
+                    int chunkSize = 25;
+                    if (int.TryParse(upload_records_no, out chunkSize))
+                    {
+
+                    }
+                    for (int i = 0; i < invSaleMaster.Count; i += chunkSize)
+                    {
+                        List<int> chunk = invSaleMaster.Skip(i).Take(chunkSize).ToList();
+
+                        // Process the current chunk
+                        if (UploadInvSaleToServer(dbtype,branchId, chunk))
+                        {
+                            Logger.write("{POS Purchase Service BL}", "uploaded a chunk of Purchases data");
+                        }
+                        else
+                            Logger.write("{POS Purchase Service BL}", "failed to upload a chunk of Purchases data");
+                    }
+                }
+                else
+                {
+                    Logger.write("{POS Sale Service BL}", "no pending sales data");
+                    //Console.WriteLine("no pending sales data");
                     return true;
                 }
             }
@@ -759,14 +809,41 @@ namespace AutoSynchClientEngine
 
         //    return true;
         //}
+        public bool UploadInvPurchaseAll(string dbtype,string upload_records_no)
+        {
+            InvPurchaseDao invPurchaseDao = new InvPurchaseDao();
+            List<int> invPurchaseMaster = invPurchaseDao.GetPurchaseMasterIds(dbtype);
+            int chunkSize = 25;
+            if(int.TryParse(upload_records_no,out chunkSize))
+            {
 
-        public bool UploadInvPurchaseToServer(string dbtype)
+            }
+            for (int i = 0; i < invPurchaseMaster.Count; i += chunkSize)
+            {
+                List<int> chunk = invPurchaseMaster.Skip(i).Take(chunkSize).ToList();
+
+                // Process the current chunk
+                if (UploadInvPurchaseToServer(dbtype, chunk))
+                {
+                    Logger.write("{POS Purchase Service BL}", "uploaded a chunk of Purchases data");
+                }
+                else
+                    Logger.write("{POS Purchase Service BL}", "failed to upload a chunk of Purchases data");
+            }
+            return true;
+        }
+        public bool UploadInvPurchaseToServer(string dbtype,List<int>? chunk=null)
         {
             try
             {
                 InvPurchaseDao invPurchaseDao = new InvPurchaseDao();
                 DataResponse dataResponse = new DataResponse();
-                dataResponse.invPurchaseMaster = invPurchaseDao.GetPurchaseMaster(dbtype);
+                if(chunk != null)
+                {
+                    dataResponse.invPurchaseMaster = invPurchaseDao.GetPurchaseMaster(dbtype,chunk);
+                }    
+                else 
+                    dataResponse.invPurchaseMaster = invPurchaseDao.GetPurchaseMaster(dbtype);
                 if (dataResponse.invPurchaseMaster!= null && dataResponse.invPurchaseMaster.Count > 0)
                 {
 
