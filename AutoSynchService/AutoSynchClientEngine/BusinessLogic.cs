@@ -890,7 +890,7 @@ namespace AutoSynchClientEngine
             }
             catch (Exception ex)
             {
-                Logger.write("{POS Purchase Service BL}", ex.Message);
+                Logger.write("{POS Purchase Service BL}", ex.StackTrace.ToString());
                 //Console.WriteLine(ex.Message);
                 return false;
             }

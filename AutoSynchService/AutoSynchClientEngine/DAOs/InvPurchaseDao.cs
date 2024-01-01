@@ -2,6 +2,7 @@
 using AutoSynchSqlite.DbManager;
 using AutoSynchSqlServer.Models;
 using AutoSynchSqlServerLocal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -73,6 +74,98 @@ IsUploaded from InvPurchaseMaster where IsCancel = 0 and (IsUploaded != 1 or IsU
                 Converter converter = new Converter();
                 List<InvPurchaseMaster> purchaseMasters = Converter.GetInvPurchaseMaster(PendingOrdersSQlite);
                 return purchaseMasters;
+            }
+        }
+        internal List<InvPurchaseMaster> GetPurchaseMaster(string dbtype,List<int> chunk)
+        {
+            string whereIds = string.Join(',', chunk).TrimEnd(',') ; 
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+
+                SqliteManager sqlite = new SqliteManager();
+                DataTable PendingOrdersSQlite = sqlite.GetDataTable($"select * from InvPurchaseMaster where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null) and Id in ({whereIds})");
+                Converter converter = new Converter();
+                List<InvPurchaseMaster> PurchaseMasters = Converter.GetInvPurchaseMaster(PendingOrdersSQlite);
+                return PurchaseMasters;
+            }
+            else
+            {
+
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(@$"select top(25) Id,
+                    InvoiceNo,
+                    InvoiceDate,
+                    VendorId ,
+                    InvoiceDisc ,
+                    Frieght ,
+                    IsReturn,
+                    PaymentTypeId,
+                    InvoiceTotal ,                    
+                    GrandTotal,
+                    ReferenceId,
+                    Source,
+                    WarehouseId,
+                    BranchId,
+                    IsCancel,
+                    Status,
+                    CreatedBy,
+                    CreatedDate,
+                    UpdatedBy,
+                    UpdatedDate,
+                    CurrencyId,
+                    CurrencyRate,
+                    GatePassNo ,
+                    BiltyNo,
+                    BiltyDate,
+                    VehicleNo ,
+                    DriverName,
+                    DriverContactNo,
+                    Commission,
+                    Tax,
+                    Remarks ,                    
+                    FiscalYearId,
+                    LoadingCharges,
+                    OtherCharges,
+                    GatePassId,
+                    GrandTotalBeforeWhTax,
+                    WithholdingTaxInAmount,
+                    WithholdingTaxInPer ,
+                    PaymentType,                    
+                    AdvanceTaxAmount,
+                    CancelRemarks,
+IsUploaded from InvPurchaseMaster where IsCancel = 0 and (IsUploaded != 1 or IsUploaded is null) and Id in ({whereIds})");
+                Converter converter = new Converter();
+                List<InvPurchaseMaster> purchaseMasters = Converter.GetInvPurchaseMaster(PendingOrdersSQlite);
+                return purchaseMasters;
+            }
+        }
+
+        internal List<int> GetPurchaseMasterIds(string dbtype)
+        {
+            if (dbtype.Equals(Constants.Sqlite))
+            {
+
+                SqliteManager sqlite = new SqliteManager();
+                DataTable PendingOrdersSQlite = sqlite.GetDataTable("select Id from InvPurchaseMaster where IsDeleted = 0 and IsCanceled = 0 and (IsUploaded != 1 or IsUploaded is null)");
+                List<int> PurchaseMasters = new List<int>();
+                for (int i = 0; i < PendingOrdersSQlite.Rows.Count; i++)
+                {
+                    PurchaseMasters.Add(PendingOrdersSQlite.Rows[i].Field<int>("Id"));
+                }
+                    
+                return PurchaseMasters;
+            }
+            else
+            {
+
+                MsSqlDbManager msSqlDb = new MsSqlDbManager();
+                DataTable PendingOrdersSQlite = msSqlDb.GetDataTable(@"select Id from InvPurchaseMaster where IsCancel = 0 and (IsUploaded != 1 or IsUploaded is null)");
+                List<int> PurchaseMasters = new List<int>();
+                for (int i = 0; i < PendingOrdersSQlite.Rows.Count; i++)
+                {
+                    PurchaseMasters.Add(PendingOrdersSQlite.Rows[i].Field<int>("Id"));
+                }
+                return PurchaseMasters;
             }
         }
         internal List<InvPurchaseDetail> GetPurchaseDetails(decimal MasterId, string dbtype)
